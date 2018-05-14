@@ -15,8 +15,8 @@ class MeetingRoomBooking extends BaseModel
   protected $fillable = [
     'meeting_room_id',
     'applicant_id',
-    'from_datetime',
-    'to_datetime',
+    'started_at',
+    'ended_at',
     'remark',
     'remark'
   ];
