@@ -7,8 +7,8 @@ class MeetingRoomHelper {
   public static function getOccupiedMeetingRoomIds()
   {
     $sNow = getLocalDateTime();
-    $occupied = MeetingRoomBooking::where('from_datetime', '<=', $sNow)
-      ->where('to_datetime', '>=', $sNow)
+    $occupied = MeetingRoomBooking::where('started_at', '<=', $sNow)
+      ->where('ended_at', '>=', $sNow)
       ->pluck('id')
       ->toArray();
     return array_unique($occupied);

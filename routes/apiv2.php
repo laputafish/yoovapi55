@@ -29,12 +29,12 @@ Route::get('/', function() {
 //    return 'API Version 2 post';
 //});
 
-Route::middleware('auth:api')->get('/user', function( Request $request) {
-    return $request->user();
-});
+//Route::middleware('auth:api')->get('/user', function( Request $request) {
+//    return $request->user();
+//});
 
 Route::group(['middleware'=>'auth:api'], function() {
-//    Route::get('user', 'UserController@getUser');
+    Route::get('user', 'UserController@getUser');
     Route::get('products/init', 'ProductController@init');
     Route::resource('products', 'ProductController');
     Route::resource('meeting_rooms', 'MeetingRoomController');

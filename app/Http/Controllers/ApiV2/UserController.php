@@ -76,7 +76,7 @@ class UserController extends Controller
     }
 
     public function getUser() {
-        $user = Auth::user();
-        return response()->json($user);
+//        $user = Auth::user();
+        return response()->json(request()->user());
     }
 }
