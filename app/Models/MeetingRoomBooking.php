@@ -21,6 +21,18 @@ class MeetingRoomBooking extends BaseModel
     'remark'
   ];
 
+  public $appends = [
+    'applicant_name'
+  ];
+
+  public function applicant() {
+    return $this->belongsTo( 'App\User', 'applicant_id');
+  }
+
+  public function getApplicantNameAttribute() {
+    return $this->applicant->name;
+  }
+
   public function meetings() {
     return $this->hasMany('App\Models\Meeting');
   }

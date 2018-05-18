@@ -38,6 +38,7 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::get('products/init', 'ProductController@init');
     Route::resource('products', 'ProductController');
     Route::resource('meeting_rooms', 'MeetingRoomController');
+    Route::resource('meeting_room_bookings', 'MeetingRoomBookingController');
     Route::resource('meetings', 'MeetingController');
     Route::get('users/init', 'UserController@init');
 });
