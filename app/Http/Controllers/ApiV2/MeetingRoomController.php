@@ -1,10 +1,9 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
-use App\Http\Controllers\Controller;
 use App\Models\MeetingRoom;
 use Illuminate\Support\Facades\Input;
 
-class MeetingRoomController extends Controller
+class MeetingRoomController extends BaseController
 {
     public function index()
     {

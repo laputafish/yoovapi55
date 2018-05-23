@@ -24,7 +24,7 @@ class Meeting extends BaseModel
     'created_at'
   ];
 
-  protected $appends = ['status','meeting_venue','applicant_name'];
+  protected $appends = ['status','meeting_venue','applicant_name', 'room_booking'];
 
   /**
    * The attributes that should be hidden for arrays.
@@ -53,8 +53,12 @@ class Meeting extends BaseModel
     return $status;
   }
 
-  public function RoomBooking() {
-    return $this->belongsTo('App\Models\MeetingRoomBooking');
+  public function roomBooking() {
+    return $this->belongsTo('App\Models\MeetingRoomBooking', 'meeting_room_booking_id');
+  }
+
+  public function getRoomBookingAttribute() {
+    return $this->roomBooking()->first();
   }
 
   public function getBookingCountAttribute() {
@@ -64,21 +68,21 @@ class Meeting extends BaseModel
   public function getMeetingVenueAttribute() {
     $result = $this->venue;
     if($this->venue_type == 'conference_room') {
-      $result = $this->meetingRoom;
+      $result = $this->meetingRoom->name;
     }
     return $result;
   }
 
-  public function meetingRoom() {
+  public function getMeetingRoomAttribute() {
     $result = null;
     if(isset($this->roomBooking)) {
       $result = $this->roomBooking->meetingRoom;
     }
-    return result;
+    return $result;
   }
 
   public function applicant() {
-    return $this->belongsTo('App\User');
+    return $this->belongsTo('App\User', 'user_id');
   }
 
   public function getApplicantNameAttribute() {

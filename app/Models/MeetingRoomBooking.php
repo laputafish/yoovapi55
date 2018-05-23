@@ -34,7 +34,7 @@ class MeetingRoomBooking extends BaseModel
   }
 
   public function meetings() {
-    return $this->hasMany('App\Models\Meeting');
+    return $this->hasMany('App\Models\Meeting', 'meeting_room_booking_id');
   }
 
   public function meetingRoom() {

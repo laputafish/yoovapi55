@@ -1,11 +1,10 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use App\User;
 use App\Models\UserInfo;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     public function init() {
         $users = [

@@ -1,11 +1,10 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use App\Product;
 use App\Category;
 
-class ProductController extends Controller
+class ProductController extends BaseController
 {
     public function index() {
         return 'products';

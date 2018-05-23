@@ -33,7 +33,7 @@ Route::get('/', function() {
 //    return $request->user();
 //});
 
-Route::group(['middleware'=>'auth:api'], function() {
+Route::group([/*'middleware'=>'auth:api'*/], function() {
     Route::get('user', 'UserController@getUser');
     Route::get('products/init', 'ProductController@init');
     Route::resource('products', 'ProductController');
