@@ -22,7 +22,8 @@ class MeetingRoomBooking extends BaseModel
   ];
 
   public $appends = [
-    'applicant_name'
+    'applicant_name',
+    'meeting_room_name'
   ];
 
   public function applicant() {
@@ -38,6 +39,10 @@ class MeetingRoomBooking extends BaseModel
   }
 
   public function meetingRoom() {
-    return $this->belongsTo('App\Models\MeetingRoom');
+    return $this->belongsTo('App\Models\MeetingRoom', 'meeting_room_id');
+  }
+
+  public function getMeetingRoomNameAttribute() {
+    return $this->meetingRoom->name;
   }
 }

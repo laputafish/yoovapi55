@@ -43,6 +43,13 @@ Route::group([/*'middleware'=>'auth:api'*/], function() {
     Route::get('users/init', 'UserController@init');
 });
 
+Route::post('register', 'Auth\RegisterController@register');
+Route::post('registered', function() {
+  dd('post: registered');
+});
+Route::get('registered', function() {
+  dd('get: registered');
+});
 // Route::post('/auth', 'LoginController@authenticate');
 //Route::middleware('auth:api')->group(function () {
 //    Route::get('user', 'UserController@getUser');
