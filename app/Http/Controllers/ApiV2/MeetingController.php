@@ -86,7 +86,7 @@ class MeetingController extends BaseController
         ]);
       }
 
-      $meeting = Meeting:;find($id);
+      $meeting = Meeting::find($id);
       if(isset($meeting)) {
         if($meeting->venue_type == 'conference_room') {
           $roomBooking = \Input::get('room_booking');

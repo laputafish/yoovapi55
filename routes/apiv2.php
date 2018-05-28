@@ -1,5 +1,11 @@
 <?php
 
+header("Access-Control-Allow-Origin", "*");
+header("Access-Control-Allow-Credentials", "true");
+header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+
+
 use Illuminate\Http\Request;
 
 // this apiv2.php doesn't require auth.
@@ -20,8 +26,11 @@ use Illuminate\Http\Request;
 //  return 'test';
 //});
 
-
 Route::get('/', function() {
+    return redirect()->to('/apiv2/version');
+});
+
+Route::get('/version', function() {
     return 'API Version 2';
 });
 
@@ -33,13 +42,15 @@ Route::get('/', function() {
 //    return $request->user();
 //});
 
-Route::group([/*'middleware'=>'auth:api'*/], function() {
+Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');
     Route::get('products/init', 'ProductController@init');
     Route::resource('products', 'ProductController');
     Route::resource('meeting_rooms', 'MeetingRoomController');
     Route::resource('meeting_room_bookings', 'MeetingRoomBookingController');
     Route::resource('meetings', 'MeetingController');
+    Route::resource('equipments', 'EquipmentController');
+    Route::resource('folders', 'FolderController');
     Route::get('users/init', 'UserController@init');
 });
 
