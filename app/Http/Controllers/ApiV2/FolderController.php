@@ -3,11 +3,25 @@
 use App\User;
 use App\Models\Folder;
 
+use App\Helpers\FolderHelper;
+
 class FolderController extends BaseController {
 
   public function show($id) {
-    $rows = Folder::descendantsAndSelf($id);
-    return $rows;
+    $folders = Folder::with('documents')->descendantsAndSelf($id)->totree();
+    $folder = $folders[0];
+    if(FolderHelper::underPublic($folder)) {
+      $ancestors[] = [
+        'name'=>$folder->name,
+        'description'=>'Public '.$folder->description,
+        'id'=>$folder->id
+      ];
+    }
+    else {
+      $ancestors = FolderHelper::getUserAncestors($id);
+    }
+    $folder->ancestors = $ancestors;
+    return $folders[0];
   }
 
   public function index() {

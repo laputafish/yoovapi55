@@ -26,4 +26,8 @@ class Folder extends Model
     return $this->belongsToMany('App\User', 'folder_users', 'folder_id', 'user_id')
       ->withPivot('writable');
   }
+
+  public function documents() {
+    return $this->hasMany('App\Models\Document', 'folder_id');
+  }
 }

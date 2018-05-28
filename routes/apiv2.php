@@ -34,6 +34,7 @@ Route::get('/version', function() {
 //Route::middleware('auth:api')->get('/user', function( Request $request) {
 //    return $request->user();
 //});
+Route::get('media/icons/{id}', 'MediaController@getIcon');
 
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');

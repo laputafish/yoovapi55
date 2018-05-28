@@ -77,4 +77,16 @@ class User extends Authenticatable
       }
       return $folder->descendants()->get();
     }
+
+    public function getScanFolderAttribute() {
+      $folders = $this->folders;
+      $result = null;
+      foreach( $folders as $folder ) {
+        if($folder->name == 'scan') {
+          $result = $folder;
+          break;
+        }
+      }
+      return $result;
+    }
 }
