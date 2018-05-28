@@ -6,6 +6,8 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+use App\Helpers\FolderHelper;
+
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
@@ -19,6 +21,10 @@ class User extends Authenticatable
         'name', 'email', 'password',
     ];
 
+    protected $appends = [
+      'folders'
+    ];
+
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -30,5 +36,45 @@ class User extends Authenticatable
 
     public function info() {
         return $this->hasOne('App\Models\UserInfo');
+    }
+
+    public function sharedFolders() {
+      return $this->belongsToMany('App\Models\Folder', 'folder_users',
+        'user_id', 'folder_id')
+        ->pivot('writable');
+    }
+
+    public function getFullNameAttribute() {
+      if(is_null($this->info)) {
+        return $this->name;
+      } else {
+        $names = [];
+        if(!empty($this->info->first_name)) {
+          $names[] = $this->info->first_name;
+        }
+        if(!empty($this->info->last_name)) {
+          $names[] = $this->info->last_name;
+        }
+        return implode(' ', $names);
+      }
+    }
+
+    public function getFoldersAttribute() {
+      if(!isset($this->info)) {
+        $info = UserInfo::create([]);
+        $this->associate($info);
+        $folder = FolderHelper::createUserFolder($this);
+        $info->folder_id = $folder->id;
+        $info->save();
+      }
+      else {
+        $folder = $this->info->folder;
+        if(is_null($folder)) {
+          $folder = FolderHelper::createUserFolder($this);
+          $this->info->folder_id = $folder->id;
+          $this->info->save();
+        }
+      }
+      return $folder->descendants()->get();
     }
 }

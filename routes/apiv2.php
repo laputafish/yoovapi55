@@ -1,11 +1,4 @@
 <?php
-
-header("Access-Control-Allow-Origin", "*");
-header("Access-Control-Allow-Credentials", "true");
-header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
-header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-
-
 use Illuminate\Http\Request;
 
 // this apiv2.php doesn't require auth.
@@ -50,9 +43,11 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('meeting_room_bookings', 'MeetingRoomBookingController');
     Route::resource('meetings', 'MeetingController');
     Route::resource('equipments', 'EquipmentController');
+    Route::get('/folders/init', 'FolderController@init');
     Route::resource('folders', 'FolderController');
     Route::get('users/init', 'UserController@init');
 });
+
 
 Route::post('register', 'Auth\RegisterController@register');
 Route::post('registered', function() {
