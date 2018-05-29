@@ -35,6 +35,7 @@ Route::get('/version', function() {
 //    return $request->user();
 //});
 Route::get('media/icons/{id}', 'MediaController@getIcon');
+Route::get('media/image/{id}', 'MediaController@getImage');
 
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');
@@ -46,6 +47,7 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('equipments', 'EquipmentController');
     Route::get('/folders/init', 'FolderController@init');
     Route::resource('folders', 'FolderController');
+    Route::resource('documents', 'DocumentController');
     Route::get('users/init', 'UserController@init');
 });
 

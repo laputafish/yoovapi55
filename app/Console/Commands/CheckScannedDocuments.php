@@ -12,7 +12,7 @@ class CheckScannedDocuments extends Command
      *
      * @var string
      */
-    protected $signature = 'check:scanned';
+    protected $signature = 'check:scanner';
 
     /**
      * The console command description.
