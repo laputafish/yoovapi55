@@ -21,4 +21,8 @@ class Document extends BaseModel
   public function getOccupiedByUserAttribute() {
     return $this->belongsTo('App\User', 'occupied_by');
   }
+
+  public function media() {
+    return $this->belongsTo('App\Models\Media', 'media_id');
+  }
 }

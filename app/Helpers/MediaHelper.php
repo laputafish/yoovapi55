@@ -73,6 +73,12 @@ class MediaHelper
     return substr($md5, 0, 2) . '/' . substr($md5, 2, 2);
   }
 
+  public static function getFullPath( $mediaId ) {
+    $media = Media::find($mediaId);
+     $pathPrefix = $media->is_image ? 'image' : 'doc';
+    return storage_path('app/'.$pathPrefix.'/'.$media->path.'/'.$media->filename );
+  }
+
   public static function createThumbnail( $media, $mediaPath)
   {
     $sizeW = SystemSettingHelper::get( $mediaPath.'_size_w', 320 );
@@ -580,14 +586,23 @@ class MediaHelper
         break;
       case 'docx':
       case 'doc':
-        $filename = 'word.png';
+        $filename = 'doc.png';
         break;
       case 'xls':
       case 'xlsx':
-        $filename = 'excel.png';
+        $filename = 'xls.png';
         break;
       case 'txt':
-        $filename = 'text.png';
+        $filename = 'txt.png';
+        break;
+      case 'mp3':
+        $filename = 'mp3.png';
+        break;
+      case 'ppt':
+        $filename = 'ppt.png';
+        break;
+      case 'zip':
+        $filename='zip.png';
         break;
       default:
         $filename = 'unknown.png';

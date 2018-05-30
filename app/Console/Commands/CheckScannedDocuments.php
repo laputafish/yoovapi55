@@ -12,7 +12,7 @@ class CheckScannedDocuments extends Command
      *
      * @var string
      */
-    protected $signature = 'check:scanner';
+    protected $signature = 'check:scanned {mode}';
 
     /**
      * The console command description.
@@ -38,7 +38,7 @@ class CheckScannedDocuments extends Command
      */
     public function handle()
     {
-      ScannedDocumentHelper::check();
+      ScannedDocumentHelper::check($this->argument('mode'));
         //
     }
 }

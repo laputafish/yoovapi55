@@ -1,6 +1,6 @@
 <?php
 use Illuminate\Http\Request;
-
+use App\Models\Media;
 // this apiv2.php doesn't require auth.
 // for testing purpose temporarily
 
@@ -36,6 +36,15 @@ Route::get('/version', function() {
 //});
 Route::get('media/icons/{id}', 'MediaController@getIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
+Route::get('media/document/{id}', 'MediaController@showDocument');
+Route::get('media/download/{id}', 'MediaController@downloadDocument');
+Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsInZip');
+//Route::get('xmedia/download/{id}', function($id) {
+//  $media = Media::find($id);
+//  $filename = urlencode($media->filename);
+//  $url = 'apiv2/media/download/'.$id.'/'.$filename;
+//  return redirect($url);
+//});
 
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');

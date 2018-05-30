@@ -7,7 +7,7 @@ use App\Models\Document;
 
 class FolderHelper {
 
-  public static function moveScannedFile( $file ) {
+  public static function createNewDocument( $file ) {
     $media = MediaHelper::createMedia($file);
     $folder = self::getScannerFolder();
     $document = Document::create([
@@ -16,6 +16,7 @@ class FolderHelper {
       'folder_id'=>$folder->id,
       'file_type'=>$file->getExtension()
     ]);
+    return $document;
   }
 
   public static function underPublic($id) {
