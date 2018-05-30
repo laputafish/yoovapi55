@@ -43,6 +43,9 @@ class MeetingRoomBooking extends BaseModel
   }
 
   public function getMeetingRoomNameAttribute() {
-    return $this->meetingRoom->name;
+
+    return isset($this->meetingRoom) ?
+      $this->meetingRoom->name :
+      '';
   }
 }
