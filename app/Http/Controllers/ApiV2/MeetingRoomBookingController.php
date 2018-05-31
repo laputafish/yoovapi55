@@ -6,6 +6,14 @@ use Illuminate\Support\Facades\Input;
 
 class MeetingRoomBookingController extends BaseController
 {
+  protected $rules = [
+    'applicant_name'=>'String',
+    'description'=>'String',
+    'id'=>'String',
+    'started_at'=>'String',
+    'ended_at'=>'String'
+  ];
+
   public function index()
   {
     $rows = MeetingRoomBooking::all();
@@ -22,8 +30,15 @@ class MeetingRoomBookingController extends BaseController
   }
 
   public function store() {
-    $input = Input::all();
-    $room = MeetingRoom::create($input);
+    if (\Input::has('booking')) {
+      $data = \Input::get('booking');
+      $booking = MeetingRoomBooking::create([
+        'applicant_name'=>$data['applicant_name'],
+        'started_at'=>$data['started_at'],
+        'ended_at'=>$data['ended_at'],
+        'description'=>$data['description']
+      ]);
+    }
     return response()->json([
       'status'=>'ok'
     ]);
