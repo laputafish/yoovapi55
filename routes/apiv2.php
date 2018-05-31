@@ -46,6 +46,7 @@ Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsI
 //  return redirect($url);
 //});
 
+Route::get('users/init', 'UserController@init');
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');
     Route::get('products/init', 'ProductController@init');
@@ -57,7 +58,7 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::get('/folders/init', 'FolderController@init');
     Route::resource('folders', 'FolderController');
     Route::resource('documents', 'DocumentController');
-    Route::get('users/init', 'UserController@init');
+//    Route::get('users/init', 'UserController@init');
 });
 
 

@@ -6,7 +6,7 @@ use App\Models\UserInfo;
 
 class UserController extends BaseController
 {
-    public function init() {
+    public function init2() {
         $users = [
             ['name'=>'yoovtest1', 'email'=>'yoovtest1@gmail.com', 'password'=>bcrypt('yoovyoov')],
             ['name'=>'yoovtest2', 'email'=>'yoovtest2@gmail.com', 'password'=>bcrypt('yoovyoov')],
@@ -49,6 +49,52 @@ class UserController extends BaseController
         $userInfos[2]->appendNode($userInfos[6]);
 
         return 'finished';
+    }
+
+    public function init() {
+      define('NAME', 0);
+      define('ALIAS', 1);
+      define('LAST_NAME', 2);
+      define('FIRST_NAME', 3);
+      define('EMAIL', 4);
+      define('MOBILE', 5);
+
+      $users = [
+        ['phil', 'Phil', 'Wong', '', 'philipwong@yoov.com','61136557'],
+        ['mark', 'Mark', 'Wong', '', 'hc.devmark@gmail.com','64883360'],
+        ['dominic', 'Dominic', 'Lee', '', 'dominic@yoov.com','90279335'],
+        ['peter', 'Peter', 'Leung', '', 'peterleung@yoov.com', '51260545'],
+        ['raymond', 'Raymond', 'Cheung', '', 'raymondcheung@yoov.com','51168205'],
+        ['sugar', 'Sugar', 'Tsang', '', 'sugartsang@yoov.com', '67067103'],
+        ['teresa', 'Teresa', 'Chan', '', 'teresa@utimeapps.com', ''],
+        ['yvonne', 'Yvonne', 'Fan', '', 'yvonnefan@yoov.com', '64359588'],
+        ['tommy', 'Tommy', 'Chan', '', 'tommychan@yoov.com', '61549843'],
+        ['winnie', 'Winnie', 'Tse', 'Nga-lai', 'winnietse@yoov.com', ''],
+        ['york', 'York', 'Liang', '', 'yorkliang@yoov.com', '60413927'],
+        ['donald', 'Donald', 'Chow', '', 'donald@utimeapps.com', '93378630'],
+        ['eric', 'Eric', 'Shek', '', 'ericshek@yoov.com', '65016603'],
+        ['jack', 'jack', 'Wong', '', 'jackwong@yoov.com', '51098796'],
+        ['jacob', 'Jacob', '', '', 'jacob@utimeapps.com', '66922577'],
+        ['jennifer', 'Jennifer', 'Wong','', 'jennifer@utimeapps.com', '60482678'],
+        ['jessica', 'Jessica', 'Tam', 'Ka-yee', 'jessicatam@yoov.com', '91376708'],
+        ['kelly', 'Kelly', 'Tsui', '', 'kellytsui@yoov.com', '98611397'],
+        ['luke', 'Luke', 'Ng', '', 'lukeng@yoov.com', '62210324'],
+        ['andriy', 'Andriy', 'Chiu', 'Kwok-wah', 'andriychiu@yoov.com', '63372725'],
+        ['cyrus', 'Cyrus', 'Chow', '', 'cyrus@utimeapps.com', '91743087'],
+        ['daniel', 'Daniel', 'Leung', '', 'danielleung@yoov.com', '92305065']
+      ];
+      foreach( $users as $user ) {
+        $newUser = User::create([
+          'name'=>$user[NAME],
+          'alias'=>$user[ALIAS],
+          'first_name'=>$user[FIRST_NAME],
+          'lasst_name'=>$user[LAST_NAME],
+          'email'=>$user[EMAIL],
+          'mobile'=>$user[MOBILE],
+          'password'=>bcrypt($user[MOBILE])
+        ]);
+      }
+      return 'ok';
     }
 
     public function createInfo( $user ) {

@@ -7,6 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 use App\Helpers\FolderHelper;
+use App\Models\UserInfo;
 
 class User extends Authenticatable
 {
@@ -18,7 +19,13 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+      'name',
+      'alias',
+      'first_name',
+      'last_name',
+      'mobile',
+      'email',
+      'password',
     ];
 
     protected $appends = [
@@ -62,7 +69,7 @@ class User extends Authenticatable
     public function getFoldersAttribute() {
       if(!isset($this->info)) {
         $info = UserInfo::create([]);
-        $this->associate($info);
+        $this->info()->save($info);
         $folder = FolderHelper::createUserFolder($this);
         $info->folder_id = $folder->id;
         $info->save();
