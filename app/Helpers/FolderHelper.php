@@ -46,6 +46,34 @@ class FolderHelper {
       return $scanFolder;
   }
 
+  public static function checkCreate( $folderName, $folderDescription, $parentFolder ) {
+    $targetFolder = null;
+    for($i=0; $i<count($parentFolder->children); $i++) {
+      $child = $parentFolder->children[$i];
+      if($child->name === $folderName) {
+        $targetFolder = $child;
+        break;
+      }
+    }
+    if(is_null($targetFolder)) {
+      $targetFolder = Folder::create([
+        'name' => $folderName,
+        'description' => $folderDescription
+      ]);
+      $targetFolder->appendToNode($parentFolder);
+    }
+    return $targetFolder;
+  }
+
+  public static function createFolder( $folderName, $folderDescription, $parentFolder ) {
+    $newFolder = Folder::create([
+      'name'=>$folderName,
+      'description'=>$folderDescription
+    ]);
+    $newFolder->appendToNode( $parentFolder );
+    return $newFolder;
+  }
+
   public static function createUserFolder( $user ) {
     $usersFolder = Folder::whereName('users')->first();
     $userFolder = $usersFolder->descendants()->whereOwnedBy($user->id)->first();

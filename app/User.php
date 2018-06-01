@@ -29,7 +29,7 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-      'folders'
+      'folder'
     ];
 
     /**
@@ -66,7 +66,7 @@ class User extends Authenticatable
       }
     }
 
-    public function getFoldersAttribute() {
+    public function getFolderAttribute() {
       if(!isset($this->info)) {
         $info = UserInfo::create([]);
         $this->info()->save($info);
@@ -82,7 +82,8 @@ class User extends Authenticatable
           $this->info->save();
         }
       }
-      return $folder->descendants()->get();
+      FolderHelper::checkCreate('scan', 'Scan', $folder);
+      return $folder;
     }
 
     public function getScanFolderAttribute() {

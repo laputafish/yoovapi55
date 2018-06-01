@@ -3,7 +3,6 @@ use Illuminate\Http\Request;
 use App\Models\Media;
 // this apiv2.php doesn't require auth.
 // for testing purpose temporarily
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -34,6 +33,13 @@ Route::get('/version', function() {
 //Route::middleware('auth:api')->get('/user', function( Request $request) {
 //    return $request->user();
 //});
+//Route::get('test', function() {
+//  $now = date('Y-m-d H:i:s');
+//  $yesterday = date('2018-05-30 16:19:00');
+//
+//  dd( $now>$yesterday ? 'yes' :'no');
+//});
+
 Route::get('media/icons/{id}', 'MediaController@getIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
 Route::get('media/document/{id}', 'MediaController@showDocument');

@@ -31,6 +31,11 @@ class MeetingRoomBooking extends BaseModel
     return $this->belongsTo( 'App\User', 'applicant_id');
   }
 
+  public function getStatusAttribute() {
+    $now = date('Y-m-d H:i:s');
+    return $this->ended_at < $now ? 'approved' : 'pending';
+  }
+
   public function getApplicantNameAttribute() {
     return isset($this->applicant) ? $this->applicant->name : '(Undefined)';
   }
