@@ -8,7 +8,12 @@ use App\Helpers\FolderHelper;
 class FolderController extends BaseController {
 
   public function show($id) {
+    if($id==0) {
+      return $this->getUser()->folder;
+    }
+
     $folders = Folder::with('documents')->descendantsAndSelf($id)->totree();
+
     $folder = $folders[0];
     if(FolderHelper::underPublic($folder)) {
       $ancestors[] = [
@@ -34,8 +39,31 @@ class FolderController extends BaseController {
           $result = $publicFolder->descendants()->get();
       }
     }
-
     return response()->json($result);
+  }
+
+  public function store()
+  {
+    if (\Input::has('command')) {
+      return $this->processCommand();
+    }
+  }
+
+  public function processCommand() {
+    $command = \Input::get('command');
+    switch($command) {
+      case 'NEW':
+        $parentFolderId = \Input::get('parent_folder_id');
+        $parentFolder = Folder::find($parentFolderId);
+        $newFolder = FolderHelper::newFolder($parentFolder);
+        return response()->json([
+          'status'=>'ok'
+        ]);
+        break;
+    }
+    return response()->json([
+      'status'=>'ok'
+    ]);
   }
 
   public function init() {

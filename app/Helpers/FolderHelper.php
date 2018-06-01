@@ -46,6 +46,36 @@ class FolderHelper {
       return $scanFolder;
   }
 
+  public static function newFolder($parentFolder) {
+    $folderName = 'folder_';
+    $count = 1;
+    $newFolderName = $folderName.($count<10 ? '0'.$count : $count);
+    while(self::fileExists($parentFolder, $newFolderName)) {
+      $count++;
+      $newFolderName = $folderName.($count<10 ? '0'.$count : $count);
+    }
+    $newFolder = Folder::create([
+      'name'=>$newFolderName,
+      'description'=>$newFolderName
+    ]);
+    $newFolder->appendToNode($parentFolder);
+    $newFolder->save();
+    return $newFolder;
+  }
+
+  public static function fileExists($parentFolder, $folderName) {
+    $result = false;
+    if(isset($parentFolder->children)) {
+      for($i=0; $i<count($parentFolder->children); $i++) {
+        if (strtolower($parentFolder->children[$i]->name) == strtolower($folderName)) {
+          $result = true;
+          break;
+        }
+      }
+    }
+    return $result;
+  }
+
   public static function checkCreate( $folderName, $folderDescription, $parentFolder ) {
     $targetFolder = null;
     for($i=0; $i<count($parentFolder->children); $i++) {
