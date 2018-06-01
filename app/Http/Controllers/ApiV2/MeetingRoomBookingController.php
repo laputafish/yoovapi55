@@ -21,9 +21,16 @@ class MeetingRoomBookingController extends BaseController
   }
 
   public function update($id) {
-    $room = MeetingRoom::find($id);
-    $input = Input::all();
-    $room->update( $input );
+    $booking = MeetingRoomBooking::find($id);
+    $data = \Input::get('booking');
+    if(isset($booking)) {
+      $booking->update([
+        'started_at' => $data['started_at'],
+        'ended_at' => $data['ended_at'],
+        'meeting_room_id'=>$data['meeting_room_id'],
+        'description' => $data['description']
+      ]);
+    }
     return response()->json([
       'status'=>'ok'
     ]);
@@ -33,7 +40,8 @@ class MeetingRoomBookingController extends BaseController
     if (\Input::has('booking')) {
       $data = \Input::get('booking');
       $booking = MeetingRoomBooking::create([
-        'applicant_name'=>$data['applicant_name'],
+        'applicant_id'=>$data['applicant_id'],
+        'meeting_room_id'=>$data['meeting_room_id'],
         'started_at'=>$data['started_at'],
         'ended_at'=>$data['ended_at'],
         'description'=>$data['description']
@@ -46,8 +54,8 @@ class MeetingRoomBookingController extends BaseController
 
   public function destroy($id)
   {
-    MeetingRoom::whereId($id)->delete();
-    return response()->jsoN([
+    MeetingRoomBooking::whereId($id)->delete();
+    return response()->json([
       'status'=>'ok'
     ]);
   }

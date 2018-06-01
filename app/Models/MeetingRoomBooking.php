@@ -32,7 +32,7 @@ class MeetingRoomBooking extends BaseModel
   }
 
   public function getApplicantNameAttribute() {
-    return $this->applicant->name;
+    return isset($this->applicant) ? $this->applicant->name : '(Undefined)';
   }
 
   public function meetings() {
