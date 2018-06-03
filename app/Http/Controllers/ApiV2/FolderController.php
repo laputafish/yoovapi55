@@ -26,6 +26,10 @@ class FolderController extends BaseController {
       $ancestors = FolderHelper::getUserAncestors($id);
     }
     $folder->ancestors = $ancestors;
+    foreach( $folders[0]->children as $child) {
+      $child->folderCount = $child->children->count();
+      $child->documentCount = FolderHelper::getDocumentCount($child->id);
+    }
     return $folders[0];
   }
 
@@ -35,11 +39,26 @@ class FolderController extends BaseController {
     if(!empty($type)) {
       switch( $type) {
         case 'public':
-          $publicFolder = Folder::whereName('public')->first();
-          $result = $publicFolder->descendants()->get();
+          $result = FolderHelper::getPublicFolders();
+          break;
+        case 'all':
+          $userId = \Input::get('user_id');
+          $result = [
+            'personalFolders'=>FolderHelper::getPersonalFolders($userId),
+            'publicFolders'=>FolderHelper::getPublicFolders(),
+            'sharedFolders'=>FolderHelper::getSharedFolders()
+          ];
+          break;
       }
     }
     return response()->json($result);
+  }
+
+  public function update($id)
+  {
+    if(\Input::has('command')) {
+      return $this->processCommand($id);
+    }
   }
 
   public function store()
@@ -49,7 +68,7 @@ class FolderController extends BaseController {
     }
   }
 
-  public function processCommand() {
+  public function processCommand($id=0) {
     $command = \Input::get('command');
     switch($command) {
       case 'NEW':
@@ -59,6 +78,11 @@ class FolderController extends BaseController {
         return response()->json([
           'status'=>'ok'
         ]);
+        break;
+      case 'UPDATE_FOLDER_NAME':
+        $folder = Folder::find($id);
+        $folder->name = \Input::get('name');
+        $folder->save();
         break;
     }
     return response()->json([
@@ -153,4 +177,15 @@ class FolderController extends BaseController {
     }
     dd('ok');
   }
+
+  public function destroy($id)
+  {
+    $folder = Folder::find($id);
+    MediaHelper::deleteMedia($document->media_id);
+    $document->delete();
+    return response()->json([
+      'status' => 'ok'
+    ]);
+  }
+
 }

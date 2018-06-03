@@ -572,6 +572,19 @@ class MediaHelper
     }
   }
 
+  public static function getIconPathByName($name) {
+    $path = base_path().'/public/dist/img/icons/defaults/'.$name;
+    $types = ['jpg','png','jpeg','gif'];
+    $result = '';
+    foreach( $types as $type ) {
+      if(file_exists( $path.$type )) {
+        $result = $path.$type;
+        break;
+      }
+    }
+    return $result;
+  }
+
   public static function getIconPath( $type ) {
     $mediaTypeIconFolder = base_path().'/public/dist/img/icons/media_types/';
     switch (strtolower($type)) {

@@ -13,6 +13,13 @@ use ZipArchive;
 class MediaController extends BaseController
 {
 
+  public function getDefaultIcon($name) {
+    $iconPath = MediaHelper::getIconPathByName($name);
+    $fileContent = file_get_contents($iconPath);
+    $iconExt = pathinfo($iconPath, PATHINFO_EXTENSION);
+    return response()->make($fileContent, 200)->header('Content-Type', 'image/' . $iconExt);
+  }
+
   public function getIcon($id)
   {
     $media = Media::find($id);

@@ -4,6 +4,7 @@ namespace App\Helpers;
 use App\Models\Folder;
 use App\Models\Equipment;
 use App\Models\Document;
+use App\User;
 
 class FolderHelper {
 
@@ -17,6 +18,10 @@ class FolderHelper {
       'file_type'=>$file->getExtension()
     ]);
     return $document;
+  }
+
+  public static function getDocumentCount($folderId) {
+    return Document::whereFolderId( $folderId)->count();
   }
 
   public static function underPublic($id) {
@@ -38,6 +43,33 @@ class FolderHelper {
     else {
       return $scanner->occupied_by_user->scan_folder;
     }
+  }
+
+  public static function getSharedFolders() {
+    return [];
+  }
+  public static function getPersonalFolders($userId) {
+    $user = User::find($userId);
+    return self::transformFolders([$user->folder]);
+  }
+  public static function transformFolders($folders) {
+    $result = [];
+    if(isset($folders)) {
+      foreach ($folders as $folder) {
+        $result[] = [
+          'name' => $folder->name,
+          'expanded' => true,
+          'children' =>  self::transformFolders($folder->children)
+        ];
+      }
+    }
+    return $result;
+  }
+
+  public static function getPublicFolders() {
+    $publicFolder = Folder::whereName('public')->first();
+    $publicFolders = $publicFolder->descendants()->get()->toTree();
+    return self::transformFolders($publicFolders);
   }
 
   public static function getPublicScanFolder() {

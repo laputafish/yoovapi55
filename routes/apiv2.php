@@ -41,6 +41,7 @@ Route::get('/version', function() {
 //});
 
 Route::get('media/icons/{id}', 'MediaController@getIcon');
+Route::get('media/icons/defaults/{name}', 'MediaController@getDefaultIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
 Route::get('media/document/{id}', 'MediaController@showDocument');
 Route::get('media/download/{id}', 'MediaController@downloadDocument');
