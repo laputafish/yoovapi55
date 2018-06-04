@@ -47,7 +47,8 @@ class MediaHelper
 
     $outputDir = base_path('storage/app/'.$targetFolder); //"uploads/";
 
-    $filename = $file->getFilename();
+    $originalFilename = $file->getFilename();
+    $filename = getUniqId().'.'.pathinfo($originalFilename, PATHINFO_EXTENSION);
     $partialPath = self::createPartialPath($filename);
     $outputPath = $outputDir . '/' . $partialPath . '/' . $filename;
     if(!file_exists($outputDir.'/'.$partialPath)) {
@@ -62,11 +63,17 @@ class MediaHelper
     $media->user_id = 0;
     $media->save();
 
-    self::createThumbnail( $media, 'image_xs');
-    self::createThumbnail( $media, 'image_sm');
+    if($media->is_image) {
+      self::createThumbnail($media, 'image_xs');
+      self::createThumbnail($media, 'image_sm');
+    }
     return $media;
   }
 
+  public static function copyMedia($mediaId) {
+
+  }
+  
   public static function createPartialPath($filename)
   {
     $md5 = md5($filename);

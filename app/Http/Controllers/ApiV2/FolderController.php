@@ -86,6 +86,38 @@ class FolderController extends BaseController {
         $folder->name = \Input::get('name');
         $folder->save();
         break;
+      case 'MOVE':
+        $targetFolderId = \Input::get('targetFolderId',0);
+        $targetFolder = Folder::find($targetFolderId);
+        if(isset($targetFolder)) {
+          $documentIdsStr = \Input::get('documentIds', '');
+          if(!empty($documentIdsStr)) {
+            $documentIds = explode(',', $documentIdsStr);
+            DocumentHelper::moveDocumentsToFolder($documentIds, $targetFolder);
+          }
+          $folderIdsStr = \Input::get('folderIds', '');
+          if(!empty($folderIdsStr)) {
+            $folderIds = explode(',', $folderIdsStr);
+            FolderHelper::moveFoldersToFolder($folderIds, $targetFolder);
+          }
+        }
+        break;
+      case 'COPY':
+        $targetFolderId = \Input::get('targetFolderId',0);
+        $targetFolder = Folder::find($targetFolderId);
+        if(isset($targetFolder)) {
+          $documentIdsStr = \Input::get('documentIds', '');
+          if(!empty($documentIdsStr)) {
+            $documentIds = explode(',', $documentIdsStr);
+            DocumentHelper::copyDocumentsToFolder($documentIds, $targetFolder);
+          }
+          $folderIdsStr = \Input::get('folderIds', '');
+          if(!empty($folderIdsStr)) {
+            $folderIds = explode(',', $folderIdsStr);
+            FolderHelper::moveFoldersToFolder($folderIds, $targetFolder);
+          }
+        }
+        break;
     }
     return response()->json([
       'status'=>'ok'

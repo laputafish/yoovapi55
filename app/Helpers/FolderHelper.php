@@ -20,6 +20,16 @@ class FolderHelper {
     return $document;
   }
 
+  public static function moveFoldersToFolder($folderIds, $targetFolder) {
+    for($i=0; $i<count($folderIds); $i++) {
+      $folder = Folder::find($folderIds[$i]);
+      if(isset($folder)) {
+        $folder->appendToNode($targetFolder);
+        $folder->save();
+      }
+    }
+  }
+
   public static function getDocumentCount($folderId) {
     return Document::whereFolderId( $folderId)->count();
   }

@@ -10,3 +10,7 @@ function getLocalDateTime()
     $nowStr = $now->format('Y-m-d H:i:s');
     return $nowStr;
 }
+
+function getUniqId() {
+  return uniqid() . '_' . md5(mt_rand());
+}

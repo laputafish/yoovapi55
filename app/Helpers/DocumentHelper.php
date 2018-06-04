@@ -11,5 +11,25 @@ class DocumentHelper {
       return 'doc';
     }
   }
+
+  public static function moveDocumentsToFolder($documentIds, $targetFolder) {
+    for($i=0; $i<count($documentIds); $i++) {
+      $document = Document::find($documentIds[$i]);
+      if(isset($document)) {
+        $document->folder_id = $targetFolder->id;
+        $document->save();
+      }
+    }
+  }
+
+  public static function copyDocumentsToFolder($documentIds, $targetFolder) {
+    for($i=0; $i<count($documentIds); $i++) {
+      $document = Document::find($documentIds[$i]);
+      if(isset($document)) {
+        $document->folder_id = $targetFolder->id;
+        $document->save();
+      }
+    }
+  }
   
 }
