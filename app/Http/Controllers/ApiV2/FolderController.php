@@ -16,15 +16,17 @@ class FolderController extends BaseController {
 
     $folder = $folders[0];
     if(FolderHelper::underPublic($folder)) {
-      $ancestors[] = [
-        'name'=>$folder->name,
-        'description'=>'Public '.$folder->description,
-        'id'=>$folder->id
-      ];
+      $ancestors = FolderHelper::getPublicAncestors($id);
+//      $ancestors[] = [
+//        'name'=>$folder->name,
+//        'description'=>'Public '.$folder->description,
+//        'id'=>$folder->id
+//      ];
     }
     else {
       $ancestors = FolderHelper::getUserAncestors($id);
     }
+
     $folder->ancestors = $ancestors;
     foreach( $folders[0]->children as $child) {
       $child->folderCount = $child->children->count();

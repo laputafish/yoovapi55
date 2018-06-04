@@ -30,4 +30,8 @@ class Folder extends Model
   public function documents() {
     return $this->hasMany('App\Models\Document', 'folder_id');
   }
+
+  public function getDescriptionAttribute() {
+    return empty($this->attributes['description']) ? $this->attributes['name'] : $this->attributes['description'];
+  }
 }

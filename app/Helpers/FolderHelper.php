@@ -4,7 +4,6 @@ namespace App\Helpers;
 use App\Models\Folder;
 use App\Models\Equipment;
 use App\Models\Document;
-use App\User;
 
 class FolderHelper {
 
@@ -35,6 +34,11 @@ class FolderHelper {
     return Folder::where('id','>',$usersFolder->id)->defaultOrder()->ancestorsAndSelf( $id );
   }
 
+  public static function getPublicAncestors($id) {
+    $publicFolder = Folder::whereName('public')->first();
+    return Folder::where('id','>',$publicFolder->id)->defaultOrder()->ancestorsAndSelf( $id );
+  }
+
   public static function getScannerFolder() {
     $scanner = Equipment::whereName('scanner')->first();
     if($scanner->occupied_by == 0) {
@@ -57,6 +61,7 @@ class FolderHelper {
     if(isset($folders)) {
       foreach ($folders as $folder) {
         $result[] = [
+          'id' => $folder->id,
           'name' => $folder->name,
           'expanded' => true,
           'children' =>  self::transformFolders($folder->children)
