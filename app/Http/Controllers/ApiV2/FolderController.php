@@ -182,9 +182,19 @@ class FolderController extends BaseController {
 
   public function destroy($id)
   {
-    $folder = Folder::find($id);
-    MediaHelper::deleteMedia($document->media_id);
-    $document->delete();
+//    echo 'destroy'."<Br/>\n";
+    $folders = Folder::descendantsAndSelf($id);
+//    dd( $folders->toArray() );
+    foreach( $folders as $folder ) {
+//      echo 'folder name = '.$folder->name."\n";
+//      echo '   document count = '.$folder->documents()->count()."\n";
+      foreach($folder->documents as $document ) {
+//        echo 'document->name = '.$document->filename."<br/>\n";
+        MediaHelper::deleteMedia($document->media_id);
+        $document->delete();
+      }
+      $folder->delete();
+    }
     return response()->json([
       'status' => 'ok'
     ]);

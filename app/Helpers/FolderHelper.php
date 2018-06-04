@@ -4,6 +4,7 @@ namespace App\Helpers;
 use App\Models\Folder;
 use App\Models\Equipment;
 use App\Models\Document;
+use App\User;
 
 class FolderHelper {
 
