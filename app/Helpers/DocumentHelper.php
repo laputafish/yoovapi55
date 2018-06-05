@@ -22,14 +22,19 @@ class DocumentHelper {
     }
   }
 
-  public static function copyDocumentsToFolder($documentIds, $targetFolder) {
-    for($i=0; $i<count($documentIds); $i++) {
-      $document = Document::find($documentIds[$i]);
-      if(isset($document)) {
-        $document->folder_id = $targetFolder->id;
-        $document->save();
-      }
-    }
+  public static function duplicateDocument($document) {
+    $newDocument = Document::create([]);
+    $newMedia = MediaHelper::duplicateMedia( $document->media_id );
+
   }
+//  public static function copyDocumentsToFolder($documentIds, $targetFolder) {
+//    for($i=0; $i<count($documentIds); $i++) {
+//      $document = Document::find($documentIds[$i]);
+//      if(isset($document)) {
+//        $document->folder_id = $targetFolder->id;
+//        $document->save();
+//      }
+//    }
+//  }
   
 }

@@ -30,6 +30,37 @@ class FolderHelper {
     }
   }
 
+  public static function copyFoldersToFolder($folderIds, $targetFolder) {
+    $folders = Folder::inWhere('id', $folderIds);
+    self::appendContent( $targetFolder, $folders, []);
+//    for($i=0; $i<count($folderIds); $i++) {
+//      $folder = Folder::find($folderIds[$i]);
+//      $newFolder = Folder::create([]);
+//      $newFolder->name = $folder->name;
+//      $newFolder->description = $folder->description;
+//      $newFolder->remark = $folder->remark;
+//      $newFolder->appendToNode($targetFolder->id);
+//      $newFolder->save();
+//      self::appendContent( $newFolder, $folder->children, $folder->documents);
+//    }
+  }
+
+  public static function appendContent( $targetFolder, $folders, $documents ) {
+    foreach($folders as $folder) {
+      $newFolder = Folder::create([]);
+      $newFolder->name = $folder->name;
+      $newFolder->description = $folder->description;
+      $newFolder->remark = $folder->remark;
+      $newFolder->appendToNode($targetFolder->id);
+      $newFolder->save();
+      self::appendContent( $newFolder, $folder->children, $folder->documents);
+    }
+    foreach($documents as $document) {
+      $document = DocumentHelper::duplicateDocument($document);
+      $document->folder()->save($targetFolder);
+    }
+  }
+
   public static function getDocumentCount($folderId) {
     return Document::whereFolderId( $folderId)->count();
   }
@@ -80,6 +111,12 @@ class FolderHelper {
       }
     }
     return $result;
+  }
+
+  public static function getPublicFolder() {
+    $publicFolder = Folder::whereName('public')->first();
+    $publicFolders = Folder::descendantsAndSelf($publicFolder->id)->toTree();
+    return self::transformFolders($publicFolders);
   }
 
   public static function getPublicFolders() {

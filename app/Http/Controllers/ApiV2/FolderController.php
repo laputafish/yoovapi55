@@ -41,7 +41,7 @@ class FolderController extends BaseController {
     if(!empty($type)) {
       switch( $type) {
         case 'public':
-          $result = FolderHelper::getPublicFolders();
+          $result = FolderHelper::getPublicFolder();
           break;
         case 'all':
           $userId = \Input::get('user_id');
@@ -86,7 +86,8 @@ class FolderController extends BaseController {
         $folder->name = \Input::get('name');
         $folder->save();
         break;
-      case 'MOVE':
+      case 'MOVE_SELECTION':
+      case 'MOVE_ITEM':
         $targetFolderId = \Input::get('targetFolderId',0);
         $targetFolder = Folder::find($targetFolderId);
         if(isset($targetFolder)) {
@@ -102,7 +103,8 @@ class FolderController extends BaseController {
           }
         }
         break;
-      case 'COPY':
+      case 'COPY_SELECTION':
+      case 'COPY_ITEM':
         $targetFolderId = \Input::get('targetFolderId',0);
         $targetFolder = Folder::find($targetFolderId);
         if(isset($targetFolder)) {
@@ -114,7 +116,7 @@ class FolderController extends BaseController {
           $folderIdsStr = \Input::get('folderIds', '');
           if(!empty($folderIdsStr)) {
             $folderIds = explode(',', $folderIdsStr);
-            FolderHelper::moveFoldersToFolder($folderIds, $targetFolder);
+            FolderHelper::copyFoldersToFolder($folderIds, $targetFolder);
           }
         }
         break;

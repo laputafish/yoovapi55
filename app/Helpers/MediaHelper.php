@@ -31,7 +31,7 @@ class MediaHelper
   public static function getMediaExt( $mediaObj )
   {
     $media = is_int($mediaObj) ?
-      Media::find($mediaId) :
+      Media::find($mediaObj) :
       $mediaObj;
 
     $filename = $media->filename;
@@ -42,11 +42,9 @@ class MediaHelper
     self::createMedia($file, true /* temp */);
   }
 
-  public static function createMedia($file, $isTemp=false) {
+  public static function createMediaFile($file, $isTemp=false) {
     $targetFolder = $isTemp ? 'temp' : DocumentHelper::getFileTypeFolder($file);
-
     $outputDir = base_path('storage/app/'.$targetFolder); //"uploads/";
-
     $originalFilename = $file->getFilename();
     $filename = getUniqId().'.'.pathinfo($originalFilename, PATHINFO_EXTENSION);
     $partialPath = self::createPartialPath($filename);
@@ -54,12 +52,29 @@ class MediaHelper
     if(!file_exists($outputDir.'/'.$partialPath)) {
       mkdir($outputDir . '/' . $partialPath, 0777, true);
     }
-    rename( $file->getPathname(), $outputPath );
+    return [
+      'outputPath'=>$outputPath,
+      'partialPath'=>$partialPath,
+      'filename'=>$filename
+    ];
+  }
+  public static function createMedia($file, $isTemp=false)
+  {
+    $mediaFileInfo = self::createMediaFile($file, $isTemp);
+    // returns [
+    //    'outputPath'=>'...'
+    //    'partialPath'=>'...'
+    //    'filename'=>'...'
+    // ]
+    rename($file->getPathname(), $mediaFileInfo['outputPath']);
+    return self::generateMedia($mediaFileInfo);
+  }
 
+  public static function generateMedia($mediaFileInfo) {
     $media = new Media();
     $media->is_temp = 0;
-    $media->path = $partialPath;
-    $media->filename = $filename;
+    $media->path = $mediaFileInfo['$partialPath'];
+    $media->filename = $mediaFileInfo['filename'];
     $media->user_id = 0;
     $media->save();
 
@@ -70,8 +85,11 @@ class MediaHelper
     return $media;
   }
 
-  public static function copyMedia($mediaId) {
-
+  public static function duplicateMedia($mediaId) {
+    $filePath = self::getFullPath($mediaId);
+    $mediaFileInfo = self::createMediaFile( $filePath, false);
+    copy($filePath, $mediaFileInfo['outputPath']);
+    return self::generateMedia($mediaFileInfo);
   }
   
   public static function createPartialPath($filename)
