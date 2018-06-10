@@ -14,30 +14,44 @@ class MeetingRoomBooking extends BaseModel
    */
   protected $fillable = [
     'meeting_room_id',
+    'applicant_name',
+    'description',
     'applicant_id',
     'started_at',
     'ended_at',
-    'remark',
     'remark'
   ];
 
   public $appends = [
-    'applicant_name'
+    'applicant_name',
+    'meeting_room_name'
   ];
 
   public function applicant() {
     return $this->belongsTo( 'App\User', 'applicant_id');
   }
 
+  public function getStatusAttribute() {
+    $now = date('Y-m-d H:i:s');
+    return $this->ended_at < $now ? 'approved' : 'pending';
+  }
+
   public function getApplicantNameAttribute() {
-    return $this->applicant->name;
+    return isset($this->applicant) ? $this->applicant->name : '(Undefined)';
   }
 
   public function meetings() {
-    return $this->hasMany('App\Models\Meeting');
+    return $this->hasMany('App\Models\Meeting', 'meeting_room_booking_id');
   }
 
   public function meetingRoom() {
-    return $this->belongsTo('App\Models\MeetingRoom');
+    return $this->belongsTo('App\Models\MeetingRoom', 'meeting_room_id');
+  }
+
+  public function getMeetingRoomNameAttribute() {
+
+    return isset($this->meetingRoom) ?
+      $this->meetingRoom->name :
+      '';
   }
 }
