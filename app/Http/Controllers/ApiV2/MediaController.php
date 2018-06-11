@@ -166,9 +166,11 @@ class MediaController extends BaseController
         case 'txt':
           $path = $pathPrefix . 'doc/' . $media->path . '/' . $media->filename;
           $fileContent = Storage::get($path);
+          $contentType = \Config::get('content_types')[$ext]['type'];
+
           return Response::make($fileContent, 200, [
-            'Content-Type' => \Config::get('content_types')[$ext]['type'],
-            'Content-Disposition' => 'inline; filename="' . $media->file
+            'Content-Type' => $contentType,
+            'Content-Disposition' => 'inline; filename="' . $media->filename.'"'
           ]);
           break;
       }
