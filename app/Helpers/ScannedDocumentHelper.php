@@ -5,7 +5,9 @@ use Illuminate\Support\Carbon;
 use App\Models\Folder;
 use App\Models\Equipment;
 use App\Models\Command;
+
 use App\Events\ScannedDocumentReceived;
+use App\Helpers\EquipmentHelper;
 
 class ScannedDocumentHelper {
   public static function check($mode = 'auto')
@@ -14,12 +16,39 @@ class ScannedDocumentHelper {
 
     $command = Command::whereName('checkScanned')->first();
 
-    if(isset($command) && isset($command->last_checked_at)) {
-      echo 'enabled: '.$command->enabled."<br/>\n";
-      echo 'mode: '.$command->mode."<Br/>\n";
+    // create command if not exist
+    if(is_null($command)) {
+      $command = Command::create([
+        'name' => 'checkScanned',
+        'enabled' => 1
+      ]);
+    }
 
-      if(!$command->enabled && ($command->mode!=$mode)) return;
+    // check user action
+    switch($mode) {
+      case 'enable':
+        $command->enabled = 1;
+        $command->save();
+        return;
+      case 'disable':
+        $command->enabled = 0;
+        $command->save();
+        break;
+      case 'manual':
+        $command->mode = 'manual';
+        $command->save();
+        break;
+      case 'auto':
+        $command->mode = 'auto';
+        $command->save();
+        break;
+    }
 
+    if(!$command->enabled) {
+      return;
+    }
+
+    if(isset($command->last_checked_at)) {
       $now = now();
       $lastCheckedAt = Carbon::parse($command->last_checked_at);
       $durationPassed = $now->diffInSeconds($lastCheckedAt);
@@ -29,22 +58,13 @@ class ScannedDocumentHelper {
       }
     }
 
-    if(is_null($command)) {
-      $command = Command::create([
-        'name' => 'checkScanned'
-      ]);
-    }
-
     // Process
-    $scanner = Equipment::whereName('scanner')->first();
-    $pathSettings = json_decode( $scanner->settings, true );
-    $path = $pathSettings['path'];
+    $path = EquipmentHelper::getSetting('scanner', 'path');
     while(true) {
       $now = now();
       $command->last_checked_at = $now;
       $command->save();
       $files = \File::allFiles($path);
-      echo $now. ': '.count($files)."<Br/>\n";
       foreach( $files as $file) {
         // move file
         $document = FolderHelper::createNewDocument( $file );

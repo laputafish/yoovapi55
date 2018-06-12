@@ -76,9 +76,20 @@ class FolderHelper {
     return Folder::where('id','>',$usersFolder->id)->defaultOrder()->ancestorsAndSelf( $id );
   }
 
+  public static function getAncestors($id) {
+    $rootFolder = Folder::whereName('root')->first();
+    $folder = Folder::find($id);
+    $ancestors = array_values( Folder::ancestorsAndSelf($id)->where('id','>',$rootFolder->id)->toArray() );
+//    $result = Folder::where('id', '>', $rootFolder->id)->defaultOrder()->ancestorsAndSelf($id);
+//    $ancestors = $result->toArray();
+    if($ancestors[0]['name'] == 'users') {
+      array_shift($ancestors);
+    }
+    return $ancestors;
+  }
   public static function getPublicAncestors($id) {
     $publicFolder = Folder::whereName('public')->first();
-    return Folder::where('id','>',$publicFolder->id)->defaultOrder()->ancestorsAndSelf( $id );
+    return Folder::where('id','>=',$publicFolder->id)->defaultOrder()->ancestorsAndSelf( $id );
   }
 
   public static function getScannerFolder() {
@@ -87,7 +98,7 @@ class FolderHelper {
       return self::getPublicScanFolder();
     }
     else {
-      return $scanner->occupied_by_user->scan_folder;
+      return $scanner->holdByUser->scan_folder;
     }
   }
 

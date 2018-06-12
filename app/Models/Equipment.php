@@ -17,6 +17,10 @@ class Equipment extends BaseModel
     ];
 
     public function getOccupiedByUserAttribute() {
+      return isset($this->user) ? $this->user : null;
+    }
+
+    public function user() {
         return $this->belongsTo('App\User', 'occupied_by');
     }
 }

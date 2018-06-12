@@ -87,7 +87,7 @@ class User extends Authenticatable
     }
 
     public function getScanFolderAttribute() {
-      $folders = $this->folders;
+      $folders = $this->folder->children;
       $result = null;
       foreach( $folders as $folder ) {
         if($folder->name == 'scan') {
@@ -97,4 +97,9 @@ class User extends Authenticatable
       }
       return $result;
     }
+
+    public function occupiedEquipments() {
+      return $this->hasMany('App\Models\Equipment', 'occupied_by');
+    }
+
 }

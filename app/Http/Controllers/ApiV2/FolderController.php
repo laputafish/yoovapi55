@@ -13,26 +13,13 @@ class FolderController extends BaseController {
     }
 
     $folders = Folder::with('documents')->descendantsAndSelf($id)->totree();
-
     $folder = $folders[0];
-    if(FolderHelper::underPublic($folder)) {
-      $ancestors = FolderHelper::getPublicAncestors($id);
-//      $ancestors[] = [
-//        'name'=>$folder->name,
-//        'description'=>'Public '.$folder->description,
-//        'id'=>$folder->id
-//      ];
-    }
-    else {
-      $ancestors = FolderHelper::getUserAncestors($id);
-    }
-
-    $folder->ancestors = $ancestors;
-    foreach( $folders[0]->children as $child) {
+    $folder->ancestors = FolderHelper::getAncestors($folder->id);
+    foreach( $folder->children as $child) {
       $child->folderCount = $child->children->count();
       $child->documentCount = FolderHelper::getDocumentCount($child->id);
     }
-    return $folders[0];
+    return $folder;
   }
 
   public function index() {
@@ -41,7 +28,30 @@ class FolderController extends BaseController {
     if(!empty($type)) {
       switch( $type) {
         case 'public':
-          $result = FolderHelper::getPublicFolder();
+          $publicFolder = Folder::whereName('public')->first();
+          if (\Input::has('folderName')) {
+            $folderId = $publicFolder->descendants()->whereName(\Input::get('folderName'))->value('id');
+          }
+          else {
+            $folderId = $publicFolder->id;
+          }
+          return redirect('/apiv2/folders/'.$folderId);
+          // $result = FolderHelper::getPublicFolder();
+          break;
+        case 'shared':
+
+          dd('shared');
+          break;
+        case 'personal':
+          $userFolder = $this->getUser()->folder;
+          if (\Input::has('folderName')) {
+            $folderId = $userFolder->descendants()->whereName(\Input::get('folderName'))->value('id');
+          }
+          else {
+            $folderId = $userFolder->id;
+          }
+          return redirect('/apiv2/folders/'.$folderId);
+          dd('personal');
           break;
         case 'all':
           $userId = \Input::get('user_id');

@@ -47,7 +47,7 @@ class MediaHelper
     $outputDir = base_path('storage/app/'.$targetFolder); //"uploads/";
     $originalFilename = $file->getFilename();
     $filename = getUniqId().'.'.pathinfo($originalFilename, PATHINFO_EXTENSION);
-    $partialPath = self::createPartialPath($filename);
+    $partialPath = self::generatePartialPath($filename);
     $outputPath = $outputDir . '/' . $partialPath . '/' . $filename;
     if(!file_exists($outputDir.'/'.$partialPath)) {
       mkdir($outputDir . '/' . $partialPath, 0777, true);
@@ -67,13 +67,14 @@ class MediaHelper
     //    'filename'=>'...'
     // ]
     rename($file->getPathname(), $mediaFileInfo['outputPath']);
-    return self::generateMedia($mediaFileInfo);
+    $result = self::generateMedia($mediaFileInfo);
+    return $result;
   }
 
   public static function generateMedia($mediaFileInfo) {
     $media = new Media();
     $media->is_temp = 0;
-    $media->path = $mediaFileInfo['$partialPath'];
+    $media->path = $mediaFileInfo['partialPath'];
     $media->filename = $mediaFileInfo['filename'];
     $media->user_id = 0;
     $media->save();
@@ -92,7 +93,7 @@ class MediaHelper
     return self::generateMedia($mediaFileInfo);
   }
   
-  public static function createPartialPath($filename)
+  public static function generatePartialPath($filename)
   {
     $md5 = md5($filename);
     return substr($md5, 0, 2) . '/' . substr($md5, 2, 2);
