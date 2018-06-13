@@ -14,3 +14,12 @@ function getLocalDateTime()
 function getUniqId() {
   return uniqid() . '_' . md5(mt_rand());
 }
+
+function getIdArray($idStr) {
+  $result = [];
+  if(!empty(idStr)) {
+    $result = explode(',', $idStr);
+  }
+  return $result;
+}
+

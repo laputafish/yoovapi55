@@ -36,5 +36,12 @@ class DocumentHelper {
 //      }
 //    }
 //  }
-  
+
+  public static function rename($id, $name) {
+    $document = Document::find($id);
+    $ext = end(explode(',', $name));
+    $document->filename = $name;
+    $document->file_type = strtolower($ext);
+    $document->save();
+  }
 }

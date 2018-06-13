@@ -20,6 +20,14 @@ class FolderHelper {
     return $document;
   }
 
+  public static function moveItemsToFolder($targetFolderId, $documentIds, $folderIds) {
+    $targetFolder = Folder::find($targetFolderId);
+    if(isset($targetFolder)) {
+      DocumentHelper::moveDocumentsToFolder($documentIds, $targetFolder);
+      self::moveFoldersToFolder($folderIds, $targetFolder);
+    }
+  }
+
   public static function moveFoldersToFolder($folderIds, $targetFolder) {
     for($i=0; $i<count($folderIds); $i++) {
       $folder = Folder::find($folderIds[$i]);
@@ -79,6 +87,7 @@ class FolderHelper {
   public static function getAncestors($id) {
     $rootFolder = Folder::whereName('root')->first();
     $folder = Folder::find($id);
+
     $ancestors = array_values( Folder::ancestorsAndSelf($id)->where('id','>',$rootFolder->id)->toArray() );
 //    $result = Folder::where('id', '>', $rootFolder->id)->defaultOrder()->ancestorsAndSelf($id);
 //    $ancestors = $result->toArray();
@@ -239,5 +248,11 @@ class FolderHelper {
       $myDocuments->save();
     }
     return $userFolder;
+  }
+
+  public static function rename($id, $name) {
+    $folder = Folder::find($id);
+    $folder->name = $name;
+    $folder->save();
   }
 }

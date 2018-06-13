@@ -39,8 +39,6 @@ class FolderController extends BaseController {
           // $result = FolderHelper::getPublicFolder();
           break;
         case 'shared':
-
-          dd('shared');
           break;
         case 'personal':
           $userFolder = $this->getUser()->folder;
@@ -51,7 +49,6 @@ class FolderController extends BaseController {
             $folderId = $userFolder->id;
           }
           return redirect('/apiv2/folders/'.$folderId);
-          dd('personal');
           break;
         case 'all':
           $userId = \Input::get('user_id');
@@ -83,6 +80,30 @@ class FolderController extends BaseController {
   public function processCommand($id=0) {
     $command = \Input::get('command');
     switch($command) {
+      case 'RENAME':
+        $fileType = \Input::get('fileType');
+        $fileItemId = \Input::get('fileItemId');
+        $newName = \Input::get('newName');
+        if($fileType == 'folder') {
+          FolderHelper::rename($fileItemId, $newName);
+        }
+        else {
+          DocumentHelper::rename($fileItemId, $newName);
+        }
+        break;
+      case 'DROP':
+        $targetFolderId = \Input::get('targetFolderId', 0);
+        $fileType = \Input::get('fileType');
+        $fileItemId = \Input::get('fileItemId');
+        $documentIds = [];
+        $folderIds = [];
+        if($fileType == 'folder') {
+          $folderIds = [$fileItemId];
+        } else {
+          $documentIds = [$fileItemId];
+        }
+        FolderHelper::moveItemsToFolder($targetFolderId, $documentIds, $folderIds);
+        break;
       case 'NEW':
         $parentFolderId = \Input::get('parent_folder_id');
         $parentFolder = Folder::find($parentFolderId);
@@ -99,19 +120,22 @@ class FolderController extends BaseController {
       case 'MOVE_SELECTION':
       case 'MOVE_ITEM':
         $targetFolderId = \Input::get('targetFolderId',0);
-        $targetFolder = Folder::find($targetFolderId);
-        if(isset($targetFolder)) {
-          $documentIdsStr = \Input::get('documentIds', '');
-          if(!empty($documentIdsStr)) {
-            $documentIds = explode(',', $documentIdsStr);
-            DocumentHelper::moveDocumentsToFolder($documentIds, $targetFolder);
-          }
-          $folderIdsStr = \Input::get('folderIds', '');
-          if(!empty($folderIdsStr)) {
-            $folderIds = explode(',', $folderIdsStr);
-            FolderHelper::moveFoldersToFolder($folderIds, $targetFolder);
-          }
-        }
+        $documentIds = getIdArray(\Input::get('documentIds', ''));
+        $folderIds = getIdArray(\Input::get('folderIds', ''));
+        FolderHelper::moveItemsToFolder($targetFolderId, $documentIds, $folderIds);
+//        $targetFolder = Folder::find($targetFolderId);
+//        if(isset($targetFolder)) {
+//          $documentIdsStr = \Input::get('documentIds', '');
+//          if(!empty($documentIdsStr)) {
+//            $documentIds = explode(',', $documentIdsStr);
+//            DocumentHelper::moveDocumentsToFolder($documentIds, $targetFolder);
+//          }
+//          $folderIdsStr = \Input::get('folderIds', '');
+//          if(!empty($folderIdsStr)) {
+//            $folderIds = explode(',', $folderIdsStr);
+//            FolderHelper::moveFoldersToFolder($folderIds, $targetFolder);
+//          }
+//        }
         break;
       case 'COPY_SELECTION':
       case 'COPY_ITEM':
