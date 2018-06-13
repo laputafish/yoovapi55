@@ -105,6 +105,56 @@ class MediaController extends BaseController
     unlink($zipFilePath);
   }
 
+  public function uploadDocument() {
+    $outputDir = base_path('storage/app/temp'); //"uploads/";
+    // dd('FILES[file] = ' . $_FILES["file"]);
+    if (isset($_FILES["file"])) {
+      //Filter the file types , if you want.
+      if ($_FILES["file"]["error"] > 0) {
+        echo "Error: " . $_FILES["file"]["error"] . "		";
+      } else {
+        $originalName = $_FILES['file']['name'];
+        $filename = $this->createFilename($originalName);
+        $partialPath = $this->createPartialPath($filename);
+        $outputPath = $outputDir . '/' . $partialPath . '/' . $filename; //$_FILES["file"]["name"];
+        mkdir($outputDir . '/' . $partialPath, 0777, true);
+        move_uploaded_file($_FILES["file"]["tmp_name"], $outputPath);
+        $media = $this->addMedia($filename, $partialPath, 'temp');
+        $fileType = pathinfo($originalName, PATHINFO_EXTENSION);
+
+        $tags = [];
+        try {
+          if ($fileType == 'docx') {
+            $systemTagNames = OfferDocumentHelper::getDynamicTags();
+            $tagNames = [];
+            $tagNames = ConversionHelper::getTags(
+              MediaHelper::getMediaPath(
+                $media->id));
+            foreach ($tagNames as $tagName) {
+              $tags[] = [
+                'id' => 0,
+                'name' => $tagName,
+                'default' => '',
+                'placeholder' => in_array($tagName, $systemTagNames) ? '(Auto)' : ''
+              ];
+            }
+          }
+        } catch( \Exception $e ) {
+          abort(500);
+          return;
+        }
+
+        return Response::json([
+          'status' => 'ok',
+          'imageId' => $media->id,
+          'filename' => pathinfo($originalName, PATHINFO_FILENAME),
+          'fileType' => $fileType,
+          'tags' => $tags
+        ]);
+      }
+    }
+  }
+
   public function downloadDocument($id, $filename='') {
     $ids = explode(',',$id);
     if(count($ids)>1) {

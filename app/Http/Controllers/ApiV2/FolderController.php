@@ -117,6 +117,12 @@ class FolderController extends BaseController {
         $folder->name = \Input::get('name');
         $folder->save();
         break;
+      case 'DELETE':
+        $folderIds = \Input::get('ids');
+        for($i=0; $i<count($folderIds); $i++) {
+          $this->deleteFolder($folderIds[$i]);
+        }
+        break;
       case 'MOVE_SELECTION':
       case 'MOVE_ITEM':
         $targetFolderId = \Input::get('targetFolderId',0);
@@ -158,6 +164,17 @@ class FolderController extends BaseController {
     return response()->json([
       'status'=>'ok'
     ]);
+  }
+
+  public function deleteFolder($id) {
+    $folder = Folder::find($id);
+    $childFolders = Folder::descendantsAndSelf($id);
+    foreach( $childFolders as $childFolder ) {
+      foreach($childFolder->documents as $document ) {
+        MediaHelper::deleteMedia($document->media_id);
+      }
+    }
+    $folder->delete();
   }
 
   public function init() {
@@ -250,19 +267,7 @@ class FolderController extends BaseController {
 
   public function destroy($id)
   {
-//    echo 'destroy'."<Br/>\n";
-    $folders = Folder::descendantsAndSelf($id);
-//    dd( $folders->toArray() );
-    foreach( $folders as $folder ) {
-//      echo 'folder name = '.$folder->name."\n";
-//      echo '   document count = '.$folder->documents()->count()."\n";
-      foreach($folder->documents as $document ) {
-//        echo 'document->name = '.$document->filename."<br/>\n";
-        MediaHelper::deleteMedia($document->media_id);
-        $document->delete();
-      }
-      $folder->delete();
-    }
+    $this->deleteFolder($id);
     return response()->json([
       'status' => 'ok'
     ]);
