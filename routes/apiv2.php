@@ -40,6 +40,7 @@ Route::get('/version', function() {
 //  dd( $now>$yesterday ? 'yes' :'no');
 //});
 
+Route::get('test/{count}', 'TestController@insertRecords');
 Route::get('media/icons/{id}', 'MediaController@getIcon');
 Route::get('media/icons/defaults/{name}', 'MediaController@getDefaultIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
