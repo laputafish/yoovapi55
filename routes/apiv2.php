@@ -1,6 +1,9 @@
 <?php
 use Illuminate\Http\Request;
 use App\Models\Media;
+
+use App\Helpers\MpfHelper;
+
 // this apiv2.php doesn't require auth.
 // for testing purpose temporarily
 /*
@@ -24,6 +27,10 @@ Route::get('/', function() {
 
 Route::get('/version', function() {
     return 'API Version 2';
+});
+
+Route::get('/mpf', function() {
+  return MpfHelper::generate();
 });
 
 //Route::post('/xxx', function() {

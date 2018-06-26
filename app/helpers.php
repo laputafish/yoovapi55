@@ -23,3 +23,14 @@ function getIdArray($idStr) {
   return $result;
 }
 
+function preg_replace_all( $find, $replacement, $s )
+{
+  while(preg_match($find, $s)) {
+    $s = preg_replace($find, $replacement, $s);
+  }
+  return $s;
+}
+
+function toCurrency($value, $digits=0, $decimals='.', $thousands=',') {
+  return number_format( $value, $digits, $decimals, $thousands);
+}
