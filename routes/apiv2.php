@@ -33,6 +33,43 @@ Route::get('/mpf', function() {
   return MpfHelper::generate();
 });
 
+//*******************
+// Login OA
+//*******************
+Route::post('/auth/login',
+  'Auth\OAAuthController@login');
+
+//  function() {
+//    $url = 'https://hr.yoov.com/api/v1/t/auth/login';
+//    $data = [
+//      'email' => 'dominic@yoov.com',
+//      'password' => 'lmf26891',
+//      'teamId' => null
+//    ];
+//    $options = array(
+//      'http' => array(
+//        'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+//        'method'  => 'POST',
+//        'content' => http_build_query($data)
+//      )
+//    );
+//    $context  = stream_context_create($options);
+//    $result = file_get_contents($url, false, $context);
+//
+//    if ($result === FALSE) {
+//      return response()->json([
+//        'status' => false,
+//        'message' => 'Access Denied'
+//      ]);
+//    } else {
+//      $data = json_decode($result);
+//      return response()->json($data);
+//    }
+////    $data = json_decode( $result, true );
+////    print_r( $data );
+//  }
+//);
+
 //Route::post('/xxx', function() {
 //    return 'API Version 2 post';
 //});
