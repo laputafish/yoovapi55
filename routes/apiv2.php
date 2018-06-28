@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Http\Request;
 use App\Models\Media;
-
+use App\Models\Folder;
 use App\Helpers\MpfHelper;
 
 // this apiv2.php doesn't require auth.
@@ -23,6 +23,24 @@ use App\Helpers\MpfHelper;
 
 Route::get('/', function() {
     return redirect()->to('/apiv2/version');
+});
+
+Route::get('/users/attachFolder', function() {
+  $rootFolder = Folder::whereName('root')->first();
+  $usersFolder = Folder::whereName('users')->first();
+  if(is_null($usersFolder)) {
+    $usersFolder = Folder::create([
+      "name"=>"users",
+      "description"=>"Users"
+    ]);
+  }
+  $usersFolder->parent()->associate($rootFolder)->save();
+
+  $detachedFolders = Folder::where('name', '!=', 'root')->whereNull('parent_id')->get();
+  foreach( $detachedFolders as $detachedFolder ) {
+    $detachedFolder->parent()->associate($usersFolder)->save();
+  }
+  dd($detachedFolders->toArray());
 });
 
 Route::get('/version', function() {

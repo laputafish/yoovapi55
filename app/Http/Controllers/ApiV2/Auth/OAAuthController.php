@@ -12,7 +12,7 @@ class OAAuthController extends BaseController
     $teamId = \Input::get('teamId');
     $authorized = \Input::get('authorized', false);
     $isSupervisor = false;
-    $status = 'ok';
+    $status = true;
     $oaAuth = [];
     $token = '';
 
@@ -24,8 +24,10 @@ class OAAuthController extends BaseController
 
     if (!$isSupervisor) {
       $authResult = $this->loginOA($email, $password, $teamId);
+//      return $authResult;
+
       if (empty($authResult)) {
-        $status = 'fails';
+        $status = false;
       } else {
         $oaAuth = $authResult;
         if (!isset($user)) {
@@ -138,28 +140,34 @@ class OAAuthController extends BaseController
       'password' => $password,
       'teamId' => $teamId
     ];
-    $options = array(
-      'http' => array(
-        'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-        'method' => 'POST',
-        'content' => http_build_query($data)
-      )
-    );
-    $context = stream_context_create($options);
+//    $options = array(
+//      'http' => array(
+//        'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+//        'method' => 'POST',
+//        'content' => http_build_query($data)
+//      )
+//    );
+//    $context = stream_context_create($options);
     try {
-      $jsonStr = $this->get_contents($url, false, $context);
+      $jsonStr = $this->postData($url, $data);
+//print_r( $jsonStr ); nl();
+//      // $jsonStr = $this->get_contents($url, false, $context);
+//      echo '1';
     } catch (ErrorException $e) {
+//      echo '2';
       $jsonStr = FALSE;
     }
-
+//    echo '3';
     $result = [];
     if ($jsonStr === FALSE) {
+// dd('false');
 //      return [];
 //      return response()->json([
 //        'status' => false,
 //        'message' => 'Access Denied'
 //      ]);
     } else {
+// dd('ok');
       $authResult = json_decode($jsonStr, true);
       if ($authResult['status']) {
         $result = $authResult['result'];
@@ -168,10 +176,60 @@ class OAAuthController extends BaseController
     return $result;
   }
 
-  public function get_contents($url, $u = false, $c = null, $o = null)
+  public function postData( $url, $data ) {
+//    $options = array(
+//      'http' => array(
+//        'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+//        'method' => 'POST',
+//        'content' => http_build_query($data)
+//      )
+//    );
+//    $context = stream_context_create($options);
+    $username=$data['email'];
+    $password=$data['password'];
+    $teamId="";
+
+//    $url="http://www.myremotesite.com/index.php?page=login";
+    $cookie="cookie.txt";
+
+    $postdata = "email=".$username."&password=".$password."&teamId=".$teamId;
+
+    $ch = curl_init();
+    curl_setopt ($ch, CURLOPT_URL, $url);
+    curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
+    curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6");
+    curl_setopt ($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, 0);
+    curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt ($ch, CURLOPT_COOKIEJAR, $cookie);
+    curl_setopt ($ch, CURLOPT_REFERER, $url);
+
+    curl_setopt ($ch, CURLOPT_POSTFIELDS, $postdata);
+    curl_setopt ($ch, CURLOPT_POST, 1);
+    $result = curl_exec ($ch);
+
+    curl_close($ch);
+    return $result;
+  }
+  public function get_contentsx($url, $u = false, $c = null, $o = null)
   {
+    echo 'url=['.$url.'] '; nl();
+    $originalAgent = ini_get('user_agent');
+    echo 'user agent = '.$originalAgent; nl(); nl();
+    ini_set('user_agent', 'Mozilla/5.0');
+    echo 'new user agent = '.ini_get('user_agent' ); nl();
     $headers = get_headers($url);
+    ini_set('user_agent', $originalAgent);
+    echo 'headers: '; nl();
+    print_r( $headers ); nl(); nl();
     $status = substr($headers[0], 9, 3);
+    echo 'status: '; nl();
+
+    $a = file_get_contents($url, $u, $c, $o);
+    print_r( $a ); nl();
+    echo "***********************"; nl();
+
+    echo $status;
     if ($status == '200') {
       return file_get_contents($url, $u, $c, $o);
     }
