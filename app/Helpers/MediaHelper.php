@@ -603,8 +603,9 @@ class MediaHelper
     $types = ['jpg','png','jpeg','gif'];
     $result = '';
     foreach( $types as $type ) {
-      if(file_exists( $path.$type )) {
-        $result = $path.$type;
+      $filePath = $path.'.'.$type;
+      if(file_exists( $filePath )) {
+        $result = $filePath;
         break;
       }
     }

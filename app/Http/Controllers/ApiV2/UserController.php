@@ -127,7 +127,6 @@ class UserController extends BaseController
 
   public function getUser()
   {
-//        $user = Auth::user();
     return response()->json(request()->user());
   }
 }

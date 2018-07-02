@@ -27,6 +27,10 @@ class User extends Authenticatable
     'mobile',
     'email',
     'password',
+    'oa_token_type',
+    'oa_access_token',
+    'oa_expires_in',
+    'oa_refresh_token'
   ];
 
   protected $appends = [
@@ -131,5 +135,18 @@ class User extends Authenticatable
   public function hasRole($role)
   {
     return null !== $this->roles()->where('name', $role)->first();
+  }
+
+  public function oaAuth() {
+    return $this->hasOne('App\Models\OAAuth');
+  }
+  
+  public function fillOAAuth($oaAuth) {
+    $this->oa_access_token = $oaAuth['accessToken'];
+    $this->oa_expires_in = $oaAuth['expiresIn'];
+    $this->oa_refresh_token = $oaAuth['refreshToken'];
+    $this->oa_token_type = $oaAuth['tokenType'];
+    $this->oa_updated_at = date('Y-m-d H:n:s');
+    $this->save();
   }
 }

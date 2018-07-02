@@ -54,7 +54,7 @@ Route::get('/mpf', function() {
 //*******************
 // Login OA
 //*******************
-Route::post('/auth/login',
+Route::post('/auth/login_oa',
   'Auth\OAAuthController@login');
 
 //  function() {

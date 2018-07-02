@@ -5,6 +5,19 @@ use App\User;
 
 class OAAuthController extends BaseController
 {
+  private function createUserEntry($email, $password) {
+    $emailSegs = explode('@', $email);
+    $name = $emailSegs[0];
+    $user = User::create([
+      'name' => $name,
+      'alias' => $name,
+      'first_name' => $name,
+      'email' => $email,
+      'password' => bcrypt($password)
+    ]);
+    return $user;
+  }
+
   public function login()
   {
     $email = \Input::get('email');
@@ -12,7 +25,7 @@ class OAAuthController extends BaseController
     $teamId = \Input::get('teamId');
     $authorized = \Input::get('authorized', false);
     $isSupervisor = false;
-    $status = true;
+    $connectOASuccess = true;
     $oaAuth = [];
     $token = '';
 
@@ -22,43 +35,56 @@ class OAAuthController extends BaseController
       $isSupervisor = $user->hasRole('supervisor');
     }
 
-    if (!$isSupervisor) {
-      $authResult = $this->loginOA($email, $password, $teamId);
-//      return $authResult;
+    $oaAuth = $this->loginOA($email, $password, $teamId);
+    $connectOASuccess = !empty($oaAuth);
 
-      if (empty($authResult)) {
-        $status = false;
-      } else {
-        $oaAuth = $authResult;
-        if (!isset($user)) {
-          $emailSegs = explode('@', $email);
-          $name = $emailSegs[0];
-          $user = User::create([
-            'name' => $name,
-            'alias' => $name,
-            'first_name' => $name,
-            'email' => $email,
-            'password' => bcrypt($password)
-          ]);
-        }
-        $user->oa_access_token = $authResult['accessToken'];
-        $user->oa_expires_in = $authResult['expiresIn'];
-        $user->oa_refresh_token = $authResult['refreshToken'];
-        $user->oa_token_type = $authResult['tokenType'];
-        $user->oa_updated_at = date('Y-m-d H:n:s');
-        $user->save();
-
-        $token = $user->createToken('*')->accessToken;
+    if($connectOASuccess) {
+      if (!isset($user)) {
+        $user = createUserEntry($email, $password);
       }
-    } else {
+      $user->fillOAAuth($oaAuth);
+    }
+
+    if($connectOASuccess || $isSupervisor) {
       $token = $user->createToken('*')->accessToken;
     }
 
+//    if (!$isSupervisor) {
+//      $authResult = $this->loginOA($email, $password, $teamId);
+//
+//      if (empty($authResult)) {
+//        $connectOAOk = false;
+//      } else {
+//        $oaAuth = $authResult;
+//        if (!isset($user)) {
+//          $emailSegs = explode('@', $email);
+//          $name = $emailSegs[0];
+//          $user = User::create([
+//            'name' => $name,
+//            'alias' => $name,
+//            'first_name' => $name,
+//            'email' => $email,
+//            'password' => bcrypt($password)
+//          ]);
+//        }
+//        $user->oa_access_token = $authResult['accessToken'];
+//        $user->oa_expires_in = $authResult['expiresIn'];
+//        $user->oa_refresh_token = $authResult['refreshToken'];
+//        $user->oa_token_type = $authResult['tokenType'];
+//        $user->oa_updated_at = date('Y-m-d H:n:s');
+//        $user->save();
+//
+//        $token = $user->createToken('*')->accessToken;
+//      }
+//    } else {
+//      $token = $user->createToken('*')->accessToken;
+//    }
+
     return response()->json([
-      'status' => $status,
+      'status' => $connectOASuccess || $isSupervisor,
       'isSupervisor' => $isSupervisor,
       'token' => $token,
-      'oaAuth' => $oaAuth
+//      'oaAuth' => $oaAuth
     ]);
 //
 //    else {

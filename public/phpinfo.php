@@ -1,4 +1,4 @@
-<h4>/var/www/yoovapi55/public/phpinfo.php</h4>
+<h4>e:/www.yoovapi55/public/phpinfo.php</h4>
 <?php
 phpinfo();
 ?>
