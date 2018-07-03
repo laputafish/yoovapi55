@@ -3,9 +3,15 @@
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use App\User;
 use App\Models\UserInfo;
+use App\Helpers\OAHelper;
 
 class UserController extends BaseController
 {
+  protected $modelName = 'User';
+  protected $rules = [
+    'oa_last_team_id'=> 'string'
+  ];
+
   public function init2()
   {
     $users = [
@@ -127,6 +133,25 @@ class UserController extends BaseController
 
   public function getUser()
   {
-    return response()->json(request()->user());
+    $user = request()->user();
+    if(is_null($user->oa_last_team_id)) {
+      $user = null;
+    }
+    else {
+      $oaTokenValid = OAHelper::checkOAToken($user);
+      $user = $oaTokenValid ?
+        $this->model->find($user->id) :
+        null;
+    }
+    return response()->json($user);
+  }
+
+  public function update($id) {
+    $user = $this->model->find($id);
+    $input = $this->getInput(\Input::all(), $this->rules);
+    $user->update($input);
+    return response()->json([
+      'status'=>true
+    ]);
   }
 }

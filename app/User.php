@@ -30,7 +30,8 @@ class User extends Authenticatable
     'oa_token_type',
     'oa_access_token',
     'oa_expires_in',
-    'oa_refresh_token'
+    'oa_refresh_token',
+    'oa_last_team_id'
   ];
 
   protected $appends = [

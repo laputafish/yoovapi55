@@ -119,6 +119,7 @@ Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsI
 Route::get('users/init', 'UserController@init');
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');
+    Route::resource('users', 'UserController');
     Route::get('products/init', 'ProductController@init');
     Route::resource('products', 'ProductController');
     Route::resource('meeting_rooms', 'MeetingRoomController');

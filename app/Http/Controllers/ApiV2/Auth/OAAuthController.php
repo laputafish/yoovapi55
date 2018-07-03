@@ -166,34 +166,14 @@ class OAAuthController extends BaseController
       'password' => $password,
       'teamId' => $teamId
     ];
-//    $options = array(
-//      'http' => array(
-//        'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-//        'method' => 'POST',
-//        'content' => http_build_query($data)
-//      )
-//    );
-//    $context = stream_context_create($options);
     try {
       $jsonStr = $this->postData($url, $data);
-//print_r( $jsonStr ); nl();
-//      // $jsonStr = $this->get_contents($url, false, $context);
-//      echo '1';
     } catch (ErrorException $e) {
-//      echo '2';
       $jsonStr = FALSE;
     }
-//    echo '3';
     $result = [];
     if ($jsonStr === FALSE) {
-// dd('false');
-//      return [];
-//      return response()->json([
-//        'status' => false,
-//        'message' => 'Access Denied'
-//      ]);
     } else {
-// dd('ok');
       $authResult = json_decode($jsonStr, true);
       if ($authResult['status']) {
         $result = $authResult['result'];
@@ -203,14 +183,6 @@ class OAAuthController extends BaseController
   }
 
   public function postData( $url, $data ) {
-//    $options = array(
-//      'http' => array(
-//        'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-//        'method' => 'POST',
-//        'content' => http_build_query($data)
-//      )
-//    );
-//    $context = stream_context_create($options);
     $username=$data['email'];
     $password=$data['password'];
     $teamId="";
