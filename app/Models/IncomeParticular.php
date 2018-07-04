@@ -13,8 +13,14 @@ class IncomeParticular extends BaseModel
   protected $fillable = [
     'name',
     'with_input',
-    'input_label'
+    'input_label',
+    'seq_no',
+    'is_default',
+    'description_tag'
   ];
+
+
+  public $timestamps = false;
 
   public function teamIncomeParticulars() {
     return $this->hasMany('App\Models\TeamIncomeParticular');

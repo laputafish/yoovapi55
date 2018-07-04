@@ -11,6 +11,9 @@ class TeamIncomeParticularPayType extends BaseModel
    * @var array
    */
   protected $fillable = [
-    'pay_type_id'
+    'pay_type_id',
+    'team_income_particular_id'
   ];
+  public $timestamps = false;
+
 }

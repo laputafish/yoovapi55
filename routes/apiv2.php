@@ -130,7 +130,7 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('folders', 'FolderController');
     Route::resource('documents', 'DocumentController');
     Route::post('media/upload', 'MediaController@uploadDocument');
-    Route::resource('income_particulars', 'IncomeParticularController', ['only'=>['index']]);
+    Route::resource('income_particulars', 'IncomeParticularController', ['only'=>['index','store']]);
 //    Route::get('users/init', 'UserController@init');
 });
 
