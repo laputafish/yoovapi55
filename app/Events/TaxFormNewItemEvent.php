@@ -2,8 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Document;
-
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -12,20 +10,19 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class ScannedDocumentReceived implements ShouldBroadcast
+class TaxFormNewItemEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $document;
+    public $taxForm;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($document)
+    public function __construct($taxForm)
     {
-      $this->document = $document;
-      echo "ScannedDocumentReceived event created\n";
+      $this->taxForm = $taxForm;
         //
     }
 
@@ -36,14 +33,11 @@ class ScannedDocumentReceived implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        echo "broadcastOn\n";
-        //return new PrivateChannel('channel-name');
-        return new Channel('documents');
+//        return new PrivateChannel('channel-name');
+      return new Channel('tax_forms');
     }
 
-    public function broadcastAs()
-    {
-      echo "broadcastAs\n";
-      return 'document_added';
+    public function broadcastAs() {
+      return 'new_tax_form';
     }
 }

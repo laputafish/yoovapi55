@@ -19,7 +19,7 @@ class ScannedDocumentReceivedListener
     }
 
     public function onDocumentAdded($event) {
-      broadcast( new ScannedDocumentReceived($document));
+      broadcast( new ScannedDocumentReceivedEvent($document));
     }
     /**
      * Handle the event.

@@ -68,7 +68,7 @@ class ScannedDocumentHelper {
       foreach( $files as $file) {
         // move file
         $document = FolderHelper::createNewDocument( $file );
-        event(new ScannedDocumentReceived($document));
+        event(new ScannedDocumentReceivedEvent($document));
       }
       sleep(1);
 

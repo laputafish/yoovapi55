@@ -150,4 +150,8 @@ class User extends Authenticatable
     $this->oa_updated_at = date('Y-m-d H:n:s');
     $this->save();
   }
+
+  public function taxForms() {
+    return $this->hasMany('App\Models\TaxForm');
+  }
 }

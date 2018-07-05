@@ -16,6 +16,12 @@ class EventServiceProvider extends ServiceProvider
       'App\Events\ScannedDocumentReceivedEvent' => [
         'App\Listeners\ScannedDocumentReceivedListener'
       ],
+      'App\Events\TaxFormNewJobEvent' => [
+        'App\Listeners\TaxFormNewJobListener'
+      ],
+      'App\Events\TaxFormNewItemEvent' => [
+        'App\Listeners\TaxFormNewItemListener'
+      ]
 
 //      'App\Events\Event' => [
 //        'App\Listeners\EventListener',

@@ -129,6 +129,7 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::get('/folders/init', 'FolderController@init');
     Route::resource('folders', 'FolderController');
     Route::resource('documents', 'DocumentController');
+    Route::resource('tax_forms', 'TaxFormController');
     Route::post('media/upload', 'MediaController@uploadDocument');
     Route::resource('income_particulars', 'IncomeParticularController', ['only'=>['index','store']]);
 //    Route::get('users/init', 'UserController@init');
