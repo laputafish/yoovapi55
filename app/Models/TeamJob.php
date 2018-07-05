@@ -19,6 +19,18 @@ class TeamJob extends Model
   }
 
   public function items() {
-    return $this->hasMany('App\Models\TeamJobItem');
+    return $this->hasMany('App\Models\TeamJobItem', 'team_job_id');
   }
+
+  public function getOrCreateItem($employeeId) {
+    $item = $this->items()->whereEmployeeId($employeeId)->first();
+    if(is_null($item)) {
+      $item = new TeamJobItem;
+      $item->employee_id = $employeeId;
+
+      $this->items()->save($item);
+    }
+    return $item;
+  }
+
 }

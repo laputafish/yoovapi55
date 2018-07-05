@@ -19,8 +19,8 @@ class EventServiceProvider extends ServiceProvider
       'App\Events\TaxFormNewJobEvent' => [
         'App\Listeners\TaxFormNewJobListener'
       ],
-      'App\Events\TaxFormNewItemEvent' => [
-        'App\Listeners\TaxFormNewItemListener'
+      'App\Events\TaxFormStatusUpdatedEvent' => [
+        'App\Listeners\TaxFormStatusUpdatedListener'
       ]
 
 //      'App\Events\Event' => [

@@ -5,14 +5,14 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Helpers\TaxFormHelper;
 
-class generateTaxForms extends Command
+class GenerateTaxForms extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'generate:tax_forms';
+    protected $signature = 'generate:taxforms';
 
     /**
      * The console command description.

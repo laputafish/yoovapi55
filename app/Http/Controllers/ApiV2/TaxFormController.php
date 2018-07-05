@@ -4,9 +4,10 @@ use App\Models\TaxForm;
 use App\Models\TeamJob;
 
 use App\Helpers\TeamHelper;
+use App\Helpers\TeamJobHelper;
 
 use App\Events\TaxFormNewJobEvent;
-use App\Events\TaxFormNewItemEvent;
+use App\Events\TaxFormStatusUpdatedEvent;
 
 class TaxFormController extends BaseController
 {
@@ -28,7 +29,7 @@ class TaxFormController extends BaseController
     $command = \Input::get('command');
     switch ($command) {
       case 'generate':
-        $this->generate();
+        return $this->generate();
         break;
     }
   }
@@ -41,15 +42,21 @@ class TaxFormController extends BaseController
     $team = TeamHelper::getOrCreate($oaTeamId);
 
     $job = $team->getOrCreateJob('tax_form');
-    foreach($employeeIds as $employeeId ) {
+    $job = TeamJob::find($job->id);
+    $job->items()->update([
+      'enabled'=>0
+    ]);
+    foreach($employeeIds as $employeeIdStr ) {
+      $employeeId = (int) $employeeIdStr;
       // for summary notification
-      $job->getOrCreateItem($employeeId);
+      $item = $job->getOrCreateItem($employeeId); // $job->getOrCreateItem($employeeId);
+      $item->enabled = 1;
+      $item->save();
 
       $taxForm = $team->getOrCreateTaxForm($employeeId, $fiscalYear);
       $taxForm->status = 'pending';
       $taxForm->save();
-
-      event(new TaxFormNewItemEvent($taxForm));
+//      event(new TaxFormNewItemEvent($taxForm));
     }
 
     // set status = 'pending', trigger action to start in background
@@ -57,11 +64,15 @@ class TaxFormController extends BaseController
     $job->fiscal_year = (int) $fiscalYear;
     $job->save();
 
-    $job->items = $job->items;
+    $total = $job->items()->whereEnabled(0)->count();
+    $job->team = $job->team;
+
     event(new TaxFormNewJobEvent($job));
 
     return response()->json([
-      'status'=>true
+      'status'=>true,
+      'job'=>$job,
+      'total'=>$total
     ]);
   }
 }

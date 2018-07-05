@@ -34,7 +34,7 @@ class TaxFormNewJobEvent implements ShouldBroadcast
     public function broadcastOn()
     {
 //        return new PrivateChannel('channel-name');
-      return new Channel('tax_forms');
+      return new Channel('team_'.$this->job->team->oa_team_id);
     }
 
     public function broadcastAs() {

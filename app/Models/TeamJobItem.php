@@ -13,4 +13,8 @@ class TeamJobItem extends Model
     'team_job_id',
     'employee_id'
   ];
+
+  public function job() {
+    return $this->belongsTo('App\Models\TeamJob', 'team_job_id' );
+  }
 }

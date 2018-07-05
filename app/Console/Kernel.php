@@ -26,7 +26,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-      $schedule->command('check:scanned',['mode'=>'auto'])->everyMinute();
+      // $schedule->command('check:scanned',['mode'=>'auto'])->everyMinute();
+      $schedule->command('generate:taxforms')->everyMinute();
     }
 
     /**

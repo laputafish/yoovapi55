@@ -10,20 +10,26 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class TaxFormNewItemEvent implements ShouldBroadcast
+class TaxFormStatusUpdatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $taxForm;
+    public $data;
+    /*
+    public $team;
+    public $index;
+    public $item;
+    public $total;
+    */
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($taxForm)
+    public function __construct($data)
     {
-      $this->taxForm = $taxForm;
-        //
+      $this->data = $data;
     }
 
     /**
@@ -33,11 +39,10 @@ class TaxFormNewItemEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-//        return new PrivateChannel('channel-name');
-      return new Channel('tax_forms');
+      return new Channel('team_'.$this->data['team']->oa_team_id );
     }
 
     public function broadcastAs() {
-      return 'new_tax_form';
+      return 'tax_form_status_updated';
     }
 }
