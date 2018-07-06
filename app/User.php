@@ -152,6 +152,6 @@ class User extends Authenticatable
   }
 
   public function taxForms() {
-    return $this->hasMany('App\Models\TaxForm');
+    return $this->hasMany('App\Models\TaxForm', 'employee_id', 'employee_id');
   }
 }

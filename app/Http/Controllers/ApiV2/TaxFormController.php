@@ -2,6 +2,7 @@
 
 use App\Models\TaxForm;
 use App\Models\TeamJob;
+use App\Models\Team;
 
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
@@ -15,9 +16,11 @@ class TaxFormController extends BaseController
 
   public function index()
   {
-    $teamId = \Input::get('teamId');
+    $oaTeamId = \Input::get('teamId');
+    $team = Team::whereOaTeamId($oaTeamId)->first();
+
     $fiscalYear = \Input::get('fiscalYear');
-    $rows = $this->model->whereFiscalYear((int)$fiscalYear)->whereTeamId($teamId)->get();
+    $rows = $team->taxForms()->whereFiscalYear((int)$fiscalYear)->get();
     return response()->json([
       'status' => true,
       'result' => $rows
@@ -35,6 +38,8 @@ class TaxFormController extends BaseController
   }
 
   public function generate() {
+    $user = app('auth')->guard()->user();
+
     $oaTeamId = \Input::get('teamId');
     $fiscalYear = (int) \Input::get('fiscalYear');
     $employeeIds = \Input::get('employeeIds');
@@ -43,6 +48,10 @@ class TaxFormController extends BaseController
 
     $job = $team->getOrCreateJob('tax_form');
     $job = TeamJob::find($job->id);
+    $job->oa_access_token = $user->oa_access_token;
+    $job->oa_token_type = $user->oa_token_type;
+    $job->save();
+
     $job->items()->update([
       'enabled'=>0
     ]);

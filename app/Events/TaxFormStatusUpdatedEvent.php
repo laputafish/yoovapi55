@@ -14,11 +14,11 @@ class TaxFormStatusUpdatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $data;
+    public $statusInfo;
     /*
     public $team;
     public $index;
-    public $item;
+    public $taxForm;
     public $total;
     */
 
@@ -27,9 +27,9 @@ class TaxFormStatusUpdatedEvent implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct($data)
+    public function __construct($statusInfo)
     {
-      $this->data = $data;
+      $this->statusInfo = $statusInfo;
     }
 
     /**
@@ -39,7 +39,7 @@ class TaxFormStatusUpdatedEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-      return new Channel('team_'.$this->data['team']->oa_team_id );
+      return new Channel('team_'.$this->statusInfo['team']->oa_team_id );
     }
 
     public function broadcastAs() {

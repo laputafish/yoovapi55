@@ -107,6 +107,7 @@ Route::get('media/icons/{id}', 'MediaController@getIcon');
 Route::get('media/icons/defaults/{name}', 'MediaController@getDefaultIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
 Route::get('media/document/{id}', 'MediaController@showDocument');
+Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
 Route::get('media/download/{id}', 'MediaController@downloadDocument');
 Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsInZip');
 //Route::get('xmedia/download/{id}', function($id) {

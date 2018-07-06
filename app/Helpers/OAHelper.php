@@ -8,16 +8,19 @@ class OAHelper
     $valid = self::checkTokenValidity($header, $user);
     if (!$valid) {
       self::refreshToken($user);
-      $header = self::getCurlHeader($user);
+      $header = self::getCurlHeader([
+        'token_type'=>$user->oa_token_type,
+        'access_token'=>$user->oa_access_token
+      ]);
       $valid = self::checkTokenValidity($header, $user);
     }
     return $valid;
   }
 
-  public static function getCurlHeader($user)
+  public static function getCurlHeader($oaAuth)
   {
     return [
-      'Authorization: ' . $user->oa_token_type . ' ' . $user->oa_access_token,
+      'Authorization: ' . $oaAuth['token_type'] . ' ' . $oaAuth['access_token'],
       'Content-Type: application/json',
       'Accept: application/json, text/plain, */*'
     ];
@@ -25,7 +28,7 @@ class OAHelper
 
   public static function checkTokenValidity($header, $user) {
     // fetch self
-    $url = 'https://hr.yoov.com/api/v1/t/users/self?' . $user->oa_last_team_id;
+    $url = \Config::get('oa')['apiUrl'].'/t/users/self?' . $user->oa_last_team_id;
     try {
       $jsonStr = CurlHelper::get($url, $header);
     } catch (ErrorException $e) {
@@ -66,7 +69,7 @@ class OAHelper
     $accessToken = $user->oa_access_token;
     $refreshToken = $user->oa_refresh_token;
 
-    $url = 'https://hr.yoov.com/api/v1/t/auth/refresh';
+    $url = \Config::get('oa')['apiUrl'].'/t/auth/refresh';
     $header = [
       'Authorization: ' . $tokenType . ' ' . $accessToken,
       // 'Content-Type: application/json',
@@ -96,5 +99,39 @@ class OAHelper
       }
     }
     return $result;
+  }
+
+  public static function get($urlSuffix, $oaAuth, $params=[]) {
+    $url = \Config::get('oa')['apiUrl'].$urlSuffix;
+
+    // parameters
+    $keyValueArray = [];
+    foreach( $params as $key=>$value ) {
+      $keyValueArray[] = $key.'='.$value;
+    }
+    $dataStr = empty($params) ? '' : implode('&', $keyValueArray);
+    $header = self::getCurlHeader($oaAuth);
+
+    return CurlHelper::getData($url.'?'.$dataStr, $header);
+  }
+
+  public static function post($urlSuffix, $oaAuth, $params=[]) {
+    $url = \Config::get('oa')['apiUrl'].$urlSuffix;
+
+    // parameters
+    $keyValueArray = [];
+    foreach( $params as $key=>$value ) {
+      $keyValueArray[] = $key.'='.$value;
+    }
+    $dataStr = empty($params) ? '' : implode('&', $keyValueArray);
+    $header = self::getCurlHeader($oaAuth);
+
+    /* params = [
+    'username' => $data['email'],
+    'password' => $data['password'],
+    'teamId' => ''
+    ]*/
+
+    return CurlHelper::postData($url, $header, $dataStr);
   }
 }

@@ -1,14 +1,19 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
 use App\User;
+
 use App\Models\Folder;
 use App\Models\Media;
 use App\Models\Document;
-use Storage;
-use Response;
+use App\Models\TaxForm;
+
 use App\Helpers\FolderHelper;
 use App\Helpers\MediaHelper;
+
 use ZipArchive;
+use Storage;
+use Response;
+
 
 class MediaController extends BaseController
 {
@@ -192,6 +197,54 @@ class MediaController extends BaseController
           break;
       }
     }
+  }
+
+  function showTaxForm($id)
+  {
+    $taxForm = TaxForm::find($id);
+    $team = $taxForm->team;
+    $user = $taxForm->user;
+    $fiscalYear = $taxForm->fiscal_year;
+    $employeeId = $taxForm->employee_id;
+
+    $filePath ='/tax_forms/'.$team->oa_team_id.'/'.$fiscalYear.'/'.$employeeId.'.pdf';
+    $fileContent = Storage::get($filePath);
+    $contentType = \Config::get('content_types')['pdf']['type'];
+    $filename = $this->getTaxFormFilename($fiscalYear, $user);
+    return response()->make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'inline; filename="' . $filename.'"'
+    ]);
+  }
+
+  private function getTaxFormFilename($fiscalYear, $user) {
+    $segs = [];
+    $segs[] = 'ir56b';
+    $segs[] = substr($fiscalYear,-2).'-'.substr($fiscalYear + 1,-2);
+
+    $username = $user->name;
+    if (!empty($user->display_name)) {
+      $username = $user->display_name;
+    } else {
+      $firstLastName = $this->firstLastName($user);
+      if(!empty($firstLastName)) {
+        $username = $firstLastName;
+      }
+    }
+    $segs[] = strtolower($username);
+
+    return strtolower(implode('_', $segs)).'.pdf';
+  }
+
+  private function firstLastName( $user ) {
+    $segs = [];
+    if(!empty($user->first_name)) {
+      $segs[] = $user->first_name;
+    }
+    if(!empty($user->last_name)) {
+      $segs[] = $user->last_name;
+    }
+    return count($segs)>0 ? implode('_', $segs) : '';
   }
 
   function showDocument($id)
