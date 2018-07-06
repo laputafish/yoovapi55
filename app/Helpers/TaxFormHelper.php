@@ -25,6 +25,10 @@ class TaxFormHelper
       $jobItems = $job->items()->whereEnabled(1)->get();
       $totalCount = $jobItems->count();
 
+      $oaAuth = [
+        'oa_access_token' => $job->oa_access_token,
+        'oa_token_type' => $job->oa_token_type
+      ];
       foreach ($jobItems as $i => $item) {
         // echo 'i = '.$i; nl();
         $employeeId = $item->employee_id;
@@ -44,7 +48,7 @@ class TaxFormHelper
           //*******************
           // Generation
           //*******************
-          self::generateTaxForm($taxForm);
+          self::generateTaxForm($taxForm, $oaAuth);
 
           $taxForm->status = 'ready';
           $taxForm->save();
@@ -142,17 +146,16 @@ class TaxFormHelper
     ];
   }
 
-  public static function generateTaxForm($taxForm) {
-    $oaAuth = [
-      'oa_access_token'=>$taxForm->oa_access_token,
-      'oa_token_type'=>$taxForm->oa_token_type
-    ];
-    $oaUser = OAUserHelper::get($taxForm->employee_id, $oaAuth);
+  public static function generateTaxForm($taxForm, $oaAuth) {
+    $team = $taxForm->team;
+    $oaUser = OAEmployeeHelper::get($taxForm->employee_id, $oaAuth, $team->oa_team_id);
+
+    dd($oaUser);
+
     $user = UserHelper::getFromOAUser($oaUser);
     $filePath = self::getFilePath($taxForm->fiscal_year, $user);
 
     $data = self::getTaxFormData($taxForm);
     TaxFormPdfHelper::generate($data, $filePath);
-    sleep(2);
   }
 }

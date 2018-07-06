@@ -20,7 +20,7 @@ class OAHelper
   public static function getCurlHeader($oaAuth)
   {
     return [
-      'Authorization: ' . $oaAuth['token_type'] . ' ' . $oaAuth['access_token'],
+      'Authorization: ' . $oaAuth['oa_token_type'] . ' ' . $oaAuth['oa_access_token'],
       'Content-Type: application/json',
       'Accept: application/json, text/plain, */*'
     ];
