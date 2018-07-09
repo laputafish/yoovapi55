@@ -133,6 +133,11 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('tax_forms', 'TaxFormController');
     Route::post('media/upload', 'MediaController@uploadDocument');
     Route::resource('income_particulars', 'IncomeParticularController', ['only'=>['index','store']]);
+    Route::resource('employee_commencements', 'EmployeeCommencementController');
+    Route::resource('employee_terminations', 'EmployeeTerminationController');
+    Route::resource('employee_salaries', 'EmployeeSalaryController');
+    Route::resource('employee_departures', 'EmployeeDepartureController');
+
 //    Route::get('users/init', 'UserController@init');
 });
 

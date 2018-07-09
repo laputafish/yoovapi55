@@ -9,8 +9,8 @@ class OAHelper
     if (!$valid) {
       self::refreshToken($user);
       $header = self::getCurlHeader([
-        'token_type'=>$user->oa_token_type,
-        'access_token'=>$user->oa_access_token
+        'oa_token_type'=>$user->oa_token_type,
+        'oa_access_token'=>$user->oa_access_token
       ]);
       $valid = self::checkTokenValidity($header, $user);
     }
@@ -19,11 +19,12 @@ class OAHelper
 
   public static function getCurlHeader($oaAuth)
   {
-    return [
+    $result = [
       'Authorization: ' . $oaAuth['oa_token_type'] . ' ' . $oaAuth['oa_access_token'],
       'Content-Type: application/json',
       'Accept: application/json, text/plain, */*'
     ];
+    return $result;
   }
 
   public static function checkTokenValidity($header, $user) {
