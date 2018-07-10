@@ -1,6 +1,6 @@
 <?php namespace App\Models;
 
-class FormTerminationEmployee extends BaseModel {
+class FormTerminationEmployee extends BaseIRDFormEmployee {
   protected $parentModelName = 'FormTermination';
 
 }
