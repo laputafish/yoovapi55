@@ -6,6 +6,10 @@ use App\Models\Folder;
 use App\Models\Media;
 use App\Models\Document;
 use App\Models\TaxForm;
+use App\Models\FormCommencement;
+use App\Models\FormTermination;
+use App\Models\FormDeparture;
+use App\Models\FormSalary;
 
 use App\Helpers\FolderHelper;
 use App\Helpers\MediaHelper;
@@ -282,4 +286,52 @@ class MediaController extends BaseController
     }
   }
 
+  public function showPdfFile( $path, $filename=null ) {
+    if(is_null($filename)) {
+      $filename = path_info($path, PATHINFO_FILENAME);
+    }
+    $fileContent = Storage::get($path);
+    $contentType = \Config::get('content_types')['pdf']['type'];
+
+    return Response::make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'inline; filename="' . $filename.'"'
+    ]);
+  }
+
+  public function showIrdFormFile( $team, $form, $employee ) {
+    $storageAppPath = '/teams/'.$team->oa_team_id.'/commencements/'.$form->id.'/'.$employee->file;
+    $path = storage_path( '/app'.$storageAppPath );
+    if(file_exists($path)) {
+      return $this->showPdfFile($storageAppPath, $employee->file);
+    } else {
+      return $this->getDefaultIcon('pdf');
+    }
+  }
+
+  public function showCommencementForm($formId, $employeeId) {
+    $ok = false;
+    $form = FormCommencement::find($formId);
+    if(isset($form)) {
+      $team = $form->team;
+      $employee = $form->employees()->whereEmployeeId($employeeId)->first();
+      if(isset($employee)) {
+        $fileStatus = $employee->status;
+        if ($fileStatus == 'ready') {
+          return $this->showIrdFormFile( $team, $form, $employee );
+        }
+      }
+    }
+    return $this->getDefaultIcon('pdf');
+  }
+
+  public function showSalaryForm($formId, $employeeId) {
+
+  }
+  public function showDepartureForm($formId, $employeeId) {
+
+  }
+  public function showTerminationForm($formId, $employeeId) {
+
+  }
 }

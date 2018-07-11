@@ -4,6 +4,11 @@ use App\Models\FormCommencementEmployee;
 
 class EmployeeCommencementController extends BaseIRDFormController {
   protected $modelName = 'FormCommencement';
+  protected $rules = [
+    'form_no'=>'string',
+    'form_date'=>'date',
+    'remark'=>'string'
+  ];
 
   public function indexx() {
     $rows = $this->model->all();
@@ -26,5 +31,40 @@ class EmployeeCommencementController extends BaseIRDFormController {
     }
 
     return parent::index();
+  }
+
+  public function update($id) {
+    $form = $this->model->find($id);
+    $input = $this->getInput();
+
+    $employees = \Input::get('employees',[]);
+    $form->update($input);
+    $dataEmployeeIds = $form->employees()->pluck('employee_id')->toArray();
+    $inputEmployeeIds = array_map(function($employee) {
+      return (int) $employee['id'];
+    }, $employees);
+
+    $newIds = array_diff($inputEmployeeIds, $dataEmployeeIds);
+    $obsolateIds = array_diff($dataEmployeeIds, $inputEmployeeIds);
+
+    $form->employees()->whereIn('employee_id', $obsolateIds)->delete();
+    for($i=0; $i<count($newIds); $i++) {
+      $form->employees()->save(new FormCommencementEmployee([
+        'employee_id' => $newIds[$i]
+      ]));
+    }
+
+    return response()->json([
+      'status'=>true,
+      'result'=>[
+        'added_ids'=>$newIds,
+        'removed_ids'=>$obsolateIds
+      ]
+    ]);
+
+  }
+
+  public function store() {
+
   }
 }

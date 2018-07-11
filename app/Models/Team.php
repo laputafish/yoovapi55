@@ -40,6 +40,22 @@ class Team extends BaseModel {
     return $this->hasMany( 'App\Models\TaxForm');
   }
 
+  public function commencementForms() {
+    return $this->hasMany('App\Models\FormCommencement');
+  }
+
+  public function departureForms() {
+    return $this->hasMany('App\Models\FormDeparture');
+  }
+
+  public function terminationForms() {
+    return $this->hasMany('App\Models\FormTermination');
+  }
+
+  public function salaryForms() {
+    return $this->hasMany('App\Models\FormSalary');
+  }
+
   public function getOrCreateTaxForm($employeeId, $fiscalYear) {
     $taxForm = $this->taxForms()
       ->whereEmployeeId($employeeId)

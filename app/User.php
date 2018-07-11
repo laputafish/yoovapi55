@@ -24,6 +24,7 @@ class User extends Authenticatable
     'alias',
     'first_name',
     'last_name',
+    'display_name',
     'mobile',
     'email',
     'password',
@@ -61,7 +62,9 @@ class User extends Authenticatable
 
   public function getFullNameAttribute()
   {
-    if (is_null($this->info)) {
+    if (isset($this->display_name)) {
+      return $this->display_name;
+    } else if (is_null($this->info)) {
       return $this->name;
     } else {
       $names = [];

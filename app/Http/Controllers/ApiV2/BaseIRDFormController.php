@@ -27,6 +27,7 @@ class BaseIRDFormController extends BaseController {
       $query = $query->take(\Input::get('limit'));
     }
     $data = $query->get();
+    $data = $this->onDataReady($data);
 
     return response()->json([
       'status'=>true,
@@ -35,5 +36,9 @@ class BaseIRDFormController extends BaseController {
         'total'=>$total
       ]
     ]);
+  }
+
+  protected function onDataReady($data) {
+    return $data;
   }
 }

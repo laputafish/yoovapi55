@@ -108,6 +108,12 @@ Route::get('media/icons/defaults/{name}', 'MediaController@getDefaultIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
 Route::get('media/document/{id}', 'MediaController@showDocument');
 Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
+
+Route::get('media/forms/commencements/{formId}/{employeeId}', 'MediaController@showCommencementForm');
+Route::get('media/forms/salaries/{formId}/{employeeId}', 'MediaController@showSalaryForm');
+Route::get('media/forms/terminations/{formId}/{employeeId}', 'MediaController@showTerminationForm');
+Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@showDepartureForm');
+
 Route::get('media/download/{id}', 'MediaController@downloadDocument');
 Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsInZip');
 //Route::get('xmedia/download/{id}', function($id) {

@@ -158,4 +158,9 @@ class TaxFormHelper
     $data = self::getTaxFormData($taxForm);
     TaxFormPdfHelper::generate($data, $filePath);
   }
+
+  public static function getFormUrl($formEmployee, $formType) {
+    $form = $formEmployee->form;
+    return storage_path( 'app/teams/'.$form->team_id.'/'.$formType.'/'.$form->id.'/'.$formEmployee->file );
+  }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 class BaseController extends Controller {
   protected $modelName = '';
   protected $model = null;
+  protected $rules = [];
 
   public function __construct() {
     if(!empty($this->modelName)) {
@@ -17,8 +18,14 @@ class BaseController extends Controller {
     return request()->user();
   }
 
-  protected function getInput($input, $rules)
+  protected function getInput($input=null, $rules=null)
   {
+    if(is_null($input)) {
+      $input = \Input::all();
+    }
+    if(is_null($rules)) {
+      $rules = $this->rules;
+    }
     return array_intersect_key($input, array_flip(array_keys($rules)));
   }
 
