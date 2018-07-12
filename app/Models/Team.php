@@ -73,4 +73,29 @@ class Team extends BaseModel {
     $this->taxForms()->save($taxForm);
     return $taxForm;
   }
+
+  public function Settings() {
+    return $this->hasMany('App\Models\TeamSetting');
+  }
+
+  public function setSetting($key, $value) {
+    $setting = $this->settings()->whereKey($key)->first();
+    if(isset($setting)) {
+      $setting->value = $value;
+      $setting->save();
+    } else {
+      $setting = new TeamSetting;
+      $setting->key = $key;
+      $setting->value = $value;
+      $this->settings()->save($setting);
+    }
+  }
+  public function getSetting($key, $default) {
+    $setting = $this->settings()->whereKey($key)->first();
+    $result = $default;
+    if(isset($setting)) {
+      $result = $setting->value;
+    }
+    return $result;
+  }
 }

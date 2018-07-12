@@ -5,7 +5,7 @@ use App\User;
 use App\Models\UserInfo;
 use App\Helpers\OAHelper;
 
-class UserController extends BaseController
+class UserController extends BaseAuthController
 {
   protected $modelName = 'User';
   protected $rules = [

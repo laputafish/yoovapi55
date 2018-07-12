@@ -3,7 +3,7 @@
 use App\Models\Document;
 use App\Helpers\MediaHelper;
 
-class DocumentController extends BaseController
+class DocumentController extends BaseAuthController
 {
   public function destroy($id)
   {

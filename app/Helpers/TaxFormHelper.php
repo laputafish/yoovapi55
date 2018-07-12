@@ -1,6 +1,7 @@
 <?php namespace App\Helpers;
 
 use App\Models\TeamJob;
+use App\Models\IrdForm;
 
 use App\Events\TaxFormStatusUpdatedEvent;
 
@@ -162,5 +163,22 @@ class TaxFormHelper
   public static function getFormUrl($formEmployee, $formType) {
     $form = $formEmployee->form;
     return storage_path( 'app/teams/'.$form->team_id.'/'.$formType.'/'.$form->id.'/'.$formEmployee->file );
+  }
+
+  public static function getIrdFormId( $formCode ) {
+    $irdForm = IrdForm::whereFormCode($formCode)->first();
+    return isset($irdForm) ? $irdForm->id : 0;
+  }
+
+  public static function getNextFormId($query, $prefix) {
+    $formNo = $prefix.date('Ymd');
+    $count = 1;
+    $suffix = $count > 1 ? '_'.$count : '';
+    $newFormNo = $formNo.$suffix;
+    while(is_null($query->whereFormNo($newFormNo))) {
+      $count++;
+      $newFormNo = $formNo . '_' . $count;
+    }
+    return $newFormNo;
   }
 }

@@ -5,10 +5,17 @@ use App\Models\FormCommencementEmployee;
 class EmployeeCommencementController extends BaseIRDFormController {
   protected $modelName = 'FormCommencement';
   protected $rules = [
+    'team_id'=>'string',
     'form_no'=>'string',
     'form_date'=>'date',
+    'status'=>'string',
+    'subject'=>'string',
+    'ird_form_id'=>'integer',
     'remark'=>'string'
   ];
+  protected $formType = 'commencement';
+
+  protected $FORM_CODE = 'IR56E';
 
   public function indexx() {
     $rows = $this->model->all();
@@ -40,8 +47,8 @@ class EmployeeCommencementController extends BaseIRDFormController {
     $employees = \Input::get('employees',[]);
     $form->update($input);
     $dataEmployeeIds = $form->employees()->pluck('employee_id')->toArray();
-    $inputEmployeeIds = array_map(function($employee) {
-      return (int) $employee['id'];
+    $inputEmployeeIds = array_map(function($formEmployee) {
+      return (int) $formEmployee['employee_id'];
     }, $employees);
 
     $newIds = array_diff($inputEmployeeIds, $dataEmployeeIds);
@@ -65,6 +72,25 @@ class EmployeeCommencementController extends BaseIRDFormController {
   }
 
   public function store() {
+    $input = $this->getInput();
+    $form = $this->model->create($input);
 
+    $formEmployees = \Input::get('employees',[]);
+    $formEmployeeIds = array_map(function($formEmployee) {
+      return (int) $formEmployee['employee_id'];
+    }, $formEmployees);
+
+    for($i=0; $i<count($formEmployeeIds); $i++) {
+      $form->employees()->save(new FormCommencementEmployee([
+        'employee_id' => $formEmployeeIds[$i]
+      ]));
+    }
+
+    return response()->json([
+      'status'=>true,
+      'result'=>[
+        'added_ids'=>$formEmployeeIds
+      ]
+    ]);
   }
 }

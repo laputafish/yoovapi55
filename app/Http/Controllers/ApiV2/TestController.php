@@ -2,7 +2,7 @@
 
 use App\Models\Test;
 
-class TestController extends BaseController
+class TestController extends BaseAuthController
 {
   public function insertRecords($count) {
     $t1 = time();

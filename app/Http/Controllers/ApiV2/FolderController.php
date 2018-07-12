@@ -5,7 +5,7 @@ use App\Models\Folder;
 
 use App\Helpers\FolderHelper;
 
-class FolderController extends BaseController {
+class FolderController extends BaseAuthController {
 
   public function show($id) {
     if($id==0) {

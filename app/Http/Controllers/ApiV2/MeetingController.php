@@ -3,7 +3,7 @@
 use App\Models\Meeting;
 use Illuminate\Support\Facades\Input;
 
-class MeetingController extends BaseController
+class MeetingController extends BaseAuthController
 {
     public function rules() {
       return [

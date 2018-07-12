@@ -4,7 +4,7 @@ use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use App\Product;
 use App\Category;
 
-class ProductController extends BaseController
+class ProductController extends BaseAuthController
 {
     public function index() {
         return 'products';

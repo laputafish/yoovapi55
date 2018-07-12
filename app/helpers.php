@@ -11,6 +11,12 @@ function getLocalDateTime()
     return $nowStr;
 }
 
+function getToday() {
+  $timezone = 'ASIA/HONG_KONG';
+  $now = new \DateTime('now', new \DateTimeZone($timezone));
+  return $now->format('Y-m-d');
+}
+
 function getUniqId() {
   return uniqid() . '_' . md5(mt_rand());
 }

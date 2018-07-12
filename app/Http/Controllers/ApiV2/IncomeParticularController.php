@@ -4,7 +4,7 @@ use App\Models\IncomeParticular;
 use App\Models\TeamIncomeParticular;
 use App\Models\TeamIncomeParticularPayType;
 
-class IncomeParticularController extends BaseController {
+class IncomeParticularController extends BaseAuthController {
   protected $modelName = 'IncomeParticular';
 
   public function index() {

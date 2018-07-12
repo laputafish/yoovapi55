@@ -1,5 +1,5 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
-class EmployeeDepartureController extends BaseController {
+class EmployeeDepartureController extends BaseIRDFormController {
   protected $modelName = 'FormDeparture';
 }

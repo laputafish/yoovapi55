@@ -10,7 +10,7 @@ use App\Helpers\TeamJobHelper;
 use App\Events\TaxFormNewJobEvent;
 use App\Events\TaxFormStatusUpdatedEvent;
 
-class TaxFormController extends BaseController
+class TaxFormController extends BaseAuthController
 {
   protected $modelName = 'TaxForm';
 

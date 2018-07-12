@@ -3,7 +3,7 @@
 use App\Models\Equipment;
 use Illuminate\Support\Facades\Input;
 
-class EquipmentController extends BaseController
+class EquipmentController extends BaseAuthController
 {
     public function rules()
     {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\ApiV2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class LoginController extends BaseController
+class LoginController extends BaseAuthController
 {
     /**
      * Handle an authentication attempt.

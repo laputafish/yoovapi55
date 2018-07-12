@@ -4,7 +4,7 @@ use App\Models\MeetingRoom;
 use App\Models\MeetingRoomBooking;
 use Illuminate\Support\Facades\Input;
 
-class MeetingRoomBookingController extends BaseController
+class MeetingRoomBookingController extends BaseAuthController
 {
   protected $rules = [
     'applicant_name'=>'String',

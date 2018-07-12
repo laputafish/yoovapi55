@@ -3,7 +3,7 @@
 use App\Models\MeetingRoom;
 use Illuminate\Support\Facades\Input;
 
-class MeetingRoomController extends BaseController
+class MeetingRoomController extends BaseAuthController
 {
     public function index()
     {
