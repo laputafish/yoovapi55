@@ -7,6 +7,7 @@ class BaseIRDForm extends BaseModel {
     'team_id',
     'form_no',
     'form_date',
+    'status',
     'subject',
     'ird_form_id',
     'remark'

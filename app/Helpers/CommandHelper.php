@@ -34,6 +34,7 @@ class CommandHelper
     while (true) {
       $now = now();
       $command->last_checked_at = $now;
+
     //  $command->save();
       $handler($command);
       sleep(1);

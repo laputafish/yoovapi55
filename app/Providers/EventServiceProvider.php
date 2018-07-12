@@ -21,6 +21,34 @@ class EventServiceProvider extends ServiceProvider
       ],
       'App\Events\TaxFormStatusUpdatedEvent' => [
         'App\Listeners\TaxFormStatusUpdatedListener'
+      ],
+      // Commencement Form
+      'App\Events\CommencementFormStatusUpdatedEvent' => [
+        'App\Listeners\CommencementFormStatusUpdatedListener',
+      ],
+      'App\Events\CommencementFormEmployeeStatusUpdatedEvent' => [
+        'App\Listeners\CommencementFormEmployeeStatusUpdatedListener',
+      ],
+      // Termination Form
+      'App\Events\TerminationFormStatusUpdatedEvent' => [
+        'App\Listeners\TerminationFormStatusUpdatedListener',
+      ],
+      'App\Events\TerminationFormEmployeeStatusUpdatedEvent' => [
+        'App\Listeners\TerminationFormEmployeeStatusUpdatedListener',
+      ],
+      // Departure Form
+      'App\Events\DepartureFormStatusUpdatedEvent' => [
+        'App\Listeners\DepartureFormStatusUpdatedListener',
+      ],
+      'App\Events\DepartureFormEmployeeStatusUpdatedEvent' => [
+        'App\Listeners\DepartureFormEmployeeStatusUpdatedListener',
+      ],
+      // Salary Form
+      'App\Events\SalaryFormStatusUpdatedEvent' => [
+        'App\Listeners\SalaryFormStatusUpdatedListener',
+      ],
+      'App\Events\SalaryFormEmployeeStatusUpdatedEvent' => [
+        'App\Listeners\SalaryFormEmployeeStatusUpdatedListener',
       ]
 
 //      'App\Events\Event' => [

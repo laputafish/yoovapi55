@@ -3,6 +3,8 @@
 class Team extends BaseModel {
   protected $fillable = [
     'oa_team_id',
+    'oa_access_token',
+    'oa_token_type',
     'updated_at',
     'created_at'
   ];

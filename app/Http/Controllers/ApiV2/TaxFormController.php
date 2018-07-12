@@ -3,12 +3,29 @@
 use App\Models\TaxForm;
 use App\Models\TeamJob;
 use App\Models\Team;
+use App\Models\FormCommencement;
+use App\Models\FormTermination;
+use App\Models\FormDeparture;
+use App\Models\FormSalary;
 
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
+use App\Helpers\OAHelper;
 
 use App\Events\TaxFormNewJobEvent;
 use App\Events\TaxFormStatusUpdatedEvent;
+
+use App\Events\CommencementFormStatusUpdatedEvent;
+use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
+
+use App\Events\TerminationFormStatusUpdatedEvent;
+use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
+
+use App\Events\DepartureFormStatusUpdatedEvent;
+use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
+
+use App\Events\SalaryFormStatusUpdatedEvent;
+use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 
 class TaxFormController extends BaseAuthController
 {
@@ -29,15 +46,71 @@ class TaxFormController extends BaseAuthController
 
   public function store()
   {
+    OAHelper::refreshTeamToken($this->user, $this->team);
     $command = \Input::get('command');
+    $newStatus = '';
     switch ($command) {
       case 'generate':
-        return $this->generate();
+        $newStatus = 'ready_for_processing';
+        break;
+      case 'terminate':
+        $newStatus = 'terminated';
         break;
     }
+    $formType = \Input::get('formType','');
+    $formId = \Input::get('formId');
+    $form = null;
+    switch ($formType) {
+      case 'commencements':
+        $form = FormCommencement::find($formId);
+        break;
+      case 'terminations':
+        $form = FormTermination::find($formId);
+        break;
+      case 'salaries':
+        $form = FormSalary::find($formId);
+        break;
+      case 'departures':
+        $form = FormDeparture::find($formId);
+        break;
+    }
+    if(!is_null($form)) {
+      $update = ['status'=>$newStatus];
+      $form->update($update);
+      $form->employees()->update($update);
+
+      event(new CommencementFormStatusUpdatedEvent([
+        'team' => $form->team->toArray(),
+        'formId' => $form->id,
+        'total' => $form->employees()->count(),
+        'progress' => 0,
+        'status' => 'ready_for_processing'
+      ]));
+
+      foreach($form->employees as $employee) {
+        event(new CommencementFormEmployeeStatusUpdatedEvent([
+          'team' => $form->team->toArray(),
+          'formId' => $form->id,
+          'employeeId' => $employee['employee_id'],
+          'status' => 'ready_for_processing'
+        ]));
+      }
+    }
+
+    return response()->json([
+      'status'=>true,
+      'result'=>$newStatus
+    ]);
   }
 
-  public function generate() {
+  public function generate($form) {
+    if(is_a($form, 'App\Models\FormSalary')) {
+
+    }
+    $user = app('auth')->guard()->user();
+  }
+
+  public function generatexxx() {
     $user = app('auth')->guard()->user();
 
     $oaTeamId = \Input::get('teamId');

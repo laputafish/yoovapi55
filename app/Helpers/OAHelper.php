@@ -65,6 +65,44 @@ class OAHelper
     return $result;
   }
 
+  public static function refreshTeamToken($user, $team)
+  {
+    $tokenType = $user->oa_token_type;
+    $accessToken = $user->oa_access_token;
+    $refreshToken = $user->oa_refresh_token;
+
+    if(isset($team)) {
+      $newTokenInfo = self::doRefreshToken($tokenType, $accessToken, $refreshToken);
+      $team->oa_access_token = $newTokenInfo['accessToken'];
+      $team->oa_token_type = $newTokenInfo['tokenType'];
+      $team->save();
+    }
+  }
+
+  public static function doRefreshToken($tokenType, $accessToken, $refreshToken)
+  {
+    $url = \Config::get('oa')['apiUrl'] . '/t/auth/refresh';
+    $header = [
+      'Authorization: ' . $tokenType . ' ' . $accessToken,
+      // 'Content-Type: application/json',
+      'Accept: application/json, text/plain, */*'
+    ];
+    $postData = "refreshToken=" . $refreshToken;
+
+    try {
+      $jsonStr = CurlHelper::post($url, $postData, $header);
+    } catch (ErrorException $e) {
+      $jsonStr = FALSE;
+    }
+    $result = null;
+    if ($jsonStr === FALSE) {
+    } else {
+      $response = json_decode($jsonStr, true);
+      $result = $response['result'];
+    }
+    return $result;
+  }
+
   public static function refreshToken($user) {
     $tokenType = $user->oa_token_type;
     $accessToken = $user->oa_access_token;

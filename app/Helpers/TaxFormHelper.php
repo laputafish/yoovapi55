@@ -2,8 +2,22 @@
 
 use App\Models\TeamJob;
 use App\Models\IrdForm;
+use App\Models\FormCommencement;
+use App\Models\FormTermination;
+use App\Models\FormSalary;
+use App\Models\formDeparture;
 
 use App\Events\TaxFormStatusUpdatedEvent;
+
+use App\Events\CommencementFormStatusUpdatedEvent;
+use App\Events\TerminationFormStatusUpdatedEvent;
+use App\Events\DepartureFormStatusUpdatedEvent;
+use App\Events\SalaryFormStatusUpdatedEvent;
+
+use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
+use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
+use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
+use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 
 class TaxFormHelper
 {
@@ -17,6 +31,188 @@ class TaxFormHelper
   }
 
   public static function handle($command)
+  {
+    $jobs = [];
+
+    // Commencement
+    $forms = FormCommencement::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+    self::fillForms($jobs, $forms, 'commencement');
+
+    // Termination
+    $forms = FormTermination::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+    self::fillForms($jobs, $forms, 'termination');
+
+    // Departure
+    $forms = FormDeparture::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+    self::fillForms($jobs, $forms, 'departure');
+
+    // Salary
+    $forms = FormSalary::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+    self::fillForms($jobs, $forms, 'salary');
+
+    usort($jobs, function ($a, $b) {
+      return ($a > $b) ? 1 : -1;
+    });
+
+    self::processJobs($jobs);
+  }
+
+  public static function fillForms(&$jobs, $forms, $formType) {
+    foreach($forms as $form) {
+      $jobs[] = [
+        'form_type'=>$formType,
+        'form_id'=>$form->id,
+        'updated_at'=>$form->updated_at
+      ];
+    }
+  }
+
+  public static function generateForm($formEmployee, $form) {
+    $team = $form->team;
+    $oaUser = OAEmployeeHelper::get($formEmployee->employee_id, $oaAuth, $team->oa_team_id);
+
+    dd($oaUser);
+
+    $user = UserHelper::getFromOAUser($oaUser);
+    $filePath = self::getFilePath($taxForm->fiscal_year, $user);
+
+    $data = self::getTaxFormData($taxForm);
+    TaxFormPdfHelper::generate($data, $filePath);
+  }
+
+  public static function processCommencementJob($job) {
+    echo 'processCommencementJob: '; nl();
+    $form = FormCommencement::find($job['form_id']);
+    if($form->status != 'processing') {
+      $form->update(['status' => 'processing']);
+      event(new CommencementFormStatusUpdatedEvent([
+        'team' => $form->team,
+        'formId' => $form->id,
+        'total' => $form->employees()->count(),
+        'progress' => 0,
+        'status' => 'processing'
+      ]));
+    }
+    foreach($job->employees as $formEmployee) {
+      self::generateForm($formEmployee, $form);
+    }
+  }
+
+  public static function processTerminationJob($job) {
+    echo 'processTerminationJob: '; nl();
+    $form = FormTermination::find($job['form_id']);
+    if($form->status != 'processing') {
+      $form->update(['status' => 'processing']);
+      event(new TerminationFormStatusUpdatedEvent([
+        'team' => $form->team,
+        'formId' => $form->id,
+        'total' => $form->employees->count,
+        'progress' => 0,
+        'status' => 'processing'
+      ]));
+    }
+  }
+
+  public static function processDepartureJob($job) {
+    echo 'processDepartureJob: '; nl();
+    $form = FormDeparture::find($job['form_id']);
+    if($form->status != 'processing') {
+      $form->update(['status' => 'processing']);
+      event(new DepartureFormStatusUpdatedEvent([
+        'team' => $form->team,
+        'formId' => $form->id,
+        'total' => $form->employees->count,
+        'progress' => 0,
+        'status' => 'processing'
+      ]));
+    }
+  }
+
+  public static function processSalaryJob($job) {
+    echo 'processSalaryJob: '; nl();
+    $form = FormSalary::find($job['form_id']);
+    if($form->status != 'processing') {
+      $form->update(['status' => 'processing']);
+      event(new SalaryFormStatusUpdatedEvent([
+        'team' => $form->team,
+        'formId' => $form->id,
+        'total' => $form->employees->count,
+        'progress' => 0,
+        'status' => 'processing'
+      ]));
+    }
+  }
+
+  public static function processJobs($jobs) {
+    echo 'processJobs: '; nl();
+    foreach ($jobs as $job) {
+      switch ($job['form_type']) {
+        case 'commencement':
+          self::processCommencementJob($job);
+          break;
+        case 'termination':
+          self::processTerminationJob($job);
+          break;
+        case 'departure':
+          self::processDepartureJob($job);
+          break;
+        case 'salary':
+          self::processSalaryJob($job);
+          break;
+      }
+    }
+//      $form =
+//      $team = $job->team;
+//      $fiscalYear = $job->fiscal_year;
+//
+//      $jobItems = $job->items()->whereEnabled(1)->get();
+//      $totalCount = $jobItems->count();
+//
+//      $oaAuth = [
+//        'oa_access_token' => $job->oa_access_token,
+//        'oa_token_type' => $job->oa_token_type
+//      ];
+//      foreach ($jobItems as $i => $item) {
+//        // echo 'i = '.$i; nl();
+//        $employeeId = $item->employee_id;
+//
+//        $taxForm = $team->getOrCreateTaxForm($employeeId, $fiscalYear);
+//        if ($taxForm->status == 'pending') {
+//          $taxForm->status = 'processing';
+//          $taxForm->save();
+//        }
+//        if ($taxForm->status == 'processing') {
+//          event(new TaxFormStatusUpdatedEvent([
+//            'team' => $team,
+//            'index' => $i,
+//            'taxForm' => $taxForm,
+//            'total' => $totalCount
+//          ]));
+//          //*******************
+//          // Generation
+//          //*******************
+//          self::generateTaxForm($taxForm, $oaAuth);
+//
+//          $taxForm->status = 'ready';
+//          $taxForm->save();
+//        }
+//
+//        if ($taxForm->status == 'ready') {
+//          event(new TaxFormStatusUpdatedEvent([
+//            'team' => $team,
+//            'index' => $i,
+//            'taxForm' => $taxForm,
+//            'item' => $item,
+//            'total' => $totalCount
+//          ]));
+//        }
+//      }
+//      $job->status = 'completed';
+//      $job->save();
+//    }
+  }
+
+  public static function handlex($command)
   {
     $teamJobs = TeamJob::whereStatus('pending')->get();
     foreach ($teamJobs as $job) {
