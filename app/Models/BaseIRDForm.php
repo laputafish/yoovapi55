@@ -38,4 +38,6 @@ class BaseIRDForm extends BaseModel {
   public function irdForm() {
     return $this->belongsTo( 'App\Models\IrdForm', 'ird_form_id');
   }
+
+
 }

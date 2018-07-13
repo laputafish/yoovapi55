@@ -11,21 +11,10 @@ use App\Models\FormSalary;
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
 use App\Helpers\OAHelper;
+use App\Helpers\EventHelper;
 
 use App\Events\TaxFormNewJobEvent;
 use App\Events\TaxFormStatusUpdatedEvent;
-
-use App\Events\CommencementFormStatusUpdatedEvent;
-use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
-
-use App\Events\TerminationFormStatusUpdatedEvent;
-use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
-
-use App\Events\DepartureFormStatusUpdatedEvent;
-use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
-
-use App\Events\SalaryFormStatusUpdatedEvent;
-use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 
 class TaxFormController extends BaseAuthController
 {
@@ -79,21 +68,13 @@ class TaxFormController extends BaseAuthController
       $form->update($update);
       $form->employees()->update($update);
 
-      event(new CommencementFormStatusUpdatedEvent([
-        'team' => $form->team->toArray(),
-        'formId' => $form->id,
-        'total' => $form->employees()->count(),
-        'progress' => 0,
-        'status' => 'ready_for_processing'
-      ]));
+      EventHelper::send('commencementForm', ['form'=>$form]);
 
-      foreach($form->employees as $employee) {
-        event(new CommencementFormEmployeeStatusUpdatedEvent([
-          'team' => $form->team->toArray(),
-          'formId' => $form->id,
-          'employeeId' => $employee['employee_id'],
-          'status' => 'ready_for_processing'
-        ]));
+      foreach($form->employees as $formEmployee) {
+        // echo 'employee_id = '.$formEmployee['employee_id']; nl();
+        EventHelper::send('commencementFormEmployee', [
+          'form'=>$form,
+          'formEmployee'=>$formEmployee]);
       }
     }
 

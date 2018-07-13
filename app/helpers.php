@@ -75,3 +75,12 @@ function xxxxarray_sort($array, $on, $order=SORT_ASC)
 
   return $new_array;
 }
+
+function js2phpDate($jsDate) {
+  $jsDateTS = strtotime(substr($jsDate, 0, 10));
+  return date('Y-m-d', $jsDateTS);
+}
+
+function js2phpDateTime($jsDate) {
+
+}

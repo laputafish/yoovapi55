@@ -68,18 +68,34 @@ class TaxFormHelper
   }
 
   public static function generateForm($formEmployee, $form) {
+    echo 'genereateForm :: employee_id = '.$formEmployee['employee_id']; nl();
     $team = $form->team;
-    $oaUser = OAEmployeeHelper::get($formEmployee->employee_id, $oaAuth, $team->oa_team_id);
 
-    dd($oaUser);
+    $oaAuth = $team->getOaAuth();
+    $oaEmployee = OAEmployeeHelper::get($formEmployee['employee_id'], $oaAuth, $team->oa_team_id);
+    $employee = TeamHelper::updateEmployee($team, $oaEmployee);
+    $filePath = self::getFormFilePath($formEmployee, $employee);
 
-    $user = UserHelper::getFromOAUser($oaUser);
-    $filePath = self::getFilePath($taxForm->fiscal_year, $user);
-
-    $data = self::getTaxFormData($taxForm);
-    TaxFormPdfHelper::generate($data, $filePath);
+    $formClass = get_class($form);
+    switch($formClass) {
+      case 'App\Models\FormCommencement':
+        break;
+      case 'App\Models\FormTermination':
+        break;
+      case 'App\Models\FormDeparture':
+        break;
+      case 'App\Models\FormSalary':
+        // TaxFormPdfHelper::generate($data, $filePath);
+        break;
+    }
+    event(new commencementFormEmployeeStatusUpdatedEvent([
+      
+    ]));
   }
 
+  public static function getFormFilePath($formEmployee, $employee) {
+    return '';
+  }
   public static function processCommencementJob($job) {
     echo 'processCommencementJob: '; nl();
     $form = FormCommencement::find($job['form_id']);
@@ -93,7 +109,7 @@ class TaxFormHelper
         'status' => 'processing'
       ]));
     }
-    foreach($job->employees as $formEmployee) {
+    foreach($form->employees as $formEmployee) {
       self::generateForm($formEmployee, $form);
     }
   }

@@ -27,18 +27,27 @@ class OAHelper
     return $result;
   }
 
+
   public static function checkTokenValidity($header, $user) {
     // fetch self
     $url = \Config::get('oa')['apiUrl'].'/t/users/self?' . $user->oa_last_team_id;
+    $curlResult = FALSE;
     try {
       $jsonStr = CurlHelper::get($url, $header);
+      $curlResult = json_decode($jsonStr, true);
     } catch (ErrorException $e) {
-      $jsonStr = FALSE;
+      $curlResult = FALSE;
     }
+
+//    try {
+//      $jsonStr = CurlHelper::get($url, $header);
+//    } catch (ErrorException $e) {
+//      $jsonStr = FALSE;
+//    }
     $result = false;
-    if ($jsonStr === FALSE) {
+    if ($curlResult === FALSE) {
     } else {
-      $authResult = json_decode($jsonStr, true);
+      $authResult = $curlResult;
       if ($authResult['status']) {
         $result = true;
       }

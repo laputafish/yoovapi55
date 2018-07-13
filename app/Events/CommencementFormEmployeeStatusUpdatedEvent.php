@@ -38,7 +38,7 @@ class CommencementFormEmployeeStatusUpdatedEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel( 'item_'.$this->statusInfo['team']->oa_team_id);
+        return new Channel( 'item_'.$this->statusInfo['team']['oa_team_id']);
         // return new PrivateChannel('channel-name');
     }
 

@@ -10,7 +10,11 @@ class OAEmployeeHelper
     $curlHeader = OAHelper::getCurlHeader($oaAuth);
 
     $url = \Config::get('oa')['apiUrl'].'/user/employees/'.$employeeId.'?teamId='.$teamId;
-    return CurlHelper::get($url, $curlHeader);
+    $jsonStr = CurlHelper::get($url, $curlHeader);
 
+    $curlResult = json_decode($jsonStr, true);
+    $result = $curlResult['result'];
+
+    return $result;
   }
 }

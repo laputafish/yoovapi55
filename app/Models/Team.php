@@ -100,4 +100,15 @@ class Team extends BaseModel {
     }
     return $result;
   }
+
+  public function getOaAuth() {
+    return [
+      'oa_token_type'=>$this->oa_token_type,
+      'oa_access_token'=>$this->oa_access_token
+    ];
+  }
+
+  public function employees() {
+    return $this->hasMany('App\Models\TeamEmployee');
+  }
 }
