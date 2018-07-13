@@ -6,4 +6,10 @@ class IrdForm extends BaseModel {
     'description',
     'partial_path'
   ];
+
+  public $timestamps = false;
+
+  public function files() {
+    return $this->hasMany('App\Models\IrdFormFile');
+  }
 }

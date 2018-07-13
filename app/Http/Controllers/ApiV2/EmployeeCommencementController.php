@@ -11,7 +11,8 @@ class EmployeeCommencementController extends BaseIRDFormController {
     'status'=>'string',
     'subject'=>'string',
     'ird_form_id'=>'integer',
-    'remark'=>'string'
+    'remark'=>'string',
+    'submitted_on'=>'string'
   ];
   protected $formType = 'commencement';
 
@@ -45,6 +46,9 @@ class EmployeeCommencementController extends BaseIRDFormController {
     $input = $this->getInput();
 
     $employees = \Input::get('employees',[]);
+    if(!is_null($input['submitted_on'])) {
+      $input['status'] = 'completed';
+    }
     $form->update($input);
     $dataEmployeeIds = $form->employees()->pluck('employee_id')->toArray();
     $inputEmployeeIds = array_map(function($formEmployee) {
@@ -53,7 +57,6 @@ class EmployeeCommencementController extends BaseIRDFormController {
 
     $newIds = array_diff($inputEmployeeIds, $dataEmployeeIds);
     $obsolateIds = array_diff($dataEmployeeIds, $inputEmployeeIds);
-
     $form->employees()->whereIn('employee_id', $obsolateIds)->delete();
     for($i=0; $i<count($newIds); $i++) {
       $form->employees()->save(new FormCommencementEmployee([

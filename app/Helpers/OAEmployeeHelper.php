@@ -11,10 +11,23 @@ class OAEmployeeHelper
 
     $url = \Config::get('oa')['apiUrl'].'/user/employees/'.$employeeId.'?teamId='.$teamId;
     $jsonStr = CurlHelper::get($url, $curlHeader);
-
     $curlResult = json_decode($jsonStr, true);
-    $result = $curlResult['result'];
 
+    if($curlResult === FALSE) {
+      $result = [
+        'code'=>0,
+        'message'=>'Cannot connect to OA server.'
+      ];
+    } else {
+      if($curlResult['status']) {
+        $result = $curlResult['result'];
+      } else {
+        $result = [
+          'code' => $curlResult['code'],
+          'message' => $curlResult['message']
+        ];
+      }
+    }
     return $result;
   }
 }

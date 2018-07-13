@@ -10,7 +10,8 @@ class BaseIRDForm extends BaseModel {
     'status',
     'subject',
     'ird_form_id',
-    'remark'
+    'remark',
+    'submitted_on'
   ];
 
   protected $appends = [
@@ -39,5 +40,19 @@ class BaseIRDForm extends BaseModel {
     return $this->belongsTo( 'App\Models\IrdForm', 'ird_form_id');
   }
 
+  public function getTemplateFilePathAttribute() {
+    $className = get_class($this);
+    switch( $className ) {
+      case 'App\Models\FormCommencement':
+
+        break;
+      case 'App\Models\FormTermination':
+        break;
+      case 'App\Models\FormDeparture':
+        break;
+      case 'App\Models\FormSalary':
+        break;
+    }
+  }
 
 }

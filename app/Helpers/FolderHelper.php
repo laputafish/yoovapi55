@@ -181,6 +181,12 @@ class FolderHelper {
     return $result;
   }
 
+  public static function checkCreateFolders($folderPath) {
+    if(!file_exists($folderPath)) {
+      mkdir($folderPath, 0776, true);
+    }
+  }
+
   public static function checkCreate( $folderName, $folderDescription, $parentFolder ) {
     $targetFolder = null;
     for($i=0; $i<count($parentFolder->children); $i++) {

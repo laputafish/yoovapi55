@@ -2,7 +2,7 @@
 
 use setasign\Fpdi;
 
-class MpfPdf extends Fpdi\TcpdfFpdi
+class FormPdf extends Fpdi\TcpdfFpdi
 {
   protected $tplId;
   protected $fontName = 'times';

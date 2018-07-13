@@ -1,5 +1,7 @@
 <?php namespace App\Helpers;
 
+use App\User;
+
 class OAHelper
 {
   public static function checkOAToken($user)
@@ -72,6 +74,12 @@ class OAHelper
 //      }
     }
     return $result;
+  }
+
+  public static function updateTeamToken($team)
+  {
+    $user = User::whereOaLastTeamId($team->oa_team_id)->first();
+    self::refreshTeamToken($user, $team);
   }
 
   public static function refreshTeamToken($user, $team)

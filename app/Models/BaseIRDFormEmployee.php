@@ -5,6 +5,7 @@ use App\Helpers\TaxFormHelper;
 class BaseIRDFormEmployee extends BaseModel {
   protected $formType = 'unknown';
   protected $parentModelName = '';
+  public $incrementing = false;
 
   public $timestamps = false;
 

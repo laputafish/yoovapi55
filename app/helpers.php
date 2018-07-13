@@ -84,3 +84,9 @@ function js2phpDate($jsDate) {
 function js2phpDateTime($jsDate) {
 
 }
+
+function getDMYSegs($dateStr) {
+  $time = strtotime($dateStr);
+  $segs = date('d-m-Y', $time);
+  return explode('-', $segs);
+}

@@ -36,7 +36,10 @@ class CommandHelper
       $command->last_checked_at = $now;
 
     //  $command->save();
-      $handler($command);
+      $pass = $handler($command);
+      if(!$pass) {
+        break;
+      }
       sleep(1);
 
       // Check enabled
