@@ -1,6 +1,8 @@
-<?php namespace App\Helpers;
+<?php namespace App\Helpers\OA;
 
 use App\User;
+
+use App\Helpers\CurlHelper;
 
 class OAHelper
 {
@@ -157,7 +159,29 @@ class OAHelper
     return $result;
   }
 
-  public static function get($urlSuffix, $oaAuth, $params=[]) {
+  public static function get($url, $oaAuth) {
+    $curlHeader = OAHelper::getCurlHeader($oaAuth);
+    $jsonStr = CurlHelper::get($url, $curlHeader);
+    $curlResult = json_decode($jsonStr, true);
+
+    if($curlResult === FALSE) {
+      $result = [
+        'code'=>0,
+        'message'=>'Cannot connect to OA server.'
+      ];
+    } else {
+      if($curlResult['status']) {
+        $result = $curlResult['result'];
+      } else {
+        $result = [
+          'code' => $curlResult['code'],
+          'message' => $curlResult['message']
+        ];
+      }
+    }
+    return $result;
+  }
+  public static function xxxget($urlSuffix, $oaAuth, $params=[]) {
     $url = \Config::get('oa')['apiUrl'].$urlSuffix;
 
     // parameters
@@ -171,7 +195,7 @@ class OAHelper
     return CurlHelper::getData($url.'?'.$dataStr, $header);
   }
 
-  public static function post($urlSuffix, $oaAuth, $params=[]) {
+  public static function xxxpost($urlSuffix, $oaAuth, $params=[]) {
     $url = \Config::get('oa')['apiUrl'].$urlSuffix;
 
     // parameters
@@ -190,4 +214,6 @@ class OAHelper
 
     return CurlHelper::postData($url, $header, $dataStr);
   }
+
+
 }

@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<IR56B xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ir56b.xsd">
+  <Section>6A1</Section>
+  <ERN>01234561</ERN>
+  <YrErReturn>2014</YrErReturn>
+  <SubDate>20140420</SubDate>
+  <ErName>ABCD COMPANY</ErName>
+  <Designation>PARTNER</Designation>
+  <NoRecordBatch>00002</NoRecordBatch>
+  <TotIncomeBatch>360000</TotIncomeBatch>
+    <Employee>
+    <SheetNo>000001</SheetNo>
+    <HKID>A1144556</HKID>
+    <TypeOfForm>O</TypeOfForm>
+    <Surname>AUYEUNG</Surname>
+    <GivenName>TAI MAN</GivenName>
+    <NameInChinese>歐陽大文</NameInChinese>
+    <Sex>M</Sex>
+    <MaritalStatus>2</MaritalStatus>
+    <PpNum />
+    <SpouseName>WONG, MEI MEI</SpouseName>
+    <SpouseHKID>A456789A</SpouseHKID>
+    <SpousePpNum />
+    <ResAddr>Flat A, 8/F, 5 Mei Lai Road </ResAddr>
+    <AreaCodeResAddr>K</AreaCodeResAddr>
+    <PosAddr />
+    <Capacity>CLERK</Capacity>
+    <PtPrinEmp />
+    <StartDateOfEmp>20130401</StartDateOfEmp>
+    <EndDateOfEmp>20140331</EndDateOfEmp>
+    <PerOfSalary>20130401 - 20140331</PerOfSalary>
+    <AmtOfSalary>100000</AmtOfSalary>
+    <PerOfLeavePay />
+    <AmtOfLeavePay>0</AmtOfLeavePay>
+    <PerOfDirectorFee />
+    <AmtOfDirectorFee>0</AmtOfDirectorFee>
+    <PerOfCommFee />
+    <AmtOfCommFee>0</AmtOfCommFee>
+    <PerOfBonus>20130401 - 20140331</PerOfBonus>
+    <AmtOfBonus>50000</AmtOfBonus>
+    <PerOfBpEtc />
+    <AmtOfBpEtc>0</AmtOfBpEtc>
+    <PerOfPayRetire />
+    <AmtOfPayRetire>0</AmtOfPayRetire>
+    <PerOfSalTaxPaid />
+    <AmtOfSalTaxPaid>0</AmtOfSalTaxPaid>
+    <PerOfEduBen />
+    <AmtOfEduBen>0</AmtOfEduBen>
+    <PerOfGainShareOption />
+    <AmtOfGainShareOption>0</AmtOfGainShareOption>
+    <NatureOtherRAP1 />
+    <PerOfOtherRAP1 />
+    <AmtOfOtherRAP1>0</AmtOfOtherRAP1>
+    <NatureOtherRAP2 />
+    <PerOfOtherRAP2 />
+    <AmtOfOtherRAP2>0</AmtOfOtherRAP2>
+    <NatureOtherRAP3 />
+    <PerOfOtherRAP3 />
+    <AmtOfOtherRAP3>0</AmtOfOtherRAP3>
+    <PerOfPension />
+    <AmtOfPension>0</AmtOfPension>
+    <TotalIncome>150000</TotalIncome>
+    <PlaceOfResInd>0</PlaceOfResInd>
+    <AddrOfPlace1 />
+    <NatureOfPlace1 />
+    <PerOfPlace1 />
+    <RentPaidEr1>0</RentPaidEr1>
+    <RentPaidEe1>0</RentPaidEe1>
+    <RentRefund1>0</RentRefund1>
+    <RentPaidErByEe1>0</RentPaidErByEe1>
+    <AddrOfPlace2 />
+    <NatureOfPlace2 />
+    <PerOfPlace2 />
+    <RentPaidEr2>0</RentPaidEr2>
+    <RentPaidEe2>0</RentPaidEe2>
+    <RentRefund2>0</RentRefund2>
+    <RentPaidErByEe2>0</RentPaidErByEe2>
+    <OverseaIncInd>0</OverseaIncInd>
+    <AmtPaidOverseaCo />
+    <NameOfOverseaCo />
+    <AddrOfOverseaCo />
+    <Remarks />
+  </Employee>
+  <Employee>
+    <SheetNo>000002</SheetNo>
+    <HKID>K1234560</HKID>
+    <TypeOfForm>O</TypeOfForm>
+    <Surname>LEE</Surname>
+    <GivenName>SIU SUM</GivenName>
+    <NameInChinese>李小森</NameInChinese>
+    <Sex>F</Sex>
+    <MaritalStatus>1</MaritalStatus>
+    <PpNum />
+    <SpouseName />
+    <SpouseHKID />
+    <SpousePpNum />
+    <ResAddr>Flat B 2/F Block C Happy Garden 1 Happy Road </ResAddr>
+    <AreaCodeResAddr>H</AreaCodeResAddr>
+    <PosAddr />
+    <Capacity>MANAGER</Capacity>
+    <PtPrinEmp />
+    <StartDateOfEmp>20130401</StartDateOfEmp>
+    <EndDateOfEmp>20140331</EndDateOfEmp>
+    <PerOfSalary>20130401 - 20140331</PerOfSalary>
+    <AmtOfSalary>210000</AmtOfSalary>
+    <PerOfLeavePay />
+    <AmtOfLeavePay>0</AmtOfLeavePay>
+    <PerOfDirectorFee />
+    <AmtOfDirectorFee>0</AmtOfDirectorFee>
+    <PerOfCommFee />
+    <AmtOfCommFee>0</AmtOfCommFee>
+    <PerOfBonus />
+    <AmtOfBonus>0</AmtOfBonus>
+    <PerOfBpEtc />
+    <AmtOfBpEtc>0</AmtOfBpEtc>
+    <PerOfPayRetire />
+    <AmtOfPayRetire>0</AmtOfPayRetire>
+    <PerOfSalTaxPaid />
+    <AmtOfSalTaxPaid>0</AmtOfSalTaxPaid>
+    <PerOfEduBen />
+    <AmtOfEduBen>0</AmtOfEduBen>
+    <PerOfGainShareOption />
+    <AmtOfGainShareOption>0</AmtOfGainShareOption>
+    <NatureOtherRAP1 />
+    <PerOfOtherRAP1 />
+    <AmtOfOtherRAP1>0</AmtOfOtherRAP1>
+    <NatureOtherRAP2 />
+    <PerOfOtherRAP2 />
+    <AmtOfOtherRAP2>0</AmtOfOtherRAP2>
+    <NatureOtherRAP3 />
+    <PerOfOtherRAP3 />
+    <AmtOfOtherRAP3>0</AmtOfOtherRAP3>
+    <PerOfPension />
+    <AmtOfPension>0</AmtOfPension>
+    <TotalIncome>210000</TotalIncome>
+    <PlaceOfResInd>1</PlaceOfResInd>
+    <AddrOfPlace1>Flat B 21/F Block C Happy Garden 1 Happy Garden 1 Happy Road HK</AddrOfPlace1>
+    <NatureOfPlace1>Flat</NatureOfPlace1>
+    <PerOfPlace1>20130401 - 20140331</PerOfPlace1>
+    <RentPaidEr1>0</RentPaidEr1>
+    <RentPaidEe1>120000</RentPaidEe1>
+    <RentRefund1>120000</RentRefund1>
+    <RentPaidErByEe1>0</RentPaidErByEe1>
+    <AddrOfPlace2 />
+    <NatureOfPlace2 />
+    <PerOfPlace2 />
+    <RentPaidEr2>0</RentPaidEr2>
+    <RentPaidEe2>0</RentPaidEe2>
+    <RentRefund2>0</RentRefund2>
+    <RentPaidErByEe2>0</RentPaidErByEe2>
+    <OverseaIncInd>0</OverseaIncInd>
+    <AmtPaidOverseaCo />
+    <NameOfOverseaCo />
+    <AddrOfOverseaCo />
+    <Remarks />
+  </Employee>
+</IR56B>

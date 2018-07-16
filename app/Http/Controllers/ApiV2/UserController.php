@@ -3,7 +3,7 @@
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use App\User;
 use App\Models\UserInfo;
-use App\Helpers\OAHelper;
+use App\Helpers\OA\OAHelper;
 
 class UserController extends BaseAuthController
 {

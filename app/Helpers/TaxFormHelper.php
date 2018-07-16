@@ -15,6 +15,10 @@ use App\Events\TerminationFormStatusUpdatedEvent;
 use App\Events\DepartureFormStatusUpdatedEvent;
 use App\Events\SalaryFormStatusUpdatedEvent;
 
+use App\Helpers\OA\OAEmployeeHelper;
+use App\Helpers\OA\OATeamHelper;
+use App\Helpers\OA\OAHelper;
+
 use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
 use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
 use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
@@ -109,6 +113,9 @@ class TaxFormHelper
   }
 
   public static function generateFormCommencement($form, $formEmployee, $filePath) {
+    echo 'generateFormCommencement :: form id = '.$form->id; nl();
+    echo 'generateFormCommencement :: employee id = '.$formEmployee->employee_id; nl();
+
     $irdForm = $form->irdForm;
 
     $data = self::getFormCommencementData($form, $formEmployee);
@@ -126,6 +133,8 @@ class TaxFormHelper
   }
 
   public static function getFormCommencementData($form, $formEmployee) {
+
+    $ir56b = IrdDataHelper::getIr56b($form, $formEmployee);
     return [
       // 'title' => 'MPF 2018',
       'company' => [
