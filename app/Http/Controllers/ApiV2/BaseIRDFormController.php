@@ -30,9 +30,13 @@ class BaseIRDFormController extends BaseAuthController {
   }
 
   protected function onShowRecordReady($record) {
-    return is_null($record) ?
-      $this->prepareForm($this->BLANK_FORM) :
-      $record;
+    $result = $record;
+    if(is_null($record)) {
+      $result = $this->prepareForm($this->BLANK_FORM);
+    } else {
+      $result->employees;
+    }
+    return $result;
   }
 
   protected function prepareForm($form) {
@@ -45,13 +49,7 @@ class BaseIRDFormController extends BaseAuthController {
 
   public function index() {
     $input = \Input::all();
-
-//    $currentPage = $input['page'];
-//
-//    $this->paginator->setCurrentPage(\Input::get('page'));
-//    $this->paginator->setPerPage(\Input::get('per_page'));
-
-    $query = $this->model;
+    $query = $this->model->whereTeamId($this->team->id)->with('employees');
     $total = $query->count();
 
     // sort/order

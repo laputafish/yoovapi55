@@ -2,13 +2,14 @@
 
 use Illuminate\Support\Carbon;
 use App\Models\Command;
+use App;
 
 class CommandHelper
 {
   public static function start($commandName, $handler)
   {
     \Carbon\Carbon::setLocale(config('app.locale'));
-
+    App::setLocale('hk');
     $command = Command::whereName($commandName)->first();
     if (is_null($command)) {
       $command = Command::create([
@@ -45,12 +46,12 @@ class CommandHelper
       // Check enabled
       $command = Command::whereName($commandName)->first();
       if (!$command->enabled) {
-        echo "command not enabled => quit\n";
+        logConsole('messages.command_not_enabled');
         break;
       }
 
-      if ($command->mode == 'manual') {
-        echo "command mode = manual => after run once => quit\n";
+      if (!$command->loop) {
+        logConsole('messages.command_loop_not_enabled');
         break;
       }
     }

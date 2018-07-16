@@ -67,11 +67,12 @@ class TaxFormController extends BaseAuthController
       $update = ['status'=>$newStatus];
       $form->update($update);
       $form->employees()->update($update);
-
+// dd($form);
       EventHelper::send('commencementForm', ['form'=>$form]);
 
       foreach($form->employees as $formEmployee) {
-        // echo 'employee_id = '.$formEmployee['employee_id']; nl();
+//        echo 'employee_id = '.$formEmployee['employee_id']; nl();
+//        dd($formEmployee);
         EventHelper::send('commencementFormEmployee', [
           'form'=>$form,
           'formEmployee'=>$formEmployee]);

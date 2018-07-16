@@ -1,6 +1,13 @@
 <?php
 function nl() {
-    echo '<br/>';
+    echo "<br/>\n";
+}
+
+function logConsole($msg, $indentLevel=0) {
+  if ($indentLevel > 0) {
+    echo str_repeat('   ', $indentLevel);
+  }
+  echo $msg; nl();
 }
 
 function getLocalDateTime()

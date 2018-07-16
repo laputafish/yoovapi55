@@ -8,7 +8,7 @@ use App\Helpers\FormPdf;
 class CommencementFormPdfHelper {
   public static $yOffset = 2;
 
-  public static function generate($data, $templateFilePath, $finalFilePath ) {
+  public static function generate($data, $templateFilePath, $finalFilePath, $fields=[], $mappings=[] ) {
     $pdf = new FormPdf();
     $pdf->AddPage();
     $pdf->setSourceFile( $templateFilePath );
@@ -25,6 +25,20 @@ class CommencementFormPdfHelper {
     $pdf->SetFont('msungstdlight', '', 12);
 
     //Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=0, $link='', $stretch=0, $ignore_min_height=false, $calign='T', $valign='M')
+
+    foreach($fields as $field) {
+
+    }
+
+    if(file_exists($finalFilePath)) {
+      unlink($finalFilePath);
+    }
+    $pdf->Output($finalFilePath, 'F');
+    return;
+
+
+
+
 
     //****************
     // Company Name
@@ -319,6 +333,11 @@ class CommencementFormPdfHelper {
     if($residentialProvided) {
       $y = 224.7;
       $h = 5.1;
+
+      $INDEX_FONT_SIZE = 1;
+      $INDEX_WIDTH = 2;
+      $INDEX_TITLE = 0;
+      $INDEX_ALIGN = 3;
       foreach( $data['residential_place_provided'] as $item ) {
         $fields = [
           [$item['address'],10,55,'L'],
@@ -332,7 +351,13 @@ class CommencementFormPdfHelper {
         ];
         $x = 19;
         foreach($fields as $j=>$field) {
-          $pdf->outputText($x, $y+ self::$yOffset, $field[1], $field[2],$field[0],$field[3],'eng','B');
+          $pdf->outputText($x, $y+ self::$yOffset,
+            $field[$INDEX_FONT_SIZE],
+            $field[$INDEX_WIDTH],
+            $field[$INDEX_TITLE],
+            $field[$INDEX_ALIGN],
+            'eng',
+            'B');
           $x += $field[2];
         }
         $y += $h;

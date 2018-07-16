@@ -15,10 +15,11 @@ use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 class EventHelper {
   public static function send( $eventType, $options )
   {
+    $team = $options['form']->team;
     switch ($eventType) {
       case 'commencementForm':
         event(new CommencementFormStatusUpdatedEvent([
-          'team' => $options['form']->team->toArray(),
+          'team' => isset($team) ? $team->toArray() : null,
           'formId' => $options['form']->id,
           'total' => $options['form']->employees()->count(),
           'progress' => 0,
@@ -26,13 +27,19 @@ class EventHelper {
         ]));
         break;
       case 'commencementFormEmployee':
+//        echo 'commencementFormEmployee event  employee id = '
+//          .$options['formEmployee']->employee_id
+//          .'  status = '
+//          .$options['formEmployee']->status; nl();
         event(new CommencementFormEmployeeStatusUpdatedEvent([
-          'team' => $options['form']->team->toArray(),
+          'team' => isset($team) ? $team->toArray() : null,
           'formId' => $options['form']->id,
-          'employeeId' => $options['formEmployee']['employee_id'],
-          'status' => $options['form']->status
+          'employeeId' => $options['formEmployee']->employee_id,
+          'status' => $options['formEmployee']->status
         ]));
         break;
+      default:
+        echo 'Unknown event!'; nl();
     }
   }
 }

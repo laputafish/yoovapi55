@@ -12,4 +12,8 @@ class IrdForm extends BaseModel {
   public function files() {
     return $this->hasMany('App\Models\IrdFormFile');
   }
+
+  public function fields() {
+    return $this->hasMany( 'App\Models\IrdFormField');
+  }
 }

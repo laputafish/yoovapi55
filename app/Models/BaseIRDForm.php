@@ -15,17 +15,11 @@ class BaseIRDForm extends BaseModel {
   ];
 
   protected $appends = [
-    'employees',
     'employee_count'
   ];
 
   public function getEmployeeCountAttribute() {
     return $this->employees()->count();
-  }
-
-  public function getEmployeesAttribute() {
-    $employees = $this->employees()->get();
-    return isset($employees) ? $employees->toArray() : [];
   }
 
   public function team() {

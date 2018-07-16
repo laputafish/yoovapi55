@@ -109,13 +109,17 @@ class TaxFormHelper
   }
 
   public static function generateFormCommencement($form, $formEmployee, $filePath) {
+    $irdForm = $form->irdForm;
+
     $data = self::getFormCommencementData($form, $formEmployee);
-    $templateFilePath = FormTemplateHelper::getTemplateFilePath($form, 'IR56B');
+    $data['title'] = $irdForm->form_code;
+    $templateFilePath = FormTemplateHelper::getTemplateFilePath($form, $irdForm->form_code);
 
     CommencementFormPdfHelper::generate(
       $data,
       $templateFilePath,
-      $filePath);
+      $filePath,
+      $irdForm->fields);
 
     $filename = pathinfo($filePath, PATHINFO_BASENAME);
     $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['file'=>$filename]);
@@ -123,7 +127,7 @@ class TaxFormHelper
 
   public static function getFormCommencementData($form, $formEmployee) {
     return [
-      'title' => 'MPF 2018',
+      // 'title' => 'MPF 2018',
       'company' => [
         'business_name' => 'Yoov Internet Technology Co . Ltd . ',
         'file_no' => '6Y1 - 12345678',
@@ -275,53 +279,36 @@ class TaxFormHelper
 
   public static function processCommencementJob($job)
   {
+    logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nl();
     $form = FormCommencement::find($job['form_id']);
-    if ($form->status != 'processing') {
-      $form->update(['status' => 'processing']);
-      EventHelper::send('commencementForm', ['form'=>$form]);
+    if(is_null($form->team)) {
+      logConsole( __('messages.team_not_defined'), 1 );
+      $form->message = __('messages.team_not_defined');
+      $form->status = 'terminated';
+      $form->save();
+      EventHelper::send( 'commencementForm', ['form'=>$form]);
+    } else {
+      logConsole('team #'.$form->team->id.'  ('.$form->team->oa_team_id.')',1);
+      if ($form->status != 'processing') {
+        $form->update(['status' => 'processing']);
+        EventHelper::send('commencementForm', ['form' => $form]);
+      }
+      $employees = $form->employees()->get();
+      foreach ($employees as $formEmployee) {
+        $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'processing']);
+        EventHelper::send('commencementFormEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
+        self::generateForm($formEmployee, $form);
 
-//      event(new CommencementFormStatusUpdatedEvent([
-//        'team' => $form->team,
-//        'formId' => $form->id,
-//        'total' => $form->employees()->count(),
-//        'progress' => 0,
-//        'status' => 'processing'
-//      ]));
+        $result = $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'ready']);
+//        echo 'TaxFormHelper :: formEmployee :  '; nl();
+        $formEmployee = $form->employees()->whereEmployeeId($formEmployee->employee_id)->first();
+        // dd($formEmployee->toArray());
+        // dd($formEmployee);
+        EventHelper::send('commencementFormEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
+      }
+      $form->update(['status' => 'ready']);
+      EventHelper::send('commencementForm', ['form' => $form]);
     }
-    $employees = $form->employees()->get();
-    foreach ($employees as $formEmployee) {
-  //    $formEmployee->update(['status'=>'processing']);
-
-      $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status'=>'processing']);
-//      $formEmployee->status = 'processing';
-//      $formEmployee->save();
-
-      EventHelper::send('commencementFormEmployee', ['form'=>$form,'formEmployee'=>$formEmployee]);
-//
-//      event(new CommencementFormStatusUpdatedEvent([
-//        'team' => $form->team,
-//        'formId' => $form->id,
-//        'total' => $form->employees()->count(),
-//        'progress' => 0,
-//        'status' => 'processing'
-//      ]));
-      self::generateForm($formEmployee, $form);
-
-      $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status'=>'ready']);
-//      $formEmployee->status = 'ready';
-//      $formEmployee->save();
-//      $formEmployee->update(['status'=>'ready']);
-      EventHelper::send('commencementFormEmployee', ['form'=>$form, 'formEmployee'=>$formEmployee]);
-//      event(new CommencementFormStatusUpdatedEvent([
-//        'team' => $form->team,
-//        'formId' => $form->id,
-//        'total' => $form->employees()->count(),
-//        'progress' => 0,
-//        'status' => 'processing'
-//      ]));
-    }
-    $form->update(['status'=>'ready']);
-    EventHelper::send('commencementForm', ['form'=>$form]);
   }
 
   public static function processTerminationJob($job)
@@ -395,55 +382,6 @@ class TaxFormHelper
           break;
       }
     }
-//      $form =
-//      $team = $job->team;
-//      $fiscalYear = $job->fiscal_year;
-//
-//      $jobItems = $job->items()->whereEnabled(1)->get();
-//      $totalCount = $jobItems->count();
-//
-//      $oaAuth = [
-//        'oa_access_token' => $job->oa_access_token,
-//        'oa_token_type' => $job->oa_token_type
-//      ];
-//      foreach ($jobItems as $i => $item) {
-//        // echo 'i = '.$i; nl();
-//        $employeeId = $item->employee_id;
-//
-//        $taxForm = $team->getOrCreateTaxForm($employeeId, $fiscalYear);
-//        if ($taxForm->status == 'pending') {
-//          $taxForm->status = 'processing';
-//          $taxForm->save();
-//        }
-//        if ($taxForm->status == 'processing') {
-//          event(new TaxFormStatusUpdatedEvent([
-//            'team' => $team,
-//            'index' => $i,
-//            'taxForm' => $taxForm,
-//            'total' => $totalCount
-//          ]));
-//          //*******************
-//          // Generation
-//          //*******************
-//          self::generateTaxForm($taxForm, $oaAuth);
-//
-//          $taxForm->status = 'ready';
-//          $taxForm->save();
-//        }
-//
-//        if ($taxForm->status == 'ready') {
-//          event(new TaxFormStatusUpdatedEvent([
-//            'team' => $team,
-//            'index' => $i,
-//            'taxForm' => $taxForm,
-//            'item' => $item,
-//            'total' => $totalCount
-//          ]));
-//        }
-//      }
-//      $job->status = 'completed';
-//      $job->save();
-//    }
   }
 
   public static function handlex($command)
