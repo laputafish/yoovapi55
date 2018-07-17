@@ -11,7 +11,6 @@ class IrdDataHelper
   {
     $team = $form->team;
     OAHelper::updateTeamToken($team);
-
     $oaAuth = $team->getOaAuth();
 
     $oaEmployee = oaEmployeeHelper::get($formEmployee->employee_id, $oaAuth, $team->oa_team_id);
@@ -34,6 +33,15 @@ class IrdDataHelper
     dd((array)$irData);
 
     dd($oaEmployee);
+
+  }
+
+  public static function getIr56e($form, $formEmployee)
+  {
+    $team = $form->team;
+    OAHelper::updateTeamToken($team);
+    $oaAuth = $team->getOaAuth();
+
 
 
   }
