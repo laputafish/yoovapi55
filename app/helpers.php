@@ -97,3 +97,23 @@ function getDMYSegs($dateStr) {
   $segs = date('d-m-Y', $time);
   return explode('-', $segs);
 }
+
+function phpDateFormat( $yyyy_mm_dd, $format ) {
+  $date = strtotime($yyyy_mm_dd);
+  return date($format, $date);
+}
+
+function getOAEmployeeChineseName($oaEmployee) {
+  $result = '';
+  if(isset($oaEmployee)) {
+    $values = [];
+    if(!empty(trim($oaEmployee['chineseSurname']))) {
+      $values[] = trim($oaEmployee['chineseSurname']);
+    }
+    if(!empty(trim($oaEmployee['chineseGivenName']))) {
+      $values[] = trim($oaEmployee['chineseGivenName']);
+    }
+    $result = implode(' ', $values);
+  }
+  return $result;
+}

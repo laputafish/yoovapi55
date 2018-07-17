@@ -15,7 +15,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   function Header() {}
   function Footer() {}
 
-  function outputText($x, $y, $fontSize, $width, $text, $align='L', $lang='eng',$valign='M') {
+  function outputText($x, $y, $fontSize, $width, $text, $align='L', $lang='eng',$valign='M',$fontStyle='') {
     $fontName = $lang == 'eng' ? $this->fontName : $this->fontNameChn;
 
     if($width == 0) {
@@ -24,7 +24,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
 
     $this->setY($y);
     $this->setX($x);
-    $this->SetFont($fontName, '', $fontSize);
+    $this->SetFont($fontName, $fontStyle, $fontSize);
     $this->Cell($width, $h=0,
       $text, // $txt='',
       $border=0,

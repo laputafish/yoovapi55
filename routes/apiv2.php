@@ -25,6 +25,13 @@ Route::get('/', function() {
     return redirect()->to('/apiv2/version');
 });
 
+Route::get('/test/{formId}/{employeeId}', function($formId, $employeeId) {
+  $form = \App\Models\FormCommencement::find($formId);
+  $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
+  $ir56e = \App\Helpers\IrData\IR56eHelper::get($form, $formEmployee);
+  dd($ir56e);
+});
+
 Route::get('/users/attachFolder', function() {
   $rootFolder = Folder::whereName('root')->first();
   $usersFolder = Folder::whereName('users')->first();

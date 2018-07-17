@@ -7,52 +7,49 @@ use App\Events\TaxFormStatusUpdatedEvent;
 class OAEmployeeHelper
 {
 
-  public static function get($employeeId, $oaAuth, $teamId) {
-    $url = \Config::get('oa')['apiUrl'].'/user/employees/'.$employeeId.'?teamId='.$teamId;
-
+  public static function getAdminInfo($employeeId, $oaAuth, $teamId)
+  {
+    $url = \Config::get('oa')['apiUrl'] . '/admin/employees/' . $employeeId . '?teamId=' . $teamId;
     return OAHelper::get($url, $oaAuth);
-//    $jsonStr = CurlHelper::get($url, $curlHeader);
-//    $curlResult = json_decode($jsonStr, true);
-//
-//    if($curlResult === FALSE) {
-//      $result = [
-//        'code'=>0,
-//        'message'=>'Cannot connect to OA server.'
-//      ];
-//    } else {
-//      if($curlResult['status']) {
-//        $result = $curlResult['result'];
-//      } else {
-//        $result = [
-//          'code' => $curlResult['code'],
-//          'message' => $curlResult['message']
-//        ];
-//      }
-//    }
-//    return $result;
   }
-//  public static function get($employeeId, $oaAuth, $teamId) {
-//    $curlHeader = OAHelper::getCurlHeader($oaAuth);
-//
-//    $url = \Config::get('oa')['apiUrl'].'/user/employees/'.$employeeId.'?teamId='.$teamId;
-//    $jsonStr = CurlHelper::get($url, $curlHeader);
-//    $curlResult = json_decode($jsonStr, true);
-//
-//    if($curlResult === FALSE) {
-//      $result = [
-//        'code'=>0,
-//        'message'=>'Cannot connect to OA server.'
-//      ];
-//    } else {
-//      if($curlResult['status']) {
-//        $result = $curlResult['result'];
-//      } else {
-//        $result = [
-//          'code' => $curlResult['code'],
-//          'message' => $curlResult['message']
-//        ];
-//      }
-//    }
-//    return $result;
-//  }
+
+  public static function get($employeeId, $oaAuth, $teamId)
+  {
+    $url = \Config::get('oa')['apiUrl'] . '/user/employees/' . $employeeId . '?teamId=' . $teamId;
+    return OAHelper::get($url, $oaAuth);
+  }
+
+  public static function getCommencementSalary($joinedDate, $salaries)
+  {
+    $salaryList = [];
+
+    foreach ($salaries as $salary) {
+      $salaryList[] = [
+        'effectiveDate' => $salary['effectiveDate'],
+        'payRate' => $salary['payRate']
+      ];
+//      $salaryList = array_prepend($salaryList, [
+//        'effectiveDate' => $salary['effectiveDate'],
+//        'payRate' => $salary['payRate']
+//      ]);
+    }
+    $salaryList = array_sort($salaryList, function( $salaryItem ) {
+      return $salaryItem['effectiveDate'];
+    });
+
+    $result = 0;
+
+    if(count($salaries)>0) {
+      $result = (double)$salaryList[0]['payRate'];
+
+      foreach($salaryList as $salaryItem) {
+        if($joinedDate >= $salaryItem['effectiveDate']){
+          $result = (double) $salaryItem['payRate'];
+        } else {
+          break;
+        }
+      }
+    }
+    return $result;
+  }
 }

@@ -215,5 +215,9 @@ class OAHelper
     return CurlHelper::postData($url, $header, $dataStr);
   }
 
+  public static function refreshTokenByTeam($team) {
+    OAHelper::updateTeamToken($team);
+    return $team->getOaAuth();
+  }
 
 }
