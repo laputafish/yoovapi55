@@ -130,6 +130,10 @@ Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsI
 //  return redirect($url);
 //});
 
+
+// temporary for debugging
+Route::get('employees/{employeeId}/forms', 'TestFormController@generateForm');
+
 Route::get('users/init', 'UserController@init');
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');

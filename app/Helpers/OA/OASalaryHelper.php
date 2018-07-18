@@ -6,7 +6,7 @@ use App\Events\TaxFormStatusUpdatedEvent;
 
 class OASalaryHelper
 {
-  public static function get($employeeId, $oaAuth, $teamId)
+  public static function get($oaAuth, $employeeId, $teamId)
   {
     $url = \Config::get('oa')['apiUrl'] . '/admin/employees/' .
       $employeeId . '/salaries?teamId=' . $teamId;

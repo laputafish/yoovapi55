@@ -86,8 +86,9 @@ class TaxFormHelper
     OAHelper::updateTeamToken($team);
 
     $oaAuth = $team->getOaAuth();
+    $employeeId = $formEmployee->employee_id;
 
-    $oaEmployee = OAEmployeeHelper::get($formEmployee->employee_id, $oaAuth, $team->oa_team_id);
+    $oaEmployee = OAEmployeeHelper::get($employeeId, $oaAuth, $team->oa_team_id);
     if (array_key_exists('code', $oaEmployee)) {
       dd($oaEmployee['message']);
     }
@@ -101,42 +102,59 @@ class TaxFormHelper
     $formClass = get_class($form);
     switch ($formClass) {
       case 'App\Models\FormCommencement':
-        self::generateFormCommencement($form, $formEmployee, $targetFilePath);
+        self::generateFormCommencement($team, $formEmployee, $form, $targetFilePath);
         break;
       case 'App\Models\FormTermination':
-        self::generateFormTermination($form, $formEmployee, $targetFilePath);
+        self::generateFormTermination($team, $formEmployee, $form, $targetFilePath);
         break;
       case 'App\Models\FormDeparture':
-        self::generateFormDeparture($form, $formEmployee, $targetFilePath);
+        self::generateFormDeparture($team, $formEmployee, $form, $targetFilePath);
         break;
       case 'App\Models\FormSalary':
-        self::generateFormSalary($form, $formEmployee, $targetFilePath);
+        self::generateFormSalary($team, $formEmployee, $form, $targetFilePath);
         break;
     }
   }
 
-  public static function generateFormCommencement($form, $formEmployee, $filePath) {
-    echo 'generateFormCommencement :: form id = '.$form->id; nl();
-    echo 'generateFormCommencement :: employee id = '.$formEmployee->employee_id; nl();
+  public static function generateFormCommencement($team, $employeeId, $form=null, $filePath=null, $options=[]) {
+    // if filePath is null, output PDf on screen
+    if(isset($form)) {
+      $irdForm = $form->irdForm;
+    } else {
+      if(array_key_exists('formCode', $options)) {
+        $formCode = $options['formCode'];
+      } else {
+        $formCode = 'IR56E';
+      }
+      $irdForm = IrdForm::whereFormCode($formCode)->first();
+    }
 
-    $irdForm = $form->irdForm;
-    $data = self::getFormCommencementData($form, $formEmployee);
+    $data = Ir56eHelper::get($team, $employeeId, $form);
+    // $data = self::getFormCommencementData($form, $employeeId);
 
+    // language
+    $langCode = array_key_exists('langCode', $options) ?
+      $options['langCode'] :
+      'en-us';
+    // get ird form file
     $data->title = $irdForm->form_code;
-    $templateFilePath = FormTemplateHelper::getTemplateFilePath($form, $irdForm->form_code);
+    $irdFormFile = $irdForm->getFile( $langCode );
+    // FormTemplateHelper::getTemplateFilePath($irdForm);
+
     CommencementFormPdfHelper::generate(
       $data,
-      $templateFilePath,
       $filePath,
-      $irdForm->fields);
+      $irdFormFile);
 
-    $filename = pathinfo($filePath, PATHINFO_BASENAME);
-    $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['file'=>$filename]);
+    if(isset($filePath)) {
+      $filename = pathinfo($filePath, PATHINFO_BASENAME);
+      $form->employees()->whereEmployeeId($employeeId)->update(['file' => $filename]);
+    }
   }
 
-  public static function getFormCommencementData($form, $formEmployee) {
+  public static function xxxgetFormCommencementData($form, $employeeId) {
 
-    $ir56eData = Ir56eHelper::get($form, $formEmployee);
+    $ir56eData = Ir56eHelper::get($form, $employeeId);
     return $ir56eData;
 //    return [
 //      // 'title' => 'MPF 2018',
@@ -214,19 +232,19 @@ class TaxFormHelper
 //    ];
   }
 
-  public static function generateFormCommencementFile($data, $filePath) {
+//  public static function generateFormCommencementFile($data, $filePath) {
+//
+//  }
+
+  public static function generateFormTermination($form, $employeeId, $filePath) {
 
   }
 
-  public static function generateFormTermination($form, $formEmployee, $filePath) {
+  public static function generateFormDeparture($form, $employeeId, $filePath) {
 
   }
 
-  public static function generateFormDeparture($form, $formEmployee, $filePath) {
-
-  }
-
-  public static function generateFormSalary($form, $formEmployee, $filePath) {
+  public static function generateFormSalary($form, $employeeId, $filePath) {
 
   }
 
@@ -249,7 +267,7 @@ class TaxFormHelper
     return $result;
   }
 
-  public static function getFormFilePath($form, $formEmployee)
+  public static function getFormFilePath($form, $employeeId)
   {
     $team = $form->team;
     $pathSegs = [
@@ -257,7 +275,7 @@ class TaxFormHelper
       $team->oa_team_id,
       self::getFormPath($form),
       $form->id,
-      $formEmployee->employee_id . '.pdf'
+      $employeeId . '.pdf'
     ];
     return implode('/', $pathSegs);
   }

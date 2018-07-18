@@ -7,15 +7,15 @@ use App\Events\TaxFormStatusUpdatedEvent;
 class OAEmployeeHelper
 {
 
-  public static function getAdminInfo($employeeId, $oaAuth, $teamId)
+  public static function getAdminInfo($oaAuth, $employeeId, $oaTeamId)
   {
-    $url = \Config::get('oa')['apiUrl'] . '/admin/employees/' . $employeeId . '?teamId=' . $teamId;
+    $url = \Config::get('oa')['apiUrl'] . '/admin/employees/' . $employeeId . '?teamId=' . $oaTeamId;
     return OAHelper::get($url, $oaAuth);
   }
 
-  public static function get($employeeId, $oaAuth, $teamId)
+  public static function get($oaAuth, $employeeId, $oaTeamId)
   {
-    $url = \Config::get('oa')['apiUrl'] . '/user/employees/' . $employeeId . '?teamId=' . $teamId;
+    $url = \Config::get('oa')['apiUrl'] . '/user/employees/' . $employeeId . '?teamId=' . $oaTeamId;
     return OAHelper::get($url, $oaAuth);
   }
 

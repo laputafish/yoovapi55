@@ -1,6 +1,6 @@
 <?php namespace App\Models;
 
-class IrdFormField extends BaseModel {
+class IrdFormFileField extends BaseModel {
   protected $fillable = [
     'ird_form_id',
     'key',
@@ -15,12 +15,14 @@ class IrdFormField extends BaseModel {
     'align',
     'char_align',
     'lang',
+    'append_asterisk',
+    'to_currency',
     'remark'
   ];
 
   public $timestamps = false;
 
-  public function irdForm() {
-    return $this->belongsTo('App\Models\IrdForm');
+  public function irdFormFile() {
+    return $this->belongsTo('App\Models\IrdFormFile', 'ird_form_file_id');
   }
 }

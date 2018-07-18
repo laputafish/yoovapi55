@@ -1,7 +1,7 @@
 <?php namespace App\Helpers\OA;
 
 class OATeamHelper {
-  public static function get($oaTeamId, $oaAuth) {
+  public static function get($oaAuth, $oaTeamId) {
     $url = \Config::get('oa')['apiUrl'].'/t/teams/'. $oaTeamId;
 //    echo 'url = '.$url; nl();
 //echo 'oa_team_id = '.$oaTeamId; nl();

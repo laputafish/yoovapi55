@@ -14,6 +14,15 @@ class IrdForm extends BaseModel {
   }
 
   public function fields() {
-    return $this->hasMany( 'App\Models\IrdFormField');
+    return $this->hasMany('App\Models\IrdFormFileField');
+  }
+
+  public function getFile( $langCode='en-us' ) {
+    $lang = Lang::whereCode($langCode)->first();
+    $irdFormFile = $this->files()->whereLangId( $lang->id )->first();
+    if(is_null($irdFormFile)) {
+      $irdFormFile = $this->files()->first();
+    }
+    return $irdFormFile;
   }
 }

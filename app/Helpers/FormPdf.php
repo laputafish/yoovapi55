@@ -10,6 +10,12 @@ class FormPdf extends Fpdi\TcpdfFpdi
 
   public function __construct() {
     parent::__construct();
+    $this->AddFont('times', 'B', 'timesb.php');
+    $this->SetPrintFooter(false);
+    $this->SetFooterMargin(5);
+//    dd( PDF_MARGIN_BOTTOM);
+    $this->SetAutoPageBreak(False);
+
   }
 
   function Header() {}
@@ -24,7 +30,16 @@ class FormPdf extends Fpdi\TcpdfFpdi
 
     $this->setY($y);
     $this->setX($x);
+
+//    if($fontStyle == 'B') {
+//      $this->setStyle('b', true);
+//    } else {
+//      $this->setStyle('b', false);
+//    }
+
+    //$this->SetFont($fontName, strtolower($fontStyle), $fontSize);
     $this->SetFont($fontName, $fontStyle, $fontSize);
+
     $this->Cell($width, $h=0,
       $text, // $txt='',
       $border=0,
@@ -35,7 +50,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
       $stretch=0,
       $ignore_min_height=false,
       $calign='C',
-      $valign='M');
+      $valign);
   }
 
   function outputChars($x, $y, $fontSize, $width, $charCount, $chars, $align='L', $lang='eng') {

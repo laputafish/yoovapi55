@@ -117,3 +117,7 @@ function getOAEmployeeChineseName($oaEmployee) {
   }
   return $result;
 }
+
+function hasChinese($utf8_str) {
+  return preg_match("/\p{Han}+/u", $utf8_str);
+}
