@@ -7,15 +7,35 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $tplId;
   protected $fontName = 'times';
   protected $fontNameChn = 'msungstdlight';
+  protected $topOffset = 0;
+  protected $rightMargin = 0;
 
-  public function __construct() {
+  public function __construct($options) {
     parent::__construct();
     $this->AddFont('times', 'B', 'timesb.php');
+    $this->setPrintHeader(false);
     $this->SetPrintFooter(false);
     $this->SetFooterMargin(5);
 //    dd( PDF_MARGIN_BOTTOM);
     $this->SetAutoPageBreak(False);
+    $this->AddPage();
 
+    // options
+    if(array_key_exists('topOffset', $options) ) {
+      $this->topOffset = $options['topOffset'];
+    }
+    if(array_key_exists('rightMargin', $options) ) {
+      $this->rightMargin = $options['rightMargin'];
+    }
+    if(array_key_exists('templateFilePath',  $options)) {
+      $this->setSourceFile( $options['templateFilePath'] );
+      $tplId = $this->importPage(1);
+      $this->useTemplate($tplId);
+    }
+    if(array_key_exists('title', $options)) {
+      $this->setTitle( $options['title'] );
+      $this->setSubject( $options['title'] );
+    }
   }
 
   function Header() {}
@@ -25,10 +45,10 @@ class FormPdf extends Fpdi\TcpdfFpdi
     $fontName = $lang == 'eng' ? $this->fontName : $this->fontNameChn;
 
     if($width == 0) {
-      $width = 200 - $x;
+      $width = 200 - $x - $this->rightMargin;
     }
 
-    $this->setY($y);
+    $this->setY($this->topOffset + $y);
     $this->setX($x);
 
 //    if($fontStyle == 'B') {
@@ -56,7 +76,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   function outputChars($x, $y, $fontSize, $width, $charCount, $chars, $align='L', $lang='eng') {
     $fontName = $lang == 'eng' ? $this->fontName : $this->fontNameChn;
 
-    $this->setY($y);
+    $this->setY($this->topOffset + $y);
     $this->setX($x);
     $this->SetFont($fontName, '', $fontSize);
     $unitWidth = $width / $charCount;
@@ -88,7 +108,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   function outputNumbers($x, $y, $fontSize, $width, $numberCount, $numbers, $align='L', $lang='eng') {
     $fontName = $lang == 'eng' ? $this->fontName : $this->fontNameChn;
 
-    $this->setY($y);
+    $this->setY($this->topOffset + $y);
     $this->setX($x);
     $this->SetFont($fontName, '', $fontSize);
     $unitWidth = $width / $numberCount;
@@ -120,7 +140,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   function xxxxxxoutputDigits($x, $y, $fontSize, $width, $digitCount, $number, $align='L', $lang='eng') {
     $fontName = $lang == 'eng' ? $this->fontName : $this->fontNameChn;
 
-    $this->setY($y);
+    $this->setY($this->topOffset + $y);
     $this->setX($x);
     $this->SetFont($fontName, '', $fontSize);
     $unitWidth = $width / $digitCount;

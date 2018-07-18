@@ -6,7 +6,8 @@ class IrdFormFile extends BaseModel {
   protected $fillable = [
     'lang_id',
     'file',
-    'y_offset'
+    'top_offset',
+    'right_margin'
   ];
 
   public $timestamps = false;

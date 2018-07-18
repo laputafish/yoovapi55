@@ -121,3 +121,38 @@ function getOAEmployeeChineseName($oaEmployee) {
 function hasChinese($utf8_str) {
   return preg_match("/\p{Han}+/u", $utf8_str);
 }
+
+function decamelize($word) {
+  return $word = preg_replace_callback(
+    "/(^|[a-z])([A-Z])/",
+    function($m) { return strtolower(strlen($m[1]) ? "$m[1]_$m[2]" : "$m[2]"); },
+    $word
+  );
+
+}
+function camelize($word) {
+  return $word = preg_replace_callback(
+    "/(^|_)([a-z])/",
+    function($m) { return strtoupper("$m[2]"); },
+    $word
+  );
+}
+
+function getCurrentFiscalYearStartDate() {
+  $today = date('Y-m-d');
+  $year = date('Y');
+  $fiscalYearStart = $year.'-04-01';
+  return $today < $fiscalYearStart ?
+    ($year-1).'-04-01' :
+    $fiscalYearStart;
+}
+
+function getFiscalYearStartOfDate($theDate) {
+  $dt = strtotime( $theDate );
+  $year = (int) date('Y');
+  $day = date('Y-m-d', $dt);
+  $cutoffDate = date('Y', $dt).'-04-01';
+  return $day < $cutoffDate ?
+    ($year-1).'-04-01' :
+    $cutoffDate;
+}
