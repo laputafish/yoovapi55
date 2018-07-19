@@ -156,6 +156,10 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('employee_salaries', 'EmployeeSalaryController');
     Route::resource('employee_departures', 'EmployeeDepartureController');
 
+    Route::resource('ird_form_types', 'IrdFormTypeController');
+    Route::resource('ird_forms', 'IrdFormController');
+    Route::resource('forms', 'FormController');
+
 //    Route::get('users/init', 'UserController@init');
 });
 

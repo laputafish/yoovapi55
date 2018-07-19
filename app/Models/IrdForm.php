@@ -25,4 +25,8 @@ class IrdForm extends BaseModel {
     }
     return $irdFormFile;
   }
+
+  public function irdFormType() {
+    return $this->belongsTo('App\Models\IrdFormType');
+  }
 }

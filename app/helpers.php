@@ -138,13 +138,18 @@ function camelize($word) {
   );
 }
 
-function getCurrentFiscalYearStartDate() {
+function getCurrentFiscalYearStartYear()
+{
   $today = date('Y-m-d');
   $year = date('Y');
-  $fiscalYearStart = $year.'-04-01';
+  $fiscalYearStart = $year . '-04-01';
   return $today < $fiscalYearStart ?
-    ($year-1).'-04-01' :
-    $fiscalYearStart;
+    ($year - 1) :
+    $year;
+}
+
+function getCurrentFiscalYearStartDate() {
+  return getCurrentFiscalYearStartYear.'-04-01';
 }
 
 function getFiscalYearStartOfDate($theDate) {
@@ -155,4 +160,8 @@ function getFiscalYearStartOfDate($theDate) {
   return $day < $cutoffDate ?
     ($year-1).'-04-01' :
     $cutoffDate;
+}
+
+function getLastValidFiscalStartYear() {
+  return getCurrentFiscalYearStartYear() - 1;
 }
