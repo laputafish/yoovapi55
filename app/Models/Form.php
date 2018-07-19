@@ -14,9 +14,9 @@ class Form extends BaseIRDForm {
     'ird_form_type_id',
     'ird_form_id',
     'fiscal_start_year',
+    'remark',
     'signature_name',
-    'designation',
-    'remark'
+    'designation'
   ];
 
   public function irdFormType() {

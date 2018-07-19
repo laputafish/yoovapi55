@@ -1,15 +1,37 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
 use App\Helpers\TaxFormHelper;
+use App\Models\FormEmployee;
 
 class FormController extends BaseAuthController {
   protected $modelName = 'Form';
+
+  protected $rules = [
+    'team_id'=>'string',
+    'form_no'=>'string',
+    'form_date'=>'date',
+
+    'lang_id'=>'integer',
+    'status'=>'string',
+    'subject'=>'string',
+
+    'ird_form_type_id'=>'integer',
+    'ird_form_id'=>'integer',
+    'fiscal_start_year'=>'integer',
+
+    'remark'=>'string',
+    'signature_name'=>'string',
+    'designation'=>'string',
+
+    'submitted_on'=>'string'
+  ];
 
   protected $BLANK_FORM = [
     'id'=>0,
     'team_id'=>'',
     'form_no'=>'',
     'form_date'=>'',
+
     'lang_id'=>0,
     'status'=>'pending',
     'subject'=>'',
@@ -17,6 +39,7 @@ class FormController extends BaseAuthController {
     'ird_form_id'=>0,
     'remark'=>'',
     'fiscal_start_year'=>0,
+    'submitted_on'=>'',
     'employees'=>[]
   ];
 
@@ -40,6 +63,7 @@ class FormController extends BaseAuthController {
     $form['form_no'] = TaxFormHelper::getNextFormId($this->model, $prefix);
     $form['form_date'] = getToday();
     $form['team_id'] = $this->team->id;
+    $form['lang_id'] = $this->user->lang_id;
     $form['fiscal_start_year'] = getLastValidFiscalStartYear();
     return $form;
   }
@@ -48,6 +72,15 @@ class FormController extends BaseAuthController {
     $input = \Input::all();
     $query = $this->model->whereTeamId($this->team->id)->with('employees');
     $total = $query->count();
+
+    // filter
+    if (\Input::has('filter')) {
+      $filters = explode(';', \Input::get('filter'));
+      foreach($filters as $filter) {
+        $keyValues = explode(':', $filter);
+        $query = $query->where($keyValues[0], $keyValues[1]);
+      }
+    }
 
     // sort/order
     $sort = \Input::get('sort','');
@@ -71,6 +104,61 @@ class FormController extends BaseAuthController {
       'result'=>[
         'data'=>$data,
         'total'=>$total
+      ]
+    ]);
+  }
+
+  public function update($id) {
+    $form = $this->model->find($id);
+    $input = $this->getInput();
+
+    $employees = \Input::get('employees',[]);
+    if(!is_null($input['submitted_on'])) {
+      $input['status'] = 'completed';
+    }
+    $form->update($input);
+    $dataEmployeeIds = $form->employees()->pluck('employee_id')->toArray();
+    $inputEmployeeIds = array_map(function($formEmployee) {
+      return (int) $formEmployee['employee_id'];
+    }, $employees);
+
+    $newIds = array_diff($inputEmployeeIds, $dataEmployeeIds);
+    $obsolateIds = array_diff($dataEmployeeIds, $inputEmployeeIds);
+    $form->employees()->whereIn('employee_id', $obsolateIds)->delete();
+    for($i=0; $i<count($newIds); $i++) {
+      $form->employees()->save(new FormEmployee([
+        'employee_id' => $newIds[$i]
+      ]));
+    }
+
+    return response()->json([
+      'status'=>true,
+      'result'=>[
+        'added_ids'=>$newIds,
+        'removed_ids'=>$obsolateIds
+      ]
+    ]);
+  }
+
+  public function store() {
+    $input = $this->getInput();
+    $form = $this->model->create($input);
+
+    $formEmployees = \Input::get('employees',[]);
+    $formEmployeeIds = array_map(function($formEmployee) {
+      return (int) $formEmployee['employee_id'];
+    }, $formEmployees);
+
+    for($i=0; $i<count($formEmployeeIds); $i++) {
+      $form->employees()->save(new FormCommencementEmployee([
+        'employee_id' => $formEmployeeIds[$i]
+      ]));
+    }
+
+    return response()->json([
+      'status'=>true,
+      'result'=>[
+        'added_ids'=>$formEmployeeIds
       ]
     ]);
   }

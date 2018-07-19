@@ -6,7 +6,7 @@ class IrdFormTypeController extends BaseAuthController {
   public function index() {
     $rows = $this->model->orderBy('seq_no')->get();
     foreach( $rows as $row ) {
-      $row->forms;
+      $row->forms = $row->forms()->whereEnabled(1)->orderBy('seq_no')->get();
     }
     return response()->json([
       'status'=>true,

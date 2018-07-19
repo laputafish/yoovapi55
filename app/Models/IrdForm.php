@@ -3,8 +3,14 @@
 class IrdForm extends BaseModel {
   protected $fillable = [
     'form_code',
+    'ird_code',
+    'version',
+    'is_default',
+    'seq_no',
+    'enabled',
     'description',
-    'partial_path'
+    'partial_path',
+    'requires_fiscal_year'
   ];
 
   public $timestamps = false;

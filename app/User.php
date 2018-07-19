@@ -28,6 +28,7 @@ class User extends Authenticatable
     'mobile',
     'email',
     'password',
+    'lang_id',
     'oa_token_type',
     'oa_access_token',
     'oa_expires_in',

@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class IrdFormType extends Model
 {
     protected $fillable = [
-      'name'
+      'name',
+      'remark',
+      'seq_no',
+      'is_default'
     ];
 
     public function forms() {

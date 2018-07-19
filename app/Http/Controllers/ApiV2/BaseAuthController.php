@@ -17,7 +17,6 @@ class BaseAuthController extends BaseController {
     $this->team = Team::whereOaTeamId($this->user->oa_last_team_id)->first();
   }
 
-
   public function getUser() {
     return request()->user();
   }
