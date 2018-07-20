@@ -12,6 +12,7 @@ class IncomeParticular extends BaseModel
    */
   protected $fillable = [
     'name',
+    'name_tag',
     'with_input',
     'input_label',
     'seq_no',

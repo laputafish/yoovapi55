@@ -22,6 +22,13 @@ class EventServiceProvider extends ServiceProvider
       'App\Events\TaxFormStatusUpdatedEvent' => [
         'App\Listeners\TaxFormStatusUpdatedListener'
       ],
+      // Form
+      'App\Events\FormStatusUpdatedEvent' => [
+        'App\Listeners\FormStatusUpdatedListener',
+      ],
+      'App\Events\FormEmployeeStatusUpdatedEvent' => [
+        'App\Listeners\FormEmployeeStatusUpdatedListener',
+      ],
       // Commencement Form
       'App\Events\CommencementFormStatusUpdatedEvent' => [
         'App\Listeners\CommencementFormStatusUpdatedListener',

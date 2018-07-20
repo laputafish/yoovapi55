@@ -1,6 +1,9 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
 use App\Helpers\TaxFormHelper;
+use App\Helpers\EventHelper;
+use App\Helpers\OA\OAHelper;
+
 use App\Models\FormEmployee;
 
 class FormController extends BaseAuthController {
@@ -78,7 +81,9 @@ class FormController extends BaseAuthController {
       $filters = explode(';', \Input::get('filter'));
       foreach($filters as $filter) {
         $keyValues = explode(':', $filter);
-        $query = $query->where($keyValues[0], $keyValues[1]);
+        if($keyValues[1]!='0') {
+          $query = $query->where($keyValues[0], $keyValues[1]);
+        }
       }
     }
 
@@ -141,29 +146,70 @@ class FormController extends BaseAuthController {
   }
 
   public function store() {
-    $input = $this->getInput();
-    $form = $this->model->create($input);
+    if(\Input::has('command')) {
+      return $this->processCommand(\Input::get('command'));
+    }
+    else {
+      $input = $this->getInput();
+      $form = $this->model->create($input);
 
-    $formEmployees = \Input::get('employees',[]);
-    $formEmployeeIds = array_map(function($formEmployee) {
-      return (int) $formEmployee['employee_id'];
-    }, $formEmployees);
+      $formEmployees = \Input::get('employees', []);
+      $formEmployeeIds = array_map(function ($formEmployee) {
+        return (int)$formEmployee['employee_id'];
+      }, $formEmployees);
 
-    for($i=0; $i<count($formEmployeeIds); $i++) {
-      $form->employees()->save(new FormCommencementEmployee([
-        'employee_id' => $formEmployeeIds[$i]
-      ]));
+      for ($i = 0; $i < count($formEmployeeIds); $i++) {
+        $form->employees()->save(new FormCommencementEmployee([
+          'employee_id' => $formEmployeeIds[$i]
+        ]));
+      }
+
+      return response()->json([
+        'status' => true,
+        'result' => [
+          'added_ids' => $formEmployeeIds
+        ]
+      ]);
+    }
+  }
+
+  protected function processCommand( $command ) {
+    OAHelper::refreshTeamToken($this->user, $this->team);
+    $newStatus = '';
+    switch ($command) {
+      case 'generate':
+        $newStatus = 'ready_for_processing';
+        break;
+      case 'terminate':
+        $newStatus = 'terminated';
+        break;
+    }
+    $formId = \Input::get('formId');
+    $form = $this->model->find($formId);
+
+    if(!is_null($form)) {
+      $update = ['status'=>$newStatus];
+      $form->update($update);
+      $form->employees()->update($update);
+      EventHelper::send('form', ['form'=>$form]);
+
+      foreach($form->employees as $formEmployee) {
+        EventHelper::send('formEmployee', [
+          'form'=>$form,
+          'formEmployee'=>$formEmployee]);
+      }
     }
 
     return response()->json([
       'status'=>true,
-      'result'=>[
-        'added_ids'=>$formEmployeeIds
-      ]
+      'result'=>$newStatus
     ]);
   }
 
   protected function onDataReady($data) {
+    foreach($data as $row) {
+      $row->form_type = trans('tax.'.strtolower($row->irdFormType->name ));
+    }
     return $data;
   }
 

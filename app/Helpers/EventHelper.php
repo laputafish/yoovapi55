@@ -1,5 +1,8 @@
 <?php namespace App\Helpers;
 
+use App\Events\FormStatusUpdatedEvent;
+use App\Events\FormEmployeeStatusUpdatedEvent;
+
 use App\Events\CommencementFormStatusUpdatedEvent;
 use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
 
@@ -17,8 +20,8 @@ class EventHelper {
   {
     $team = $options['form']->team;
     switch ($eventType) {
-      case 'commencementForm':
-        event(new CommencementFormStatusUpdatedEvent([
+      case 'form':
+        event(new FormStatusUpdatedEvent([
           'team' => isset($team) ? $team->toArray() : null,
           'formId' => $options['form']->id,
           'total' => $options['form']->employees()->count(),
@@ -26,12 +29,8 @@ class EventHelper {
           'status' => $options['form']->status
         ]));
         break;
-      case 'commencementFormEmployee':
-//        echo 'commencementFormEmployee event  employee id = '
-//          .$options['formEmployee']->employee_id
-//          .'  status = '
-//          .$options['formEmployee']->status; nl();
-        event(new CommencementFormEmployeeStatusUpdatedEvent([
+      case 'formEmployee':
+        event(new FormEmployeeStatusUpdatedEvent([
           'team' => isset($team) ? $team->toArray() : null,
           'formId' => $options['form']->id,
           'employeeId' => $options['formEmployee']->employee_id,

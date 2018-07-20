@@ -10,10 +10,17 @@ use App\Models\FormType;
 
 use App\Events\TaxFormStatusUpdatedEvent;
 
+use App\Events\FormStatusUpdatedEvent;
 use App\Events\CommencementFormStatusUpdatedEvent;
 use App\Events\TerminationFormStatusUpdatedEvent;
 use App\Events\DepartureFormStatusUpdatedEvent;
 use App\Events\SalaryFormStatusUpdatedEvent;
+
+use App\Events\FormEmployeeStatusUpdatedEvent;
+use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
+use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
+use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
+use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\OA\OATeamHelper;
@@ -21,11 +28,6 @@ use App\Helpers\OA\OAHelper;
 
 use App\Helpers\IrData\IrDataHelper;
 use App\Helpers\IrData\Ir56eHelper;
-
-use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
-use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
-use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
-use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 
 use App\Helpers\Forms\CommencementFormPdfHelper;
 
@@ -44,21 +46,24 @@ class TaxFormHelper
   {
     $jobs = [];
 
-    // Commencement
-    $forms = FormCommencement::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillForms($jobs, $forms, 'commencement');
+    $forms = Form::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+    self::fillForms($jobs, $forms );
 
-    // Termination
-    $forms = FormTermination::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillForms($jobs, $forms, 'termination');
-
-    // Departure
-    $forms = FormDeparture::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillForms($jobs, $forms, 'departure');
-
-    // Salary
-    $forms = FormSalary::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillForms($jobs, $forms, 'salary');
+//    // Commencement
+//    $forms = FormCommencement::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+//    self::fillForms($jobs, $forms, 'commencement');
+//
+//    // Termination
+//    $forms = FormTermination::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+//    self::fillForms($jobs, $forms, 'termination');
+//
+//    // Departure
+//    $forms = FormDeparture::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+//    self::fillForms($jobs, $forms, 'departure');
+//
+//    // Salary
+//    $forms = FormSalary::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+//    self::fillForms($jobs, $forms, 'salary');
 
     usort($jobs, function ($a, $b) {
       return ($a > $b) ? 1 : -1;
@@ -69,7 +74,17 @@ class TaxFormHelper
     return false;
   }
 
-  public static function fillForms(&$jobs, $forms, $formType)
+  public static function fillForms(&$jobs, $forms)
+  {
+    foreach ($forms as $form) {
+      $jobs[] = [
+        'form_id' => $form->id,
+        'updated_at' => $form->updated_at
+      ];
+    }
+  }
+
+  public static function fillFormsWithType(&$jobs, $forms, $formType)
   {
     foreach ($forms as $form) {
       $jobs[] = [
@@ -307,6 +322,38 @@ class TaxFormHelper
     return $formType;
   }
 
+  public static function processJob($job)
+  {
+    logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nl();
+    $form = Form::find($job['form_id']);
+    if(is_null($form->team)) {
+      logConsole( __('messages.team_not_defined'), 1 );
+      $form->message = __('messages.team_not_defined');
+      $form->status = 'terminated';
+      $form->save();
+      EventHelper::send( 'form', ['form'=>$form]);
+    } else {
+      logConsole('team #'.$form->team->id.'  ('.$form->team->oa_team_id.')',1);
+      if ($form->status != 'processing') {
+        $form->update(['status' => 'processing']);
+        EventHelper::send('form', ['form' => $form]);
+      }
+      $employees = $form->employees()->get();
+      foreach ($employees as $formEmployee) {
+        $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'processing']);
+        EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
+        self::generateForm($formEmployee, $form);
+
+        $result = $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'ready']);
+        $formEmployee = $form->employees()->whereEmployeeId($formEmployee->employee_id)->first();
+        EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
+      }
+      $form->update(['status' => 'ready']);
+      EventHelper::send('form', ['form' => $form]);
+    }
+  }
+
+
   public static function processCommencementJob($job)
   {
     logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nl();
@@ -393,6 +440,13 @@ class TaxFormHelper
   }
 
   public static function processJobs($jobs)
+  {
+    foreach ($jobs as $job) {
+      self::processJob($job);
+    }
+  }
+
+  public static function processJobsWithType($jobs)
   {
     echo 'processJobs: ';
     nl();
