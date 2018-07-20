@@ -5,7 +5,7 @@ use App\Helpers\OA\OAEmployeeHelper;
 
 class Ir56fHelper extends IrDataHelper {
 
-  public static function get($team, $employeeId, $form=null) {
+  public static function get($team, $employeeId, $form=null, $options=[]) {
 
     self::$team = $team;
     self::$employeeId = $employeeId;

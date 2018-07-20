@@ -7,22 +7,17 @@ use App\Models\IrdFormFileField;
 use App\Helpers\IrData;
 
 class IrdFormHelper {
-  public static function generate($team, $employeeId, $formCode, $langCode, $form=null, $filePath=null)
+  public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
   {
+    $form = null;
+    $filePath = null;
+    if(array_key_exists('form', $options)) { $form = $options['form']; }
+    if(array_key_exists('filePath', $options)) { $form = $options['filePath']; }
+
     $irdForm = IrdForm::whereFormCode(strtoupper($formCode))->first();
     $lang = Lang::whereCode($langCode)->first();
     $irdFormFile = $irdForm->files()->whereLangId( $lang->id )->first();
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
-
-//    $ir56eForm = IrdForm::whereFormCode('IR56E_PC')->first();
-//    $ir56eFormFile = $ir56eForm->getFile($langCode);
-//    $ir56eFields = $ir56eFormFile->fields;
-//    foreach($ir56eFields as $field) {
-//      echo 'field = '.$field->key; nl();
-//      $irdFormFile->fields()->save(new IrdFormFileField($field->toArray()));
-//    }
-//    dd('ok');
-
 
     $irDataClassPrefix = substr(strtolower($formCode),-2)== 'pc' ?
       substr($formCode,0,strlen($formCode)-2) :
@@ -30,7 +25,7 @@ class IrdFormHelper {
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irDataClassPrefix.'Helper'));
 
     // prepare data
-    $data = $irDataHelperClassName::get($team, $employeeId, $form);
+    $data = $irDataHelperClassName::get($team, $employeeId, $form, $options);
 
     // process
     $options = [

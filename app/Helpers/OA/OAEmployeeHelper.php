@@ -15,7 +15,10 @@ class OAEmployeeHelper
 
   public static function get($oaAuth, $employeeId, $oaTeamId)
   {
+//    echo 'apiUrl = '.\Config::get('oa')['apiUrl']; nl();
+//    echo 'employeeId = '.$employeeId; nl();
     $url = \Config::get('oa')['apiUrl'] . '/user/employees/' . $employeeId . '?teamId=' . $oaTeamId;
+//    echo 'url = '.$url; nl();
     return OAHelper::get($url, $oaAuth);
   }
 

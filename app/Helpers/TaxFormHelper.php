@@ -2,25 +2,29 @@
 
 use App\Models\TeamJob;
 use App\Models\IrdForm;
-use App\Models\FormCommencement;
-use App\Models\FormTermination;
-use App\Models\FormSalary;
-use App\Models\formDeparture;
+use App\Models\Form;
+//use App\Models\FormCommencement;
+//use App\Models\FormTermination;
+//use App\Models\FormSalary;
+//use App\Models\formDeparture;
 use App\Models\FormType;
 
 use App\Events\TaxFormStatusUpdatedEvent;
 
 use App\Events\FormStatusUpdatedEvent;
-use App\Events\CommencementFormStatusUpdatedEvent;
-use App\Events\TerminationFormStatusUpdatedEvent;
-use App\Events\DepartureFormStatusUpdatedEvent;
-use App\Events\SalaryFormStatusUpdatedEvent;
-
 use App\Events\FormEmployeeStatusUpdatedEvent;
-use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
-use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
-use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
-use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
+
+//use App\Events\CommencementFormStatusUpdatedEvent;
+//use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
+//
+//use App\Events\TerminationFormStatusUpdatedEvent;
+//use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
+//
+//use App\Events\DepartureFormStatusUpdatedEvent;
+//use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
+//
+//use App\Events\SalaryFormStatusUpdatedEvent;
+//use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
 
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\OA\OATeamHelper;
@@ -95,40 +99,58 @@ class TaxFormHelper
     }
   }
 
-  public static function generateForm($formEmployee, $form)
+  public static function generateForm($formEmployee, $form, $sheetNo)
   {
     $team = $form->team;
     OAHelper::updateTeamToken($team);
 
     $oaAuth = $team->getOaAuth();
     $employeeId = $formEmployee->employee_id;
-
-    $oaEmployee = OAEmployeeHelper::get($employeeId, $oaAuth, $team->oa_team_id);
+    $oaEmployee = OAEmployeeHelper::get($oaAuth, $employeeId, $team->oa_team_id);
     if (array_key_exists('code', $oaEmployee)) {
       dd($oaEmployee['message']);
     }
 
     // storage/app/{$filePath}
     $filePath = self::getFormFilePath($form, $formEmployee);
+
     $targetFilePath = storage_path('app/'.$filePath);
     $folder = pathinfo($targetFilePath, PATHINFO_DIRNAME);
     FolderHelper::checkCreateFolders($folder);
 
-    $formClass = get_class($form);
-    switch ($formClass) {
-      case 'App\Models\FormCommencement':
-        self::generateFormCommencement($team, $formEmployee, $form, $targetFilePath);
-        break;
-      case 'App\Models\FormTermination':
-        self::generateFormTermination($team, $formEmployee, $form, $targetFilePath);
-        break;
-      case 'App\Models\FormDeparture':
-        self::generateFormDeparture($team, $formEmployee, $form, $targetFilePath);
-        break;
-      case 'App\Models\FormSalary':
-        self::generateFormSalary($team, $formEmployee, $form, $targetFilePath);
-        break;
+    // language
+    $langCode = 'en-us';
+    if (isset($form->lang)) {
+      $langCode = $form->lang->lang_code;
     }
+
+    IrdFormHelper::generate(
+      $team,
+      $formEmployee->employee_id,
+      $form->irdForm->form_code,
+      $langCode,
+      [
+        'form'=>$form,
+        'filePath'=>$filePath,
+        'sheetNo'=>$sheetNo
+      ]
+    );
+
+//    $formClass = get_class($form);
+//    switch ($formClass) {
+//      case 'App\Models\FormCommencement':
+//        self::generateFormCommencement($team, $formEmployee, $form, $targetFilePath);
+//        break;
+//      case 'App\Models\FormTermination':
+//        self::generateFormTermination($team, $formEmployee, $form, $targetFilePath);
+//        break;
+//      case 'App\Models\FormDeparture':
+//        self::generateFormDeparture($team, $formEmployee, $form, $targetFilePath);
+//        break;
+//      case 'App\Models\FormSalary':
+//        self::generateFormSalary($team, $formEmployee, $form, $targetFilePath);
+//        break;
+//    }
   }
 
   public static function generateFormCommencement($team, $employeeId, $form=null, $filePath=null, $options=[]) {
@@ -282,7 +304,7 @@ class TaxFormHelper
     return $result;
   }
 
-  public static function getFormFilePath($form, $employeeId)
+  public static function getFormFilePath($form, $formEmployee)
   {
     $team = $form->team;
     $pathSegs = [
@@ -290,41 +312,45 @@ class TaxFormHelper
       $team->oa_team_id,
       self::getFormPath($form),
       $form->id,
-      $employeeId . '.pdf'
+      $formEmployee->employee_id . '.pdf'
     ];
     return implode('/', $pathSegs);
   }
 
   public static function getFormPath($form)
   {
-    $formType = self::getFormType($form);
-    return empty($formType) ? 'unknown' : FormType::whereName($formType)->value('path');
+    $irdFormType = $form->irdFormType;
+    return (string) $irdFormType->id;
+//    $formType = self::getFormType($form);
+//    return empty($formType) ? 'unknown' : FormType::whereName($formType)->value('path');
   }
 
   public static function getFormType($form)
   {
-    $formClass = get_class($form);
-    $formType = '';
-    switch ($formClass) {
-      case 'App\Models\FormCommencement':
-        $formType = 'commencements';
-        break;
-      case 'App\Models\FormTermination':
-        $formType = 'terminations';
-        break;
-      case 'App\Models\FormDeparture':
-        $formType = 'departures';
-        break;
-      case 'App\Models\FormSalary':
-        $formType = 'salaries';
-        break;
-    }
-    return $formType;
+    $irdFormType = $form->irdFormType;
+    return (string) $irdFormType->id;
+//    $formClass = get_class($form);
+//    $formType = '';
+//    switch ($formClass) {
+//      case 'App\Models\FormCommencement':
+//        $formType = 'commencements';
+//        break;
+//      case 'App\Models\FormTermination':
+//        $formType = 'terminations';
+//        break;
+//      case 'App\Models\FormDeparture':
+//        $formType = 'departures';
+//        break;
+//      case 'App\Models\FormSalary':
+//        $formType = 'salaries';
+//        break;
+//    }
+//    return $formType;
   }
 
   public static function processJob($job)
   {
-    logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nl();
+    logConsole('Processing job form_id = '.$job['form_id'].' ...'); nl();
     $form = Form::find($job['form_id']);
     if(is_null($form->team)) {
       logConsole( __('messages.team_not_defined'), 1 );
@@ -339,14 +365,20 @@ class TaxFormHelper
         EventHelper::send('form', ['form' => $form]);
       }
       $employees = $form->employees()->get();
+      $sheetNo = 1;
       foreach ($employees as $formEmployee) {
         $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'processing']);
         EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
-        self::generateForm($formEmployee, $form);
+
+        self::generateForm($formEmployee, $form, $sheetNo);
 
         $result = $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'ready']);
         $formEmployee = $form->employees()->whereEmployeeId($formEmployee->employee_id)->first();
+        $formEmployee->sheet_no = $sheetNo;
+        $formEmployee->save();
+
         EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
+        $sheetNo++;
       }
       $form->update(['status' => 'ready']);
       EventHelper::send('form', ['form' => $form]);

@@ -6,7 +6,7 @@ class TeamEmployee extends BaseModel
 
   protected $fillable = [
     'id',
-    'employee_id',
+    'team_id',
     'last_name',
     'first_name',
     'display_name',

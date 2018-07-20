@@ -149,7 +149,7 @@ function getCurrentFiscalYearStartYear()
 }
 
 function getCurrentFiscalYearStartDate() {
-  return getCurrentFiscalYearStartYear.'-04-01';
+  return getCurrentFiscalYearStartYear().'-04-01';
 }
 
 function getFiscalYearStartOfDate($theDate) {

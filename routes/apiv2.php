@@ -134,6 +134,9 @@ Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsI
 // temporary for debugging
 Route::get('employees/{employeeId}/forms', 'TestFormController@generateForm');
 
+// Copy form template variables
+Route::get('file_fields/copy/{fromId}/{toId}', 'TestFormController@copyTemplateFields');
+
 Route::get('users/init', 'UserController@init');
 Route::group(['middleware'=>'auth:api'], function() {
     Route::get('user', 'UserController@getUser');
