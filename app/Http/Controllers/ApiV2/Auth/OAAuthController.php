@@ -5,7 +5,8 @@ use App\User;
 
 class OAAuthController extends BaseController
 {
-  private function createUserEntry($email, $password) {
+  private function createUserEntry($email, $password)
+  {
     $emailSegs = explode('@', $email);
     $name = $emailSegs[0];
     $user = User::create([
@@ -38,23 +39,30 @@ class OAAuthController extends BaseController
     $oaAuth = $this->loginOA($email, $password, $teamId);
     $connectOASuccess = !empty($oaAuth);
 
-    if($connectOASuccess) {
+    if ($connectOASuccess) {
       if (!isset($user)) {
         $user = createUserEntry($email, $password);
       }
       $user->fillOAAuth($oaAuth);
     }
 
-    if($connectOASuccess || $isSupervisor) {
-      $token = $user->createToken('*')->accessToken;
+    if ($connectOASuccess || $isSupervisor) {
+      $userTokenObj = $user->createToken('*');
+      $token = $userTokenObj->accessToken;
     }
 
-    return response()->json([
+    $result = [
       'status' => $connectOASuccess || $isSupervisor,
       'isSupervisor' => $isSupervisor,
-      'token' => $token,
-//      'oaAuth' => $oaAuth
-    ]);
+      'token' => $token
+    ];
+    // $result['token'] = $token;
+
+    return response()->json($result);
+//    ,
+//      'token' => $token,
+////      'oaAuth' => $oaAuth
+//    ]);
 //
 //    else {
 //      return response()->json([
@@ -151,50 +159,62 @@ class OAAuthController extends BaseController
     return $result;
   }
 
-  public function postData( $url, $data ) {
-    $username=$data['email'];
-    $password=$data['password'];
-    $teamId="";
+  public function postData($url, $data)
+  {
+    $username = $data['email'];
+    $password = $data['password'];
+    $teamId = "";
 
 //    $url="http://www.myremotesite.com/index.php?page=login";
-    $cookie="cookie.txt";
+    $cookie = "cookie.txt";
 
-    $postdata = "email=".$username."&password=".$password."&teamId=".$teamId;
+    $postdata = "email=" . $username . "&password=" . $password . "&teamId=" . $teamId;
 
     $ch = curl_init();
-    curl_setopt ($ch, CURLOPT_URL, $url);
-    curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
-    curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6");
-    curl_setopt ($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, 0);
-    curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt ($ch, CURLOPT_COOKIEJAR, $cookie);
-    curl_setopt ($ch, CURLOPT_REFERER, $url);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6");
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie);
+    curl_setopt($ch, CURLOPT_REFERER, $url);
 
-    curl_setopt ($ch, CURLOPT_POSTFIELDS, $postdata);
-    curl_setopt ($ch, CURLOPT_POST, 1);
-    $result = curl_exec ($ch);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    $result = curl_exec($ch);
 
     curl_close($ch);
     return $result;
   }
+
   public function get_contentsx($url, $u = false, $c = null, $o = null)
   {
-    echo 'url=['.$url.'] '; nl();
+    echo 'url=[' . $url . '] ';
+    nl();
     $originalAgent = ini_get('user_agent');
-    echo 'user agent = '.$originalAgent; nl(); nl();
+    echo 'user agent = ' . $originalAgent;
+    nl();
+    nl();
     ini_set('user_agent', 'Mozilla/5.0');
-    echo 'new user agent = '.ini_get('user_agent' ); nl();
+    echo 'new user agent = ' . ini_get('user_agent');
+    nl();
     $headers = get_headers($url);
     ini_set('user_agent', $originalAgent);
-    echo 'headers: '; nl();
-    print_r( $headers ); nl(); nl();
+    echo 'headers: ';
+    nl();
+    print_r($headers);
+    nl();
+    nl();
     $status = substr($headers[0], 9, 3);
-    echo 'status: '; nl();
+    echo 'status: ';
+    nl();
 
     $a = file_get_contents($url, $u, $c, $o);
-    print_r( $a ); nl();
-    echo "***********************"; nl();
+    print_r($a);
+    nl();
+    echo "***********************";
+    nl();
 
     echo $status;
     if ($status == '200') {

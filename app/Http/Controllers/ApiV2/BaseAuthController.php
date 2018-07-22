@@ -11,10 +11,14 @@ use App\Events\TaxFormNewJobEvent;
 use App\Events\TaxFormStatusUpdatedEvent;
 
 class BaseAuthController extends BaseController {
+  protected $team = null;
+
   public function __construct() {
     parent::__construct();
     $this->user = app('auth')->guard('api')->user();
-    $this->team = Team::whereOaTeamId($this->user->oa_last_team_id)->first();
+    if(isset($this->user) && !empty($this->user->oa_last_team_id)) {
+      $this->team = Team::whereOaTeamId($this->user->oa_last_team_id)->first();
+    }
   }
 
   public function getUser() {

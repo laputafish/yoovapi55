@@ -131,6 +131,10 @@ class UserController extends BaseAuthController
     ]);
   }
 
+  public function __construct() {
+    parent::__construct();
+  }
+
   public function getUser()
   {
     $user = request()->user();

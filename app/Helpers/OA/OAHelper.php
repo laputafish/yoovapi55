@@ -152,7 +152,8 @@ class OAHelper
         $user->save();
         $result = [
           'oa_access_token' => $newTokenInfo['result']['accessToken'],
-          'oa_token_type' => $newTokenInfo['result']['tokenType']
+          'oa_token_type' => $newTokenInfo['result']['tokenType'],
+          'oa_expires_in' => $newTokenInfo['result']['expiresIn']
         ];
       }
     }
