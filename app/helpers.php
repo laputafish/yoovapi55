@@ -36,6 +36,10 @@ function getIdArray($idStr) {
   return $result;
 }
 
+function inBetween( $theDate, $period ) {
+  return ($theDate>=$period['startDate']) && ($theDate<=$period['endDate']);
+}
+
 function preg_replace_all( $find, $replacement, $s )
 {
   while(preg_match($find, $s)) {

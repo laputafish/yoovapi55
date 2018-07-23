@@ -28,6 +28,10 @@ class TestFormController extends Controller
 
     $options = [];
 
+    if(\Input::has('year')) {
+      $options['year'] = \Input::get('year');
+    }
+
     return IrdFormHelper::generate($team, $employeeId, $formCode, $langCode, $options);
 //    switch($formType) {
 //      case 'commencement':

@@ -12,7 +12,28 @@ class IrdFormHelper {
     'spouseName' => '(spouse name)',
     'ptPrinEmp' => '(ptPrinEmp)',
 
+    'placeOfResInd' => '1',
 
+    'addrOfPlace1' => 'Rm 406, Peace Bldg., Peace St., HK',
+    'natureOfPlace1' => 'Flat',
+    'perOfPlace1' => '20160401-20170331',
+    'rentPaidEr1' => 100000,
+    'rentPaidEe1' => 0,
+    'rentRefund1' => 0,
+    'rentPaidErByEe1' => 10000,
+
+    'addrOfPlace2' => 'Rm 306, Justice Bldg., 1 Justice Rd., HK',
+    'natureOfPlace2' => 'Flat',
+    'perOfPlace2' => '20160901-20170331',
+    'rentPaidEr2' => 0,
+    'rentPaidEe2' => 154000,
+    'rentRefund2' => 140000,
+    'rentPaidErByEe2' => 0,
+
+    'overseaIncInd' => '1',
+    'amtPaidOverseaCo' => 'US$40,000 (HK$312,000)',
+    'nameOfOverseaCo' => 'Good Harvest (International) Co Ltd',
+    'addrOfOverseaCo' => 'No. 8, 400th Street, New York, USA'
   ];
 
   public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
@@ -39,13 +60,13 @@ class IrdFormHelper {
     $data = $irDataHelperClassName::get($team, $employeeId, $form, $options);
 
     // process
-    $options = [
+    $pdfOptions = [
       'title'=>$formCode,
       'topOffset'=>$irdFormFile->top_offset,
       'rightMargin'=>$irdFormFile->right_margin,
       'templateFilePath'=>$templateFilePath
     ];
-    $pdf = new FormPdf($options);
+    $pdf = new FormPdf($pdfOptions);
 
     $fieldList = $irdFormFile->fields;
     self::fillData($pdf, $fieldList, $data);

@@ -13,12 +13,13 @@ class TeamIncomeParticular extends BaseModel
   protected $fillable = [
     'id',
     'team_id',
-    'income_particular_id'
+    'income_particular_id',
+    'pay_type_ids'
   ];
 
   public $timestamps = false;
 
-  public function payTypes() {
-    return $this->hasMany('App\Models\TeamIncomeParticularPayType');
-  }
+//  public function payTypes() {
+//    return $this->hasMany('App\Models\TeamIncomeParticularPayType');
+//  }
 }

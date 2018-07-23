@@ -2,7 +2,7 @@
 
 use App\Models\IncomeParticular;
 use App\Models\TeamIncomeParticular;
-use App\Models\TeamIncomeParticularPayType;
+use App\Models\xxxTeamIncomeParticularPayType;
 
 class IncomeParticularController extends BaseAuthController {
   protected $modelName = 'IncomeParticular';
@@ -14,14 +14,19 @@ class IncomeParticularController extends BaseAuthController {
       $teamIncomeParticular = $row->teamIncomeParticulars()->whereTeamId($teamId)->first();
       $row->pay_type_ids = [];
       if (isset($teamIncomeParticular)) {
-        $payTypes = $teamIncomeParticular->payTypes;
-        if(isset($payTypes)) {
-          $row->pay_type_ids = $payTypes->map(function($item) {
-            return (string)$item->pay_type_id;
-          })->toArray();
-        }
+        $payTypeIds = trim($teamIncomeParticular->pay_type_ids);
+//        echo 'payTypeIds: '.$payTypeIds; nl();
+        $row->pay_type_ids = empty($payTypeIds) ? [] : explode(',', $payTypeIds);
+//        trim($pa))
+//        if(isset($payTypeIds)) {
+//          $row->pay_type_ids = explode(',',$payTypeIds);s->map(function($item) {
+//            return (string)$item->pay_type_id;
+//          })->toArray();
+//        }
       }
     }
+//    dd($rows->toArray());
+
     return response()->json([
       'status'=>true,
       'result'=>$rows
@@ -41,24 +46,28 @@ class IncomeParticularController extends BaseAuthController {
           'team_id' => $teamId
         ]);
       }
+
+      $teamIncomeParticular->pay_type_ids = implode(',', $particular['pay_type_ids']);
       $record->teamIncomeParticulars()->save($teamIncomeParticular);
 
       // save pay type ids
-      $payTypeIds = $particular['pay_type_ids'];
-      TeamIncomeParticularPayType::whereTeamIncomeParticularId( $teamIncomeParticular->id )
-        ->whereNotIn('pay_type_id', $payTypeIds)->delete();
+//      $record->save();
+      // $payTypeIds = $particular['pay_type_ids'];
 
-      foreach($payTypeIds as $payTypeId) {
-        if(TeamIncomeParticularPayType::whereTeamIncomeParticularId( $teamIncomeParticular->id )
-          ->wherePayTypeId($payTypeId)->count() == 0) {
-//          echo 'teamIncomeParticularId = '.$teamIncomeParticular->id; nl();
-//          echo 'payTypeId = '.$payTypeIds
-          $payType = TeamIncomeParticularPayType::create([
-            'pay_type_id' => $payTypeId,
-            'team_income_particular_id' => $teamIncomeParticular->id
-          ]);
-        }
-      }
+//      xxxTeamIncomeParticularPayType::whereTeamIncomeParticularId( $teamIncomeParticular->id )
+//        ->whereNotIn('pay_type_id', $payTypeIds)->delete();
+//
+//      foreach($payTypeIds as $payTypeId) {
+//        if(xxxTeamIncomeParticularPayType::whereTeamIncomeParticularId( $teamIncomeParticular->id )
+//          ->wherePayTypeId($payTypeId)->count() == 0) {
+////          echo 'teamIncomeParticularId = '.$teamIncomeParticular->id; nl();
+////          echo 'payTypeId = '.$payTypeIds
+//          $payType = xxxTeamIncomeParticularPayType::create([
+//            'pay_type_id' => $payTypeId,
+//            'team_income_particular_id' => $teamIncomeParticular->id
+//          ]);
+//        }
+//      }
     }
     return response()->json([
       'status'=>true

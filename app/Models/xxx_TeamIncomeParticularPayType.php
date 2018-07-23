@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class TeamIncomeParticularPayType extends BaseModel
+class xxxTeamIncomeParticularPayType extends BaseModel
 {
 
   /**
