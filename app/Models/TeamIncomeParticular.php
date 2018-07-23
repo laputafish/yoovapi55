@@ -19,6 +19,9 @@ class TeamIncomeParticular extends BaseModel
 
   public $timestamps = false;
 
+  public function incomeParticular() {
+    return $this->belongsTo('App\Models\IncomeParticular');
+  }
 //  public function payTypes() {
 //    return $this->hasMany('App\Models\TeamIncomeParticularPayType');
 //  }

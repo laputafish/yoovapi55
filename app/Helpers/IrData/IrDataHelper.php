@@ -65,10 +65,13 @@ class IrDataHelper
       }
     }
 
-    $incomeParticulars = IncomeParticular::all();
+    $incomeParticulars = self::$team->incomeParticulars()->with('incomeParticular')->get();
+
+//    dd($incomeParticulars->toArray());
     $incomeSummary = [];
     foreach( $incomeParticulars as $item ) {
-      $incomeSummary[$item->token] = $team->
+      $incomeSummary[$item['income_particular']['token']] = [];
+
     }
 
     $summary = [

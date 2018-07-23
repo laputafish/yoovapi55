@@ -108,6 +108,11 @@ class Team extends BaseModel {
     ];
   }
 
+  public function incomeParticulars() {
+    return $this->hasMany('App\Models\TeamIncomeParticular', 'team_id', 'oa_team_id');
+
+  }
+
   public function employees() {
     return $this->hasMany('App\Models\TeamEmployee');
   }
