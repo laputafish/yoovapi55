@@ -51,6 +51,11 @@ class IrDataHelper
     return oaEmployeeHelper::getAdminInfo(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
   }
 
+  public static function getOAPayrolls()
+  {
+    return oaPayrollHelper::get(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
+  }
+
   public static function getOATeam() {
     return oaTeamHelper::get(self::$oaAuth, self::$team->oa_team_id);
   }

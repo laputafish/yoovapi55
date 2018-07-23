@@ -6,6 +6,7 @@ use App\Helpers\OA\OAEmployeeHelper;
 class Ir56bHelper extends IrDataHelper {
 
   public static function get($team, $employeeId, $form=null, $options=[]) {
+    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
 
     self::$team = $team;
     self::$employeeId = $employeeId;
@@ -28,11 +29,24 @@ class Ir56bHelper extends IrDataHelper {
     }
     $fiscalYear = (int) substr($fiscalYearStart, 0, 4);
 
+    $fiscalYearPeriod = [
+      'startDate' => $fiscalYear.'-04-01',
+      'endDate' => ($fiscalYear+1).'-03-31'
+    ];
 
     // Grab data from OA
     $oaTeam = self::getOATeam();
     $oaEmployee = self::getOAAdminEmployee();
     $oaSalaries = self::getOASalary();
+    $oaPayrolls = self::getPayrolls();
+
+    $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
+    $jobEndedDate = substr($oaEmployee['jobEndedDate'], 0, 10);
+
+    $empStartDate = $fiscalYearPeriod[0] > $joinedDate ? $fiscalYearPeriod[0] : $joinedDate;
+    $empEndDate = isset($oaEmployee['jobEndedDate']) ?
+      ($fiscalYearPeriod[1] < $jobEndedDate ? $fiscalYearPeriod[1] : $jobEndedDate) :
+      $fiscalYearPeriod[1];
 
     // Company
     $registrationNumber = $oaTeam['setting']['registrationNumber'];
@@ -64,50 +78,62 @@ class Ir56bHelper extends IrDataHelper {
         $jobEndedDate = '';
         $fiscalYearStartBeforeCease = '';
       }
+
+      // 1=Single/Widowed/Divorced/Living Apart, 2=Married
+      $martialStatus = ($oaEmployee['marital'] == 'married' ? 2 : 1);
+
       $result = array_merge($result, [
         'givenName' => $oaEmployee['firstName'],
         'name' => $oaEmployee['lastName'].', '.$oaEmployee['firstName'],
         'surname' => $oaEmployee['lastName'],
         'nameInChinese' => getOAEmployeeChineseName($oaEmployee),
         'hkid' => $oaEmployee['identityNumber'],
-        'ppNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : 'xxxxx',
+        'ppNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : '',
         'gender' => $oaEmployee['gender'],
-        'martialStatus' => ($oaEmployee['marital'] == 'married' ? 2 : 1),
-        // 1=Single/Widowed/Divorced/Living Apart, 2=Married
+        'martialStatus' => $martialStatus,
 
-        'endDateOfEmp' => $jobEndedDate,
-        'fiscalYearStartDateBeforeCease' => $fiscalYearStartBeforeCease
+        'startDateOfEmp' => phpDateFormat($empStartDate, 'd/m/Y'),
+        'endDateOfEmp' => phpDateFormat($empEndDate, 'd/m/Y')
       ]);
     }
 
+    $normalPeriodStr = str_replace('-', '', $empStartDate).'-'.
+      str_replace('-', '', $empEndDate);
 
     $result = array_merge($result, [
       // Employee's Spouse
-      'spouseName' => '(spouse name)',
-      'spouseHkid' => '(spouse hkid)',
-      'spousePpNum' => '(spouse ppnum)',
+      'spouseName' => $martialStatus == 1 ? '' : $defaults['spouseName'],
+      'spouseHkid' => $martialStatus == 1 ? '' : $defaults['spouseHkid'],
+      'spousePpNum' => $martialStatus == 1 ? '' : $defaults['spousePpNum'],
 
       // Correspondence
       'resAddress' => $oaEmployee['address'][0]['text'],
+      'areaCodeResAddr' => $defaults['areaCodeResAddr'],
       'posAddress' => count($oaEmployee['address'])>1 ? $oaEmployee['address'][1] : trans('tax.same_as_above'),
 
       // Position
       'capacity' => strtoupper( $oaEmployee['jobTitle'] ),
-      'ptPrinEmp' => 'Part-time employer',
-      'startDateOfEmp' => phpDateFormat($oaEmployee['joinedDate'], 'd/m/Y'),
+      'ptPrinEmp' => $defaults['ptPrinEmp'],
+
       'monthlyFixedIncome' => toCurrency(OAEmployeeHelper::getCommencementSalary(
         phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'), $oaSalaries)),
       'monthlyAllowance' => toCurrency(110 ),
       'fluctuatingIncome' => toCurrency(120),
 
       // Place of residence
-      'placeProvided' => toCurrency(0),
-      'addrOfPlace' => '(address of place)',
-      'natureOfPlace' => '(nature of place)',
-      'rentPaidEr' => 1,
-      'rentPaidEe' => 2,
-      'rentRefund' => 3,
-      'rentPaidErByEe' => 4,
+//      'placeProvided' => toCurrency(0),
+//      'addrOfPlace' => '(address of place)',
+//      'natureOfPlace' => '(nature of place)',
+//      'rentPaidEr' => 1,
+//      'rentPaidEe' => 2,
+//      'rentRefund' => 3,
+//      'rentPaidErByEe' => 4,
+
+      // Income Particulars
+      'perOfSalary' => $normalPeriodStr, // 20170401-20180331
+      'AmtOfSalary' =>
+      // Place of residence
+
 
       // Non-Hong Kong Income
       'overseaIncInd' => 1, // 0' => not wholly or partly paid, 1' => yes

@@ -7,6 +7,14 @@ use App\Models\IrdFormFileField;
 use App\Helpers\IrData;
 
 class IrdFormHelper {
+  protected static $defaults = [
+    'areaCodeResAddr' => 'H',
+    'spouseName' => '(spouse name)',
+    'ptPrinEmp' => '(ptPrinEmp)',
+
+
+  ];
+
   public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
   {
     $form = null;
@@ -16,6 +24,8 @@ class IrdFormHelper {
 
     $irdForm = IrdForm::whereFormCode(strtoupper($formCode))->first();
     $lang = Lang::whereCode($langCode)->first();
+    LangHelper::setLang($lang->code);
+
     $irdFormFile = $irdForm->files()->whereLangId( $lang->id )->first();
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
 
@@ -25,6 +35,7 @@ class IrdFormHelper {
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irDataClassPrefix.'Helper'));
 
     // prepare data
+    $options = array_merge($options, ['defaults'=>self::$defaults]);
     $data = $irDataHelperClassName::get($team, $employeeId, $form, $options);
 
     // process

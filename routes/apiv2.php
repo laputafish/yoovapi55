@@ -113,6 +113,7 @@ Route::get('test/{count}', 'TestController@insertRecords');
 Route::get('media/icons/{id}', 'MediaController@getIcon');
 Route::get('media/icons/defaults/{name}', 'MediaController@getDefaultIcon');
 Route::get('media/image/{id}', 'MediaController@getImage');
+Route::get('media/static_forms/{name}', 'StaticFormController@getFormImage');
 Route::get('media/document/{id}', 'MediaController@showDocument');
 Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
 
@@ -123,6 +124,10 @@ Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@show
 
 Route::get('media/download/{id}', 'MediaController@downloadDocument');
 Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsInZip');
+
+Route::get('ird_forms/{employeeFormId}/icon', 'IrdFormController@showFormIcon');
+Route::get('ird_forms/{employeeFormId}', 'IrdFormController@showFormPdf');
+
 //Route::get('xmedia/download/{id}', function($id) {
 //  $media = Media::find($id);
 //  $filename = urlencode($media->filename);

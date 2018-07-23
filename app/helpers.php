@@ -99,8 +99,12 @@ function getDMYSegs($dateStr) {
 }
 
 function phpDateFormat( $yyyy_mm_dd, $format ) {
-  $date = strtotime($yyyy_mm_dd);
-  return date($format, $date);
+  if($yyyy_mm_dd == '') {
+    return '';
+  } else {
+    $date = strtotime($yyyy_mm_dd);
+    return date($format, $date);
+  }
 }
 
 function getOAEmployeeChineseName($oaEmployee) {
