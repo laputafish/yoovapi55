@@ -61,6 +61,8 @@ class Ir56bHelper extends IrDataHelper
     $empEndDate = isset($oaEmployee['jobEndedDate']) ?
       ($fiscalYearPeriod['endDate'] < $jobEndedDate ? $fiscalYearPeriod['endDate'] : $jobEndedDate) :
       $fiscalYearPeriod['endDate'];
+    $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
+      str_replace('-', '', $empEndDate);
 
     // Company
     $registrationNumber = $oaTeam['setting']['registrationNumber'];
@@ -70,19 +72,21 @@ class Ir56bHelper extends IrDataHelper
 
     $headerPeriod = 'for the year from 1 April ' . ($fiscalYear - 1) . ' to 31 March ' . ($fiscalYear);
     $result = [
+      // Non-ird fields
+      'HeaderPeriod' => strtoupper($headerPeriod),
+      'EmpPeriod' => $headerPeriod . ':',
+      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
+      'FileNo' => $registrationNumber,
+
+      // Ird fields
       'Section' => $section,
-      'Ern' => $ern,
-      'YrErReturn' => $form->fiscal_year,
+      'ERN' => $ern,
+      'YrErReturn' => $fiscalYear,
       'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
       'ErName' => $oaTeam['name'],
       'Designation' => $designation,
       'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
       'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
-
-      // Non-ird fields
-      'HeaderPeriod' => strtoupper($headerPeriod),
-      'EmpPeriod' => $headerPeriod . ':',
-
     ];
 
     // Employee
@@ -96,14 +100,8 @@ class Ir56bHelper extends IrDataHelper
 
     // 1=Single/Widowed/Divorced/Living Apart, 2=Married
     $martialStatus = ($oaEmployee['marital'] == 'married' ? 2 : 1);
-    $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
-      str_replace('-', '', $empEndDate);
 
     $result = array_merge($result, [
-      // Non-ird fields
-      'FileNo' => $registrationNumber,
-      'PerOfEmp' => $perOfEmp,
-
       // Ird fields
       'SheetNo' => $sheetNo,
       'HKID' => $oaEmployee['identityNumber'],
@@ -121,48 +119,48 @@ class Ir56bHelper extends IrDataHelper
       'SpousePpNum' => $martialStatus == 1 ? '' : $defaults['spousePpNum'],
 
       // Correspondence
-      'ResAddress' => $oaEmployee['address'][0]['text'],
-      'AreaCodeResAddr' => $defaults['areaCodeResAddr'],
+      'ResAddr' => $oaEmployee['address'][0]['text'],
+      'AreaCodeResAddr' => '', // array_key_exists('areaCodeResAddr', $defaults) ? $defaults['areaCodeResAddr'],
       'PosAddr' => count($oaEmployee['address']) > 1 ? $oaEmployee['address'][1] : trans('tax.same_as_above'),
 
       // Position
       'Capacity' => strtoupper($oaEmployee['jobTitle']),
-      'PtPrinEmp' => $defaults['ptPrinEmp'],
+      'PtPrinEmp' => '', // $defaults['ptPrinEmp'],
 
       'StartDateOfEmp' => phpDateFormat($empStartDate, 'd/m/Y'),
       'EndDateOfEmp' => phpDateFormat($empEndDate, 'd/m/Y'),
 
       // Income Particulars
-      // 1.
-      'PerOfSalary' => $perOfEmp, // 20170401-20180331
-      'AmtOfSalary' => $oaPayrollSummary->amtOfSalary,
-      // 2.
-      'PerOfLeavePay' => $perOfEmp,
-      'AmtOfLeavePay' => $oaPayrollSummary->amtOfLeavePay,
-      // 3.
-      'PerOfDirectorFee' => $perOfEmp,
-      'AmtOfDirectorFee' => $oaPayrollSummary->amtOfDirectorFee,
-      // 4.
-      'PerOfCommFee' => $perOfEmp,
-      'AmtOfCommFee' => $oaPayrollSummary->amtOfCommFee,
-      // 5.
-      'PerOfBonus' => $perOfEmp,
-      'AmtOfBonus' => $oaPayrollSummary->amtOfBonus,
-      // 6.
-      'PerOfBpEtc' => $perOfEmp,
-      'AmtOfBpEtc' => $oaPayrollSummary->amtOfBpEtc,
-      // 7.
-      'PerOfPayRetire' => $perOfEmp,
-      'AmtOfPayRetire' => $oaPayrollSummary->amtOfPayRetire,
-      // 8.
-      'PerOfSalTaxPaid' => $perOfEmp,
-      'AmtOfSalTaxPaid' => $oaPayrollSummary->amtOfSalTaxPaid,
-      // 9.
-      'PerOfEduBen' => $perOfEmp,
-      'AmtOfEduBen' => $oaPayrollSummary->amtOfEduBen,
-      // 10.
-      'PerOfGainShareOption' => $perOfEmp,
-      'AmtOfGainShareOption' => $oaPayrollSummary->amtOfGainShareOption,
+//      // 1.
+//      'PerOfSalary' => $oaPayrollSummary['salary'] > 0 ? $perOfEmp : '', // 20170401-20180331
+//      'AmtOfSalary' => toCurrency($oaPayrollSummary['salary']),
+//      // 2.
+//      'PerOfLeavePay' => $oaPayrollSummary['leave_pay'] > 0 ? $perOfEmp : '',
+//      'AmtOfLeavePay' => toCurrency($oaPayrollSummary['leave_pay']),
+//      // 3.
+//      'PerOfDirectorFee' => $oaPayrollSummary['director_fee'] > 0 ? $perOfEmp : '',
+//      'AmtOfDirectorFee' => toCurrency($oaPayrollSummary['director_fee']),
+//      // 4.
+//      'PerOfCommFee' => $oaPayrollSummary['comm_fee'] > 0 ? $perOfEmp : '',
+//      'AmtOfCommFee' => toCurrency($oaPayrollSummary['comm_fee']),
+//      // 5.
+//      'PerOfBonus' => $oaPayrollSummary['bonus'] > 0 ? $perOfEmp : '',
+//      'AmtOfBonus' => toCurrency($oaPayrollSummary['bonus']),
+//      // 6.
+//      'PerOfBpEtc' => $oaPayrollSummary['bp_etc'] > 0 ? $perOfEmp : '',
+//      'AmtOfBpEtc' => toCurrency($oaPayrollSummary['bp_etc']),
+//      // 7.
+//      'PerOfPayRetire' => $oaPayrollSummary['pay_retire'] > 0 ? $perOfEmp : '',
+//      'AmtOfPayRetire' => $oaPayrollSummary['pay_retire'],
+//      // 8.
+//      'PerOfSalTaxPaid' => $perOfEmp,
+//      'AmtOfSalTaxPaid' => $oaPayrollSummary['sal_tax_paid'],
+//      // 9.
+//      'PerOfEduBen' => $perOfEmp,
+//      'AmtOfEduBen' => $oaPayrollSummary['edu_ben'],
+//      // 10.
+//      'PerOfGainShareOption' => $perOfEmp,
+//      'AmtOfGainShareOption' => $oaPayrollSummary['gain_share_option'],
       // 11.1
       'NatureOtherRAP1' => '',
       'PerOfOtherRAP1' => '',
@@ -170,16 +168,16 @@ class Ir56bHelper extends IrDataHelper
       // 11.2
       'NatureOtherRAP2' => '',
       'PerOfOtherRAP2' => '',
-      'AmtOfOtherRAP1' => '',
+      'AmtOfOtherRAP2' => '',
       // 11.3
       'NatureOtherRAP3' => '',
       'PerOfOtherRAP3' => '',
-      'AmtOfOtherRAP1' => '',
+      'AmtOfOtherRAP3' => '',
       // 12
-      'PerOfPension' => $perOfEmp,
-      'AmtOfPension' => $oaPayrollSummary->amtOfPension,
+//      'PerOfPension' => $perOfEmp,
+//      'AmtOfPension' => $oaPayrollSummary['pension'],
       // total
-      'TotalIncome' => $oaPayrollSummary->totalIncome,
+      'TotalIncome' => toCurrency( $oaPayrollSummary['totalIncome'] ),
       
       // Place of Residence
       'PlaceOfResInd' => '0',
@@ -208,22 +206,41 @@ class Ir56bHelper extends IrDataHelper
       'Remarks' => ''
     ]);
 
-    if (count($oaPayrollSummary->otherRaps) > 0) {
-      $result['NatureOtherRAP1'] = $oaPayrollSummary->otherRaps[0]['natureOtherRAP1'];
+    // Income Particulars
+    $tableMapping = [
+      'Salary' => 'salary',
+      'LeavePay' => 'leave_pay',
+      'DirectorFee' => 'director_fee',
+      'CommFee' => 'comm_fee',
+      'Bonus' => 'bonus',
+      'BpEtc' => 'bp_etc',
+      'PayRetire' => 'pay_retire',
+      'SalTaxPaid' => 'sal_tax_paid',
+      'EduBen' => 'edu_ben',
+      'GainShareOption' => 'gain_share_option',
+      'Pension' => 'pension'
+    ];
+    foreach($tableMapping as $irdField=>$token) {
+      $result['PerOf'.$irdField] = $oaPayrollSummary[$token] > 0 ? $perOfEmp : '';
+      $result['AmtOf'.$irdField] = toCurrency($oaPayrollSummary[$token]);
+    }
+
+    if (count($oaPayrollSummary['other_raps']) > 0) {
+      $result['NatureOtherRAP1'] = $oaPayrollSummary['other_raps'][0]['nature'];
       $result['PerOfOtherRAP1'] = $perOfEmp;
-      $result['AmtOfOtherRAP1'] = $oaPayrollSummary->otherRaps[0]['amtOfOtherRAP1'];
+      $result['AmtOfOtherRAP1'] = $oaPayrollSummary['other_raps'][0]['amt'];
     }
 
-    if (count($oaPayrollSummary->otherRaps) > 1) {
-      $result['NatureOtherRAP2'] = $oaPayrollSummary->otherRaps[1]['natureOtherRAP1'];
+    if (count($oaPayrollSummary['other_raps']) > 1) {
+      $result['NatureOtherRAP2'] = $oaPayrollSummary['other_raps'][1]['nature'];
       $result['PerOfOtherRAP2'] = $perOfEmp;
-      $result['AmtOfOtherRAP2'] = $oaPayrollSummary->otherRaps[1]['amtOfOtherRAP1'];
+      $result['AmtOfOtherRAP2'] = $oaPayrollSummary['other_raps'][1]['amt'];
     }
 
-    if (count($oaPayrollSummary->otherRaps) > 2) {
-      $result['NatureOtherRAP3'] = $oaPayrollSummary->otherRaps[2]['natureOtherRAP3'];
+    if (count($oaPayrollSummary['other_raps']) > 2) {
+      $result['NatureOtherRAP3'] = $oaPayrollSummary['other_raps'][2]['nature'];
       $result['PerOfOtherRAP3'] = $perOfEmp;
-      $result['AmtOfOtherRAP3'] = $oaPayrollSummary->otherRaps[2]['amtOfOtherRAP1'];
+      $result['AmtOfOtherRAP3'] = $oaPayrollSummary['other_raps'][2]['amt'];
     }
 
     if(array_key_exists('placeOfResInd', $defaults)) {

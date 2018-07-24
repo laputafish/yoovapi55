@@ -54,10 +54,74 @@ class IrDataHelper
 
   public static function getOAPayrollSummary($period)
   {
+    $summary = [
+      'totalIncome'=>0,
+      'salary'=>0, // 1
+      'leave_pay'=>0, // 2
+      'director_fee'=>0, // 3
+      'comm_fee'=>0, // 4
+      'bonus'=>0, // 5
+      'bp_etc'=>0, // 6
+      'pay_retire'=>0, // 7
+      'sal_tax_paid'=>0, // 8
+      'edu_ben'=>0, // 9
+      'gain_share_option'=>0, // 10
+      'other_raps'=>[], // 11
+      'pension'=>0 // 12
+    ];
     // dd($period);
+
+    // Fetch pay type mapping
+    //
+    // $payTypeMappings = [
+    //  'salary' => [1,2,4],
+    //  'leave_pay' => [2,4],
+    //  ...
+    // ]
+    //
+    // Init all summary item to 0;
+    //
+    $teamIncomeParticulars = self::$team->incomeParticulars()->with('incomeParticular')->get();
+    $payTypeToTokenMappings = [];
+    $summary['totalIncome'] = 0;
+    // $otherRapPayTypeIds = [];
+    $otherRaps = [];
+    // $otherRaps = [
+    //    [
+    //      'nature'=>'xxx',
+    //      'amt'=>0
+    //    ],
+    //    [
+    //      'nature'=>'xxx',
+    //      'amt'=>0
+    //    ]
+    // ]
+    foreach( $teamIncomeParticulars as $item ) {
+      $token = $item->incomeParticular->token;
+      $payTypeIds = trim($item->pay_type_ids);
+      if($payTypeIds != '') {
+        $arPayTypeIds = explode(',', $payTypeIds);
+        foreach( $arPayTypeIds as $payTypeId) {
+          $payTypeToTokenMappings['payType_' . $payTypeId] = $token;
+//          if($token == 'other_raps') {
+//            $otherRapPayTypeIds[] = $payTypeId;
+//          }
+        }
+      }
+      if($token == 'other_raps') {
+        $summary[$token] = [];
+      } else {
+        $summary[$token] = 0;
+      }
+    }
+
+    //****************************************
+    // Fetch payslips amount of each pay type
+    //****************************************
+
+    // Filter payslips for related fiscal year
     $payslips = OAPayslipHelper::get(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
     $effectivePayslips = [];
-
     foreach($payslips as $payslip) {
       if(inBetween($payslip['startedDate'], $period) ||
         inBetween($payslip['endedDate'], $period)) {
@@ -65,36 +129,37 @@ class IrDataHelper
       }
     }
 
-    $incomeParticulars = self::$team->incomeParticulars()->with('incomeParticular')->get();
-
-//    dd($incomeParticulars->toArray());
-    $incomeSummary = [];
-    foreach( $incomeParticulars as $item ) {
-      $incomeSummary[$item['income_particular']['token']] = [];
-
+    foreach($effectivePayslips as $payslip) {
+      foreach( $payslip['details'] as $detail ) {
+        if($detail['isBasicSalary']) {
+          $summary['salary'] += $detail['amount'];
+        } else {
+          if($detail['payTypeId']) {
+            $index = 'payType_'.$detail['payTypeId'];
+            if(array_key_exists($index, $payTypeToTokenMappings)) {
+              $token = $payTypeToTokenMappings['payType_' . $detail['payTypeId']];
+              if($token == 'other_raps') {
+                 if(array_key_exists($detail['name'], $otherRaps)) {
+                   $otherRaps[$detail['name']] += $detail['amount'];
+                 } else {
+                   $otherRaps[$detail['name']] = $detail['amount'];
+                 }
+              } else {
+                $summary[$token] += $detail['amount'];
+              }
+            }
+          }
+        }
+        $summary['totalIncome'] += $detail['amount'];
+      }
     }
 
-    $summary = [
-      'totalIncome' => 0,
-      'amtOfSalary' => 0, // 1.
-      'amtOfLeavePay' => 0, // 2
-      'amtOfDirectorFee' => 0, // 3
-      'amtOfCommFee' => 0, // 4
-      'amtOfBonus' => 0, // 5
-      'amtOfBpEtc' => 0, // 6
-      'amtOfPayRetire' => 0, // 7
-      'amtOfSalTaxPaid' => 0, // 8
-      'amtOfEduBen' => 0, // 9
-      'amtOfGainShareOption' => 0, // 10
-      'otherRaps' => [],
-      'amtOfPension' => 0
-    ];
-
-    $summary['otherRaps'] = [
-      ['nature'=>'Rewards', 'amt'=>1000],
-      ['nature'=>'Allowance', 'amt'=>2000]
-    ];
-
+    foreach($otherRaps as $nature=>$amount) {
+      $summary['other_raps'][] = [
+        'nature' => $nature,
+        'amt' => $amount
+      ];
+    }
     return $summary;
   }
 

@@ -10,7 +10,8 @@ class OAPayslipHelper
   {
     $url = \Config::get('oa')['apiUrl'].'/admin/payslips?'.
       'employeeId='.$employeeId.'&'.
-      'teamId=' . $teamId;
+      'teamId=' . $teamId.'&'.
+      'status=completed';
 
     return OAHelper::get($url, $oaAuth);
   }

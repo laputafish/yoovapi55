@@ -7,9 +7,12 @@ use App\Models\IrdFormFileField;
 use App\Helpers\IrData;
 
 class IrdFormHelper {
-  protected static $defaults = [
+  protected static $defaults = [];
+  protected static $defaultsx = [
     'areaCodeResAddr' => 'H',
     'spouseName' => '(spouse name)',
+    'spouseHkid' => 'C123456(7)',
+    'spousePpNum' => 'PP12345678',
     'ptPrinEmp' => '(ptPrinEmp)',
 
     'placeOfResInd' => '1',
@@ -18,17 +21,17 @@ class IrdFormHelper {
     'natureOfPlace1' => 'Flat',
     'perOfPlace1' => '20160401-20170331',
     'rentPaidEr1' => 100000,
-    'rentPaidEe1' => 0,
-    'rentRefund1' => 0,
+    'rentPaidEe1' => 20000,
+    'rentRefund1' => 30000,
     'rentPaidErByEe1' => 10000,
 
     'addrOfPlace2' => 'Rm 306, Justice Bldg., 1 Justice Rd., HK',
     'natureOfPlace2' => 'Flat',
     'perOfPlace2' => '20160901-20170331',
-    'rentPaidEr2' => 0,
+    'rentPaidEr2' => 10000,
     'rentPaidEe2' => 154000,
     'rentRefund2' => 140000,
-    'rentPaidErByEe2' => 0,
+    'rentPaidErByEe2' => 20000,
 
     'overseaIncInd' => '1',
     'amtPaidOverseaCo' => 'US$40,000 (HK$312,000)',
@@ -83,12 +86,18 @@ class IrdFormHelper {
 
   private static function fillData($pdf, $fieldList, $data) {
     foreach($fieldList as $item) {
+      if($item->hidden) {
+        continue;
+      }
       $align = isset($item->align) ? $item->align : 'L';
       $lang = isset($item->lang) ? $item->lang : 'eng';
       $fontStyle = isset($item->font_style) ? $item->font_style : '';
       switch ($item->type) {
         case 'string':
           $text = $data->{$item->key};
+          if(empty($text)) {
+            break;
+          }
 
           // lang
           if(hasChinese($text)) {
