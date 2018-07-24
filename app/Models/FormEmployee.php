@@ -5,6 +5,7 @@ class FormEmployee extends BaseModel {
   public $timestamps = false;
   protected $fillable = [
     'form_id',
+    'sheet_no',
     'employee_id',
     'file',
     'status'

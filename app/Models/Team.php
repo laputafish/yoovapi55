@@ -81,7 +81,7 @@ class Team extends BaseModel {
   }
 
   public function setSetting($key, $value) {
-    $setting = $this->settings()->whereKey($key)->first();
+    $setting = $this->settings()->where('key',$key)->first();
     if(isset($setting)) {
       $setting->value = $value;
       $setting->save();
@@ -93,7 +93,7 @@ class Team extends BaseModel {
     }
   }
   public function getSetting($key, $default) {
-    $setting = $this->settings()->whereKey($key)->first();
+    $setting = $this->settings()->where('key',$key)->first();
     $result = $default;
     if(isset($setting)) {
       $result = $setting->value;

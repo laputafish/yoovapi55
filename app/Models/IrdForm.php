@@ -10,6 +10,7 @@ class IrdForm extends BaseModel {
     'enabled',
     'description',
     'partial_path',
+    'publishable',
     'requires_fiscal_year'
   ];
 

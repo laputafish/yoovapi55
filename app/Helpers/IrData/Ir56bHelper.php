@@ -78,6 +78,14 @@ class Ir56bHelper extends IrDataHelper
       'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
       'FileNo' => $registrationNumber,
 
+      // for Chinese version only
+      'HeaderPeriodFromYear' => $fiscalYear - 1,
+      'HeaderPeriodToYear' => $fiscalYear,
+      'EmpPeriodFromYear' => $fiscalYear - 1,
+      'EmpPeriodToYear' => $fiscalYear,
+      'IncPeriodFromYear' => $fiscalYear - 1,
+      'IncPeriodToYear' => $fiscalYear,
+
       // Ird fields
       'Section' => $section,
       'ERN' => $ern,
@@ -99,7 +107,9 @@ class Ir56bHelper extends IrDataHelper
     }
 
     // 1=Single/Widowed/Divorced/Living Apart, 2=Married
-    $martialStatus = ($oaEmployee['marital'] == 'married' ? 2 : 1);
+    $martialStatus = array_key_exists('martialStatus', $defaults) ?
+      $defaults['martialStatus'] :
+      ($oaEmployee['marital'] == 'married' ? 2 : 1);
 
     $result = array_merge($result, [
       // Ird fields
@@ -125,7 +135,9 @@ class Ir56bHelper extends IrDataHelper
 
       // Position
       'Capacity' => strtoupper($oaEmployee['jobTitle']),
-      'PtPrinEmp' => '', // $defaults['ptPrinEmp'],
+      'PtPrinEmp' => array_key_exists('ptPrinEmp', $defaults) ?
+        $defaults['ptPrinEmp'] :
+        '',
 
       'StartDateOfEmp' => phpDateFormat($empStartDate, 'd/m/Y'),
       'EndDateOfEmp' => phpDateFormat($empEndDate, 'd/m/Y'),
@@ -203,7 +215,9 @@ class Ir56bHelper extends IrDataHelper
       'AmtPaidOverseaCo' => '',
       'NameOfOverseaCo' => '',
       'AddrOfOverseaCo' => '',
-      'Remarks' => ''
+      'Remarks' => array_key_exists('remarks', $defaults) ?
+        $defaults['remarks'] :
+        ''
     ]);
 
     // Income Particulars

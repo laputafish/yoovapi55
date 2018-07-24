@@ -11,6 +11,7 @@ class Form extends BaseIRDForm {
     'lang_id',
     'status',
     'subject',
+    'published',
     'ird_form_type_id',
     'ird_form_id',
     'fiscal_start_year',

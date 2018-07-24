@@ -56,33 +56,44 @@ class TestFormController extends Controller
     $irdFormFile = IrdFormFile::find($fromId);
     $fields = $irdFormFile->fields;
 
+    echo 'fields count = '.$fields->count(); nl();
     $targetIrdFormFile = IrdFormFile::find($toId);
 
-    $result = [];
-    foreach($fields as $field) {
-      unset($field->ird_form_file_id);
-      // $a = json_encode($field);
-      // print_r( json_decode($a) );
+    if(isset($targetIrdFormFile)) {
+      $targetIrdFormFile->fields()->delete();
+      $result = [];
+      foreach ($fields as $field) {
+        unset($field->ird_form_file_id);
+        // $a = json_encode($field);
+        // print_r( json_decode($a) );
 
 
-      $targetIrdFormFile->fields()->save(new IrdFormFileField([
-        'key' => $field['key'],
-        'type' => $field['type'],
-        'x' => $field['x'],
-        'y' => $field['y'],
-        'font_size' => $field['font_size'],
-        'font-style' => $field['font_style'],
-        'relative_to' => $field['relative_to'],
-        'relative_to_key_id' => $field['relative_to_key_id'],
-        'width' => $field['width'],
-        'field_count' => $field['field_count'],
-        'align' => $field['align'],
-        'char_align' =>  $field['char_align'],
-        'lang' => $field['lang'],
-        'append_asterisk' => $field['append_asterisk'],
-        'to_currency' => $field['to_currency'],
-        'remark' => $field['remark']
-      ]));
+        $targetIrdFormFile->fields()->save(new IrdFormFileField([
+          'key' => $field['key'],
+          'type' => $field['type'],
+          'is_ird_fields' => $field['is_ird_fields'],
+          'hidden' => $field['hidden'],
+          'seq_no' => $field['seq_no'],
+          'seq_sub_no' => $field['seq_sub_no'],
+          'x' => $field['x'],
+          'y' => $field['y'],
+          'font_size' => $field['font_size'],
+          'font-style' => $field['font_style'],
+          'relative_to' => $field['relative_to'],
+          'relative_to_key_id' => $field['relative_to_key_id'],
+          'width' => $field['width'],
+          'field_count' => $field['field_count'],
+          'align' => $field['align'],
+          'char_align' => $field['char_align'],
+          'lang' => $field['lang'],
+          'append_asterisk' => $field['append_asterisk'],
+          'to_currency' => $field['to_currency'],
+          'remark' => $field['remark']
+        ]));
+      }
+    }
+    else {
+      echo '*** Target IRD Form file not found.'; nl();
     }
 
     dd('ok');

@@ -7,10 +7,12 @@ use App\Models\FormCommencement;
 use App\Models\FormTermination;
 use App\Models\FormDeparture;
 use App\Models\FormSalary;
+use App\Models\IncomeParticular;
+use App\Models\TeamIncomeParticular;
 
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
-use App\Helpers\OAHelper;
+use App\Helpers\OA\OAHelper;
 use App\Helpers\EventHelper;
 
 use App\Events\TaxFormNewJobEvent;
@@ -39,6 +41,8 @@ class TaxFormController extends BaseAuthController
     $command = \Input::get('command');
     $newStatus = '';
     switch ($command) {
+      case 'update_settings':
+        return $this->updateSettings();
       case 'generate':
         $newStatus = 'ready_for_processing';
         break;
@@ -82,6 +86,33 @@ class TaxFormController extends BaseAuthController
     return response()->json([
       'status'=>true,
       'result'=>$newStatus
+    ]);
+  }
+
+  public function updateSettings() {
+    $oaTeamId = \Input::get('teamId');
+    $team = Team::whereOaTeamId($oaTeamId)->first();
+
+    $lang = \Input::get('lang');
+    $team->setSetting('lang', $lang);
+
+    $incomeParticulars = \Input::get('incomeParticulars');
+    foreach($incomeParticulars as $particular) {
+      $particularId = $particular['id'];
+      $record = IncomeParticular::find($particularId);
+
+      $teamIncomeParticular = TeamIncomeParticular::whereTeamId($oaTeamId)->whereIncomeParticularId($particularId)->first();
+      if(is_null($teamIncomeParticular)) {
+        $teamIncomeParticular = teamIncomeParticular::create([
+          'team_id' => $oaTeamId
+        ]);
+      }
+
+      $teamIncomeParticular->pay_type_ids = implode(',', $particular['pay_type_ids']);
+      $record->teamIncomeParticulars()->save($teamIncomeParticular);
+    }
+    return response()->json([
+      'status'=>true
     ]);
   }
 

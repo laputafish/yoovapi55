@@ -10,6 +10,7 @@ class IrdFormHelper {
   protected static $defaults = [];
   protected static $defaultsx = [
     'areaCodeResAddr' => 'H',
+    'martialStatus' => '2',
     'spouseName' => '(spouse name)',
     'spouseHkid' => 'C123456(7)',
     'spousePpNum' => 'PP12345678',
@@ -36,7 +37,8 @@ class IrdFormHelper {
     'overseaIncInd' => '1',
     'amtPaidOverseaCo' => 'US$40,000 (HK$312,000)',
     'nameOfOverseaCo' => 'Good Harvest (International) Co Ltd',
-    'addrOfOverseaCo' => 'No. 8, 400th Street, New York, USA'
+    'addrOfOverseaCo' => 'No. 8, 400th Street, New York, USA',
+    'remarks' => 'Remarks'
   ];
 
   public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
