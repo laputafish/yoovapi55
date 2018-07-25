@@ -24,4 +24,25 @@ class FormHelper {
     }
     return $result;
   }
+
+  public static function getFiscalYearInfo($form, $options=[]) {
+    $result = [];
+
+    $fiscalYearStart = getCurrentFiscalYearStartDate();
+
+    if(isset($form)) {
+      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
+    } else if(array_key_exists('year', $options)) {
+      $fiscalYearStart = $options['year'];
+    }
+
+    $startYear = (int)substr($fiscalYearStart, 0, 4);
+    $result['startDate' ] = $fiscalYearStart;
+    $result['startYear'] = $startYear;
+    $result['endYear'] = $startYear + 1;
+    $result['startDate'] = $startYear . '-04-01';
+    $result['endDate'] = ($startYear + 1) . '-03-31';
+
+    return $result;
+  }
 }

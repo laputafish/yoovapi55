@@ -26,12 +26,15 @@ class TestFormController extends Controller
     $formCode = \Input::get('formCode', 'IR56E_PC');
     $langCode = \Input::get('langCode', 'en_us');
 
-    $options = [];
+    $options = [
+      'irdMaster'=>IrdFormHelper::getIrdMaster($team)
+    ];
 
     if(\Input::has('year')) {
       $options['year'] = \Input::get('year');
     }
 
+    OAHelper::updateTeamToken($team);
     return IrdFormHelper::generate($team, $employeeId, $formCode, $langCode, $options);
 //    switch($formType) {
 //      case 'commencement':

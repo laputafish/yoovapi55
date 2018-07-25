@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+
 use App\Helpers\TaxFormHelper;
+use App\Models\Form;
 
 class GenerateTaxForms extends Command
 {

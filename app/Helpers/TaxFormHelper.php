@@ -84,10 +84,9 @@ class TaxFormHelper
     }
   }
 
-  public static function generateForm($formEmployee, $form, $sheetNo)
+  public static function generateForm($formEmployee, $form, $sheetNo, $irdMaster)
   {
     $team = $form->team;
-    OAHelper::updateTeamToken($team);
 
     $oaAuth = $team->getOaAuth();
     $employeeId = $formEmployee->employee_id;
@@ -95,6 +94,8 @@ class TaxFormHelper
     if (array_key_exists('code', $oaEmployee)) {
       dd($oaEmployee['message']);
     }
+
+    TeamHelper::updateEmployee($team, $oaEmployee);
 
     // storage/app/{$filePath}
     $filePath = self::getFormFilePath($form, $formEmployee);
@@ -108,6 +109,9 @@ class TaxFormHelper
     if (isset($form->lang)) {
       $langCode = $form->lang->lang_code;
     }
+
+    $irdFormCompanyData = [];
+
     IrdFormHelper::generate(
       $team,
       $formEmployee->employee_id,
@@ -116,7 +120,8 @@ class TaxFormHelper
       [
         'form'=>$form,
         'outputFilePath'=>$targetFilePath,
-        'sheetNo'=>$sheetNo
+        'sheetNo'=>$sheetNo,
+        'irdMaster'=>$irdMaster
       ]
     );
     return $targetFilePath;
@@ -342,26 +347,37 @@ class TaxFormHelper
       $form->status = 'terminated';
       $form->save();
       EventHelper::send( 'form', ['form'=>$form]);
+
     } else {
-      logConsole('team #'.$form->team->id.'  ('.$form->team->oa_team_id.')',1);
+      $team = $form->team;
+      OAHelper::updateTeamToken($team);
+
+      logConsole('team #'.$team->id.'  ('.$team->oa_team_id.')',1);
       if ($form->status != 'processing') {
         $form->update(['status' => 'processing']);
         EventHelper::send('form', ['form' => $form]);
       }
       $employees = $form->employees()->get();
       $sheetNo = 1;
+
+      $irdMaster = IrdFormHelper::getIrdMaster($team,$form);
+
       foreach ($employees as $formEmployee) {
-        $formEmployee = $form->employees()->whereEmployeeId($formEmployee->employee_id)->first();
+        $employeeId = $formEmployee->employee_id;
+
+        echo 'processing employee #'.$employeeId.' ...'; nl();
+        $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
         if($formEmployee->status != 'processing') {
-          $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'processing']);
+          $form->employees()->whereEmployeeId($employeeId)->update(['status' => 'processing']);
+          $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
           EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
         }
-        $outputFilePath = self::generateForm($formEmployee, $form, $sheetNo);
-
-        $form->employees()->whereEmployeeId($formEmployee->employee_id)->update([
+        $outputFilePath = self::generateForm($formEmployee, $form, $sheetNo, $irdMaster);
+        $form->employees()->whereEmployeeId($employeeId)->update([
           'status' => 'ready',
           'file' => pathinfo($outputFilePath, PATHINFO_BASENAME)
         ]);
+        $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
 
         EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
         $sheetNo++;
@@ -641,9 +657,9 @@ class TaxFormHelper
   {
     $formNo = $prefix . date('Ymd');
     $count = 1;
-    $suffix = $count > 1 ? '_' . $count : '';
+    $suffix = $count > 1 ? '-' . $count : '';
     $newFormNo = $formNo . $suffix;
-    while (is_null($query->whereFormNo($newFormNo))) {
+    while ($query->whereFormNo($newFormNo)->count() > 0) {
       $count++;
       $newFormNo = $formNo . '_' . $count;
     }

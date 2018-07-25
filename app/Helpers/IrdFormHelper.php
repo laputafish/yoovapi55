@@ -5,6 +5,8 @@ use App\Models\Lang;
 use App\Models\IrdFormFileField;
 
 use App\Helpers\IrData;
+use App\Helpers\OA\OAHelper;
+use App\Helpers\OA\OATeamHelper;
 
 class IrdFormHelper {
   protected static $defaults = [];
@@ -40,6 +42,56 @@ class IrdFormHelper {
     'addrOfOverseaCo' => 'No. 8, 400th Street, New York, USA',
     'remarks' => 'Remarks'
   ];
+
+  public static function getIrdMaster($team, $options=[], $form=null) {
+    // if $form = null, test mode
+    $oaAuth = OAHelper::refreshTokenByTeam($team);
+    $oaTeam = OATeamHelper::get($oaAuth, $team->oa_team_id);
+
+    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+
+    $registrationNumber = $oaTeam['setting']['registrationNumber'];
+    $registrationNumberSegs = explode('-', $registrationNumber);
+    $section = $registrationNumberSegs[0];
+    $ern = $registrationNumberSegs[1];
+    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
+
+
+    $formDate = date('Y-m-d');
+    $designation = 'Manager';
+
+    if(isset($form)) {
+      $formDate = $form->form_date;
+      $designation = $form->designation;
+    }
+
+    $result = [
+      // Non-ird fields
+      'HeaderPeriod' => strtoupper($headerPeriod),
+      'EmpPeriod' => $headerPeriod . ':',
+      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
+      'FileNo' => $registrationNumber,
+
+      // for Chinese version only
+      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
+      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
+      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
+      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+
+      // Ird fields
+      'Section' => $section,
+      'ERN' => $ern,
+      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
+      'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
+      'ErName' => $oaTeam['name'],
+      'Designation' => $designation,
+      'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
+      'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
+    ];
+    return $result;
+  }
 
   public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
   {

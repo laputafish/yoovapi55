@@ -2,6 +2,7 @@
 
 use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
+use App\Helpers\FormHelper;
 
 class Ir56bHelper extends IrDataHelper
 {
@@ -11,6 +12,8 @@ class Ir56bHelper extends IrDataHelper
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
     $form = array_key_exists('form', $options) ? $options['form'] : null;
+
+    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
 
     self::$team = $team;
     self::$employeeId = $employeeId;
@@ -23,7 +26,7 @@ class Ir56bHelper extends IrDataHelper
       $signatureName = $form->signature_name;
       $designation = $form->designation;
       $formDate = $form->form_date;
-      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
+//      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
       if (array_key_exists('sheetNo', $options)) {
         $sheetNo = $options['sheetNo'];
       }
@@ -31,25 +34,24 @@ class Ir56bHelper extends IrDataHelper
       $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
       $designation = $team->getSetting('designation', '(No designation)');
       $formDate = date('Y-m-d');
-      if(array_key_exists('year', $options)) {
-        $year = $options['year'];
-        $fiscalYearStart = ($year-1).'-04-01';
-      } else {
-        $fiscalYearStart = getCurrentFiscalYearStartDate();
-      }
+//      if(array_key_exists('year', $options)) {
+//        $year = $options['year'];
+//        $fiscalYearStart = ($year-1).'-04-01';
+//      } else {
+//        $fiscalYearStart = getCurrentFiscalYearStartDate();
+//      }
     }
-    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
-
-    $fiscalYearPeriod = [
-      'startDate' => $fiscalStartYear . '-04-01',
-      'endDate' => ($fiscalStartYear + 1) . '-03-31'
-    ];
+//    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
+//    $fiscalYearPeriod = [
+//      'startDate' => $fiscalStartYear . '-04-01',
+//      'endDate' => ($fiscalStartYear + 1) . '-03-31'
+//    ];
 
     // Grab data from OA
     $oaTeam = self::getOATeam();
     $oaEmployee = self::getOAAdminEmployee();
     $oaSalaries = self::getOASalary();
-    $oaPayrollSummary = self::getOAPayrollSummary($fiscalYearPeriod);
+    $oaPayrollSummary = self::getOAPayrollSummary($fiscalYearInfo);
 
     if (is_null($oaEmployee)) {
       return null;
@@ -58,22 +60,24 @@ class Ir56bHelper extends IrDataHelper
     $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
     $jobEndedDate = substr($oaEmployee['jobEndedDate'], 0, 10);
 
-    $empStartDate = $fiscalYearPeriod['startDate'] > $joinedDate ? $fiscalYearPeriod['startDate'] : $joinedDate;
+    $empStartDate = $fiscalYearInfo['startDate'] > $joinedDate ? $fiscalYearInfo['startDate'] : $joinedDate;
     $empEndDate = isset($oaEmployee['jobEndedDate']) ?
-      ($fiscalYearPeriod['endDate'] < $jobEndedDate ? $fiscalYearPeriod['endDate'] : $jobEndedDate) :
-      $fiscalYearPeriod['endDate'];
+      ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearPeriod['endDate'] : $jobEndedDate) :
+      $fiscalYearInfo['endDate'];
 
     $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
       str_replace('-', '', $empEndDate);
+
+    $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
 
     // Company
     $registrationNumber = $oaTeam['setting']['registrationNumber'];
     $registrationNumberSegs = explode('-', $registrationNumber);
     $section = $registrationNumberSegs[0];
     $ern = $registrationNumberSegs[1];
+    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
 
-    $headerPeriod = 'for the year from 1 April ' . ($fiscalStartYear) . ' to 31 March ' . ($fiscalStartYear + 1);
-    $result = [
+    $result = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [
       // Non-ird fields
       'HeaderPeriod' => strtoupper($headerPeriod),
       'EmpPeriod' => $headerPeriod . ':',
@@ -81,23 +85,28 @@ class Ir56bHelper extends IrDataHelper
       'FileNo' => $registrationNumber,
 
       // for Chinese version only
-      'HeaderPeriodFromYear' => $fiscalStartYear,
-      'HeaderPeriodToYear' => $fiscalStartYear + 1,
-      'EmpPeriodFromYear' => $fiscalStartYear,
-      'EmpPeriodToYear' => $fiscalStartYear + 1,
-      'IncPeriodFromYear' => $fiscalStartYear,
-      'IncPeriodToYear' => $fiscalStartYear + 1,
+      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
+      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
+      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
+      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
 
       // Ird fields
       'Section' => $section,
       'ERN' => $ern,
-      'YrErReturn' => $fiscalStartYear + 1,
+      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
       'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
       'ErName' => $oaTeam['name'],
       'Designation' => $designation,
       'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
       'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
     ];
+
+    //*************************************************************************************
+
+
+
 
     // Employee
     if (isset($oaEmployee['jobEndedDate'])) {

@@ -52,8 +52,13 @@ class IrDataHelper
     return OAEmployeeHelper::getAdminInfo(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
   }
 
-  public static function getOAPayrollSummary($period)
+  public static function getOAPayrollSummary($fiscalYearInfo)
   {
+    $period = [
+      'startDate' => $fiscalYearInfo['startDate'],
+      'endDate' => $fiscalYearInfo['endDate']
+    ];
+
     $summary = [
       'totalIncome'=>0,
       'salary'=>0, // 1

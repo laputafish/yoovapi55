@@ -131,8 +131,8 @@ class FormController extends BaseAuthController {
       return (int) $formEmployee['employee_id'];
     }, $employees);
 
-    $newIds = array_diff($inputEmployeeIds, $dataEmployeeIds);
-    $obsolateIds = array_diff($dataEmployeeIds, $inputEmployeeIds);
+    $newIds = array_values(array_diff($inputEmployeeIds, $dataEmployeeIds));
+    $obsolateIds = array_values(array_diff($dataEmployeeIds, $inputEmployeeIds));
     $form->employees()->whereIn('employee_id', $obsolateIds)->delete();
     for($i=0; $i<count($newIds); $i++) {
       $form->employees()->save(new FormEmployee([
@@ -143,6 +143,7 @@ class FormController extends BaseAuthController {
     return response()->json([
       'status'=>true,
       'result'=>[
+        'id' => $form->id,
         'added_ids'=>$newIds,
         'removed_ids'=>$obsolateIds
       ]
@@ -163,7 +164,7 @@ class FormController extends BaseAuthController {
       }, $formEmployees);
 
       for ($i = 0; $i < count($formEmployeeIds); $i++) {
-        $form->employees()->save(new FormCommencementEmployee([
+        $form->employees()->save(new FormEmployee([
           'employee_id' => $formEmployeeIds[$i]
         ]));
       }
@@ -171,6 +172,7 @@ class FormController extends BaseAuthController {
       return response()->json([
         'status' => true,
         'result' => [
+          'id' => $form->id,
           'added_ids' => $formEmployeeIds
         ]
       ]);
