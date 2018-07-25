@@ -6,10 +6,11 @@ use App\Helpers\OA\OAEmployeeHelper;
 class Ir56bHelper extends IrDataHelper
 {
 
-  public static function get($team, $employeeId, $form = null, $options = [])
+  public static function get($team, $employeeId, $options = [])
   {
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
+    $form = array_key_exists('form', $options) ? $options['form'] : null;
 
     self::$team = $team;
     self::$employeeId = $employeeId;
@@ -17,12 +18,12 @@ class Ir56bHelper extends IrDataHelper
 
     //***
     // form->fiscal_year is the year of fiscal year end date
-    $sheetNo = 1;
+    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
     if (isset($form)) {
       $signatureName = $form->signature_name;
       $designation = $form->designation;
       $formDate = $form->form_date;
-      $fiscalYearStart = ($form->fiscal_year - 1) . '-04-01';
+      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
       if (array_key_exists('sheetNo', $options)) {
         $sheetNo = $options['sheetNo'];
       }
@@ -37,11 +38,11 @@ class Ir56bHelper extends IrDataHelper
         $fiscalYearStart = getCurrentFiscalYearStartDate();
       }
     }
-    $fiscalYear = (int)substr($fiscalYearStart, 0, 4);
+    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
 
     $fiscalYearPeriod = [
-      'startDate' => $fiscalYear . '-04-01',
-      'endDate' => ($fiscalYear + 1) . '-03-31'
+      'startDate' => $fiscalStartYear . '-04-01',
+      'endDate' => ($fiscalStartYear + 1) . '-03-31'
     ];
 
     // Grab data from OA
@@ -61,6 +62,7 @@ class Ir56bHelper extends IrDataHelper
     $empEndDate = isset($oaEmployee['jobEndedDate']) ?
       ($fiscalYearPeriod['endDate'] < $jobEndedDate ? $fiscalYearPeriod['endDate'] : $jobEndedDate) :
       $fiscalYearPeriod['endDate'];
+
     $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
       str_replace('-', '', $empEndDate);
 
@@ -70,7 +72,7 @@ class Ir56bHelper extends IrDataHelper
     $section = $registrationNumberSegs[0];
     $ern = $registrationNumberSegs[1];
 
-    $headerPeriod = 'for the year from 1 April ' . ($fiscalYear - 1) . ' to 31 March ' . ($fiscalYear);
+    $headerPeriod = 'for the year from 1 April ' . ($fiscalStartYear) . ' to 31 March ' . ($fiscalStartYear + 1);
     $result = [
       // Non-ird fields
       'HeaderPeriod' => strtoupper($headerPeriod),
@@ -79,17 +81,17 @@ class Ir56bHelper extends IrDataHelper
       'FileNo' => $registrationNumber,
 
       // for Chinese version only
-      'HeaderPeriodFromYear' => $fiscalYear - 1,
-      'HeaderPeriodToYear' => $fiscalYear,
-      'EmpPeriodFromYear' => $fiscalYear - 1,
-      'EmpPeriodToYear' => $fiscalYear,
-      'IncPeriodFromYear' => $fiscalYear - 1,
-      'IncPeriodToYear' => $fiscalYear,
+      'HeaderPeriodFromYear' => $fiscalStartYear,
+      'HeaderPeriodToYear' => $fiscalStartYear + 1,
+      'EmpPeriodFromYear' => $fiscalStartYear,
+      'EmpPeriodToYear' => $fiscalStartYear + 1,
+      'IncPeriodFromYear' => $fiscalStartYear,
+      'IncPeriodToYear' => $fiscalStartYear + 1,
 
       // Ird fields
       'Section' => $section,
       'ERN' => $ern,
-      'YrErReturn' => $fiscalYear,
+      'YrErReturn' => $fiscalStartYear + 1,
       'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
       'ErName' => $oaTeam['name'],
       'Designation' => $designation,
@@ -143,36 +145,16 @@ class Ir56bHelper extends IrDataHelper
       'EndDateOfEmp' => phpDateFormat($empEndDate, 'd/m/Y'),
 
       // Income Particulars
-//      // 1.
-//      'PerOfSalary' => $oaPayrollSummary['salary'] > 0 ? $perOfEmp : '', // 20170401-20180331
-//      'AmtOfSalary' => toCurrency($oaPayrollSummary['salary']),
-//      // 2.
-//      'PerOfLeavePay' => $oaPayrollSummary['leave_pay'] > 0 ? $perOfEmp : '',
-//      'AmtOfLeavePay' => toCurrency($oaPayrollSummary['leave_pay']),
-//      // 3.
-//      'PerOfDirectorFee' => $oaPayrollSummary['director_fee'] > 0 ? $perOfEmp : '',
-//      'AmtOfDirectorFee' => toCurrency($oaPayrollSummary['director_fee']),
-//      // 4.
-//      'PerOfCommFee' => $oaPayrollSummary['comm_fee'] > 0 ? $perOfEmp : '',
-//      'AmtOfCommFee' => toCurrency($oaPayrollSummary['comm_fee']),
-//      // 5.
-//      'PerOfBonus' => $oaPayrollSummary['bonus'] > 0 ? $perOfEmp : '',
-//      'AmtOfBonus' => toCurrency($oaPayrollSummary['bonus']),
-//      // 6.
-//      'PerOfBpEtc' => $oaPayrollSummary['bp_etc'] > 0 ? $perOfEmp : '',
-//      'AmtOfBpEtc' => toCurrency($oaPayrollSummary['bp_etc']),
-//      // 7.
-//      'PerOfPayRetire' => $oaPayrollSummary['pay_retire'] > 0 ? $perOfEmp : '',
-//      'AmtOfPayRetire' => $oaPayrollSummary['pay_retire'],
-//      // 8.
-//      'PerOfSalTaxPaid' => $perOfEmp,
-//      'AmtOfSalTaxPaid' => $oaPayrollSummary['sal_tax_paid'],
-//      // 9.
-//      'PerOfEduBen' => $perOfEmp,
-//      'AmtOfEduBen' => $oaPayrollSummary['edu_ben'],
-//      // 10.
-//      'PerOfGainShareOption' => $perOfEmp,
-//      'AmtOfGainShareOption' => $oaPayrollSummary['gain_share_option'],
+      // 1. Salary,
+      // 2. LeavePay,
+      // 3. DirectorFee,
+      // 4. CommFee,
+      // 5. Bonus,
+      // 6. BpEtc,
+      // 7. PayRetire,
+      // 8. SalTaxPaid,
+      // 9. EduBen,
+      // 10. GainShareOption,
       // 11.1
       'NatureOtherRAP1' => '',
       'PerOfOtherRAP1' => '',
@@ -185,14 +167,14 @@ class Ir56bHelper extends IrDataHelper
       'NatureOtherRAP3' => '',
       'PerOfOtherRAP3' => '',
       'AmtOfOtherRAP3' => '',
-      // 12
-//      'PerOfPension' => $perOfEmp,
-//      'AmtOfPension' => $oaPayrollSummary['pension'],
+      // 12. Pension
+
       // total
       'TotalIncome' => toCurrency( $oaPayrollSummary['totalIncome'] ),
       
       // Place of Residence
       'PlaceOfResInd' => '0',
+
       // Place #1
       'AddrOfPlace1' => '',
       'NatureOfPlace1' => '',
@@ -201,6 +183,7 @@ class Ir56bHelper extends IrDataHelper
       'RentPaidEe1' => '',
       'RentRefund1' => '',
       'RentPaidErByEe1' => '',
+
       // Place #2
       'AddrOfPlace2' => '',
       'NatureOfPlace2' => '',
@@ -215,9 +198,9 @@ class Ir56bHelper extends IrDataHelper
       'AmtPaidOverseaCo' => '',
       'NameOfOverseaCo' => '',
       'AddrOfOverseaCo' => '',
-      'Remarks' => array_key_exists('remarks', $defaults) ?
-        $defaults['remarks'] :
-        ''
+
+      // Remark
+      'Remarks' => array_key_exists('remarks', $defaults) ? $defaults['remarks'] : ''
     ]);
 
     // Income Particulars

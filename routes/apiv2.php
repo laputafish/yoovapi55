@@ -121,6 +121,7 @@ Route::get('media/forms/commencements/{formId}/{employeeId}', 'MediaController@s
 Route::get('media/forms/salaries/{formId}/{employeeId}', 'MediaController@showSalaryForm');
 Route::get('media/forms/terminations/{formId}/{employeeId}', 'MediaController@showTerminationForm');
 Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@showDepartureForm');
+Route::get('media/ird_forms/{formId}/{employeeId}', 'MediaController@showIrdForm');
 
 Route::get('media/download/{id}', 'MediaController@downloadDocument');
 Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsInZip');

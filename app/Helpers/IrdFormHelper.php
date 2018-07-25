@@ -43,26 +43,25 @@ class IrdFormHelper {
 
   public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
   {
-    $form = null;
-    $filePath = null;
-    if(array_key_exists('form', $options)) { $form = $options['form']; }
-    if(array_key_exists('filePath', $options)) { $form = $options['filePath']; }
-
+    // Fetch related IRD Form Record
     $irdForm = IrdForm::whereFormCode(strtoupper($formCode))->first();
+
+    // Set language for text translation in case
     $lang = Lang::whereCode($langCode)->first();
     LangHelper::setLang($lang->code);
 
+    // Prepare output file path
+    $outputFilePath = array_key_exists('outputFilePath', $options) ? $options['outputFilePath'] : null;
     $irdFormFile = $irdForm->files()->whereLangId( $lang->id )->first();
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
 
+    // Prepare data
     $irDataClassPrefix = substr(strtolower($formCode),-2)== 'pc' ?
       substr($formCode,0,strlen($formCode)-2) :
       $formCode;
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irDataClassPrefix.'Helper'));
-
-    // prepare data
     $options = array_merge($options, ['defaults'=>self::$defaults]);
-    $data = $irDataHelperClassName::get($team, $employeeId, $form, $options);
+    $data = $irDataHelperClassName::get($team, $employeeId, $options);
 
     // process
     $pdfOptions = [
@@ -72,16 +71,17 @@ class IrdFormHelper {
       'templateFilePath'=>$templateFilePath
     ];
     $pdf = new FormPdf($pdfOptions);
-
     $fieldList = $irdFormFile->fields;
     self::fillData($pdf, $fieldList, $data);
-    if(isset($finalFilePath)) {
-      if (file_exists($finalFilePath)) {
-        unlink($finalFilePath);
+
+    // Output
+    if(isset($outputFilePath)) {
+      if (file_exists($outputFilePath)) {
+        unlink($outputFilePath);
       }
-      $pdf->Output($finalFilePath, 'F');
+      $pdf->Output($outputFilePath, 'F');
     } else {
-      $pdf->Output('commencement_form.pdf');
+      $pdf->Output('ird_'.$formCode.'.pdf');
     }
     return;
   }
@@ -97,7 +97,12 @@ class IrdFormHelper {
       switch ($item->type) {
         case 'string':
           $text = $data->{$item->key};
-          if(empty($text)) {
+
+          if($text == '0') {
+            if ($item->blank_if_zero) {
+              break;
+            }
+          } else if(empty($text)) {
             break;
           }
 
@@ -149,6 +154,5 @@ class IrdFormHelper {
 
       }
     }
-
   }
 }

@@ -7,6 +7,7 @@ class IrdFormFileField extends BaseModel {
     'type',
     'is_ird_fields',
     'hidden',
+    'blank_if_zero',
     'seq_no',
     'seq_sub_no',
     'x',

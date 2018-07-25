@@ -173,3 +173,10 @@ function getFiscalYearStartOfDate($theDate) {
 function getLastValidFiscalStartYear() {
   return getCurrentFiscalYearStartYear() - 1;
 }
+
+function startYear2FiscalYearLabel($year) {
+  // e.g. year = 2017
+  // output 17/18
+  //
+  return substr($year, -2).'/'.substr($year+1, -2);
+}

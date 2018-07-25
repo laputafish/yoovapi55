@@ -3,6 +3,7 @@
 use App\Helpers\TaxFormHelper;
 use App\Helpers\EventHelper;
 use App\Helpers\OA\OAHelper;
+use App\Helpers\FormHelper;
 
 use App\Models\FormEmployee;
 
@@ -34,13 +35,16 @@ class FormController extends BaseAuthController {
     'team_id'=>'',
     'form_no'=>'',
     'form_date'=>'',
-
     'lang_id'=>0,
     'status'=>'pending',
+
     'subject'=>'',
+    'published'=>0,
     'ird_form_type_id'=>0,
     'ird_form_id'=>0,
     'remark'=>'',
+    'signature_name'=>'',
+    'designation'=>'',
     'fiscal_start_year'=>0,
     'submitted_on'=>'',
     'employees'=>[]
@@ -193,16 +197,29 @@ class FormController extends BaseAuthController {
       $form->employees()->update($update);
       EventHelper::send('form', ['form'=>$form]);
 
+      $sheetNo = 1;
       foreach($form->employees as $formEmployee) {
+        $form->employees()->whereEmployeeId( $formEmployee->employee_id )->update(['sheet_no'=>$sheetNo]);
         EventHelper::send('formEmployee', [
           'form'=>$form,
           'formEmployee'=>$formEmployee]);
+        $sheetNo++;
       }
     }
 
     return response()->json([
       'status'=>true,
       'result'=>$newStatus
+    ]);
+  }
+
+  public function destroy($id) {
+    $form = $this->model->find($id);
+    FormHelper::removeIrdFormFiles($form);
+    $form->employees()->delete();
+    $form->delete();
+    return response()->json([
+      'status'=>true
     ]);
   }
 

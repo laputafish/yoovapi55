@@ -52,28 +52,13 @@ class TaxFormHelper
 
     $forms = Form::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
     self::fillForms($jobs, $forms );
-
-//    // Commencement
-//    $forms = FormCommencement::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-//    self::fillForms($jobs, $forms, 'commencement');
-//
-//    // Termination
-//    $forms = FormTermination::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-//    self::fillForms($jobs, $forms, 'termination');
-//
-//    // Departure
-//    $forms = FormDeparture::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-//    self::fillForms($jobs, $forms, 'departure');
-//
-//    // Salary
-//    $forms = FormSalary::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-//    self::fillForms($jobs, $forms, 'salary');
-
     usort($jobs, function ($a, $b) {
       return ($a > $b) ? 1 : -1;
     });
 
-    self::processJobs($jobs);
+    foreach ($jobs as $job) {
+      self::processJob($job);
+    }
 
     return false;
   }
@@ -123,7 +108,6 @@ class TaxFormHelper
     if (isset($form->lang)) {
       $langCode = $form->lang->lang_code;
     }
-
     IrdFormHelper::generate(
       $team,
       $formEmployee->employee_id,
@@ -131,10 +115,11 @@ class TaxFormHelper
       $langCode,
       [
         'form'=>$form,
-        'filePath'=>$filePath,
+        'outputFilePath'=>$targetFilePath,
         'sheetNo'=>$sheetNo
       ]
     );
+    return $targetFilePath;
 
 //    $formClass = get_class($form);
 //    switch ($formClass) {
@@ -310,9 +295,8 @@ class TaxFormHelper
     $pathSegs = [
       'teams',
       $team->oa_team_id,
-      self::getFormPath($form),
       $form->id,
-      $formEmployee->employee_id . '.pdf'
+      'sheet_'.$formEmployee->sheet_no.'.pdf'
     ];
     return implode('/', $pathSegs);
   }
@@ -367,15 +351,17 @@ class TaxFormHelper
       $employees = $form->employees()->get();
       $sheetNo = 1;
       foreach ($employees as $formEmployee) {
-        $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'processing']);
-        EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
-
-        self::generateForm($formEmployee, $form, $sheetNo);
-
-        $result = $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'ready']);
         $formEmployee = $form->employees()->whereEmployeeId($formEmployee->employee_id)->first();
-        $formEmployee->sheet_no = $sheetNo;
-        $formEmployee->save();
+        if($formEmployee->status != 'processing') {
+          $form->employees()->whereEmployeeId($formEmployee->employee_id)->update(['status' => 'processing']);
+          EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
+        }
+        $outputFilePath = self::generateForm($formEmployee, $form, $sheetNo);
+
+        $form->employees()->whereEmployeeId($formEmployee->employee_id)->update([
+          'status' => 'ready',
+          'file' => pathinfo($outputFilePath, PATHINFO_BASENAME)
+        ]);
 
         EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
         $sheetNo++;
@@ -468,13 +454,6 @@ class TaxFormHelper
         'progress' => 0,
         'status' => 'processing'
       ]));
-    }
-  }
-
-  public static function processJobs($jobs)
-  {
-    foreach ($jobs as $job) {
-      self::processJob($job);
     }
   }
 

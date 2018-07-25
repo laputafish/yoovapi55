@@ -10,6 +10,7 @@ use App\Models\FormCommencement;
 use App\Models\FormTermination;
 use App\Models\FormDeparture;
 use App\Models\FormSalary;
+use App\Models\Form;
 
 use App\Helpers\FolderHelper;
 use App\Helpers\MediaHelper;
@@ -219,6 +220,43 @@ class MediaController extends BaseController
       'Content-Type' => $contentType,
       'Content-Disposition' => 'inline; filename="' . $filename.'"'
     ]);
+  }
+
+  function showIrdForm($formId, $employeeId) {
+    $form = Form::find($formId);
+    $team = $form->team;
+    $teamEmployee = $team->employees()->whereId($employeeId)->first();
+    $irdForm = $form->irdForm;
+    $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
+    $filePath = '/teams/'.$team->oa_team_id.'/'.$form->id.'/'.$formEmployee->file;
+    $fileContent = Storage::get($filePath);
+    $contentType = \Config::get('content_types')['pdf']['type'];
+    $filename = $this->getIrdFormFilename($irdForm, $teamEmployee, startYear2FiscalYearLabel($form->fiscal_start_year));
+    return response()->make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'inline; filename="' . $filename.'"'
+    ]);
+  }
+
+  private function getIrdFormFilename($irdForm, $teamEmployee, $fiscalYearLabel=null) {
+    $segs = [];
+    $segs[] = $irdForm->ird_code;
+    if($irdForm->requires_fiscal_year && !is_null($fiscalYearLabel)) {
+      $segs[] = $fiscalYearLabel;
+    }
+
+    $username = 'employee_'.$teamEmployee->id;
+    if (!empty($teamEmployee->display_name)) {
+      $username = $teamEmployee->display_name;
+    } else {
+      $firstLastName = $this->firstLastName($teamEmployee);
+      if(!empty($firstLastName)) {
+        $username = $firstLastName;
+      }
+    }
+    $segs[] = strtolower($username);
+
+    return strtolower(implode('_', $segs)).'.pdf';
   }
 
   private function getTaxFormFilename($fiscalYear, $user) {
