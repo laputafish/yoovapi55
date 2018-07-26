@@ -180,3 +180,11 @@ function startYear2FiscalYearLabel($year) {
   //
   return substr($year, -2).'/'.substr($year+1, -2);
 }
+
+function getRandomItem($ar) {
+  return $ar[rand(0,count($ar)-1)];
+}
+
+function getRandomForProbability($str, $not, $probability) {
+  return rand(1,10000) > ($probability*10000) ? $not : $str;
+}

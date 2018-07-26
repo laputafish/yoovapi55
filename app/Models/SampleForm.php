@@ -1,7 +1,7 @@
 <?php namespace App\Models;
 
 class SampleForm extends BaseIRDForm {
-  protected $modelName = 'Form';
+  protected $modelName = 'SampleForm';
   protected $employeeModelName = 'SampleFormEmployee';
 
   protected $fillable = [
