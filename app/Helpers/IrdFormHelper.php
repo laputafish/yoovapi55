@@ -56,7 +56,6 @@ class IrdFormHelper {
     $ern = $registrationNumberSegs[1];
     $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
 
-
     $formDate = date('Y-m-d');
     $designation = 'Manager';
 
@@ -88,13 +87,17 @@ class IrdFormHelper {
       'ErName' => $oaTeam['name'],
       'Designation' => $designation,
       'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
-      'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
+      'TotIncomeBatch' => 0, // isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
+      'Employees' => []
     ];
     return $result;
   }
 
   public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
   {
+    // IRD Master Data
+    $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
+
     // Fetch related IRD Form Record
     $irdForm = IrdForm::whereFormCode(strtoupper($formCode))->first();
 
@@ -113,7 +116,9 @@ class IrdFormHelper {
       $formCode;
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irDataClassPrefix.'Helper'));
     $options = array_merge($options, ['defaults'=>self::$defaults]);
-    $data = $irDataHelperClassName::get($team, $employeeId, $options);
+
+    $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
+    $pdfData = array_merge($irdMaster, $irdEmployee);
 
     // process
     $pdfOptions = [
@@ -124,7 +129,7 @@ class IrdFormHelper {
     ];
     $pdf = new FormPdf($pdfOptions);
     $fieldList = $irdFormFile->fields;
-    self::fillData($pdf, $fieldList, $data);
+    self::fillData($pdf, $fieldList, $pdfData);
 
     // Output
     if(isset($outputFilePath)) {
@@ -135,7 +140,7 @@ class IrdFormHelper {
     } else {
       $pdf->Output('ird_'.$formCode.'.pdf');
     }
-    return;
+    return $irdEmployee;
   }
 
   private static function fillData($pdf, $fieldList, $data) {
@@ -148,7 +153,7 @@ class IrdFormHelper {
       $fontStyle = isset($item->font_style) ? $item->font_style : '';
       switch ($item->type) {
         case 'string':
-          $text = $data->{$item->key};
+          $text = $data[$item->key];
 
           if($text == '0') {
             if ($item->blank_if_zero) {

@@ -170,6 +170,7 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('ird_forms', 'IrdFormController');
     Route::resource('forms', 'FormController');
 
+    Route::resource('ird56b_sample_forms', 'Ird56bSampleFormController');
     Route::resource('oa_token', 'OATokenController', ['only'=>['store']]);
 //    Route::get('users/init', 'UserController@init');
 });

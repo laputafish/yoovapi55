@@ -78,6 +78,12 @@ class OAHelper
     return $result;
   }
 
+
+  public static function refreshTokenByTeam($team) {
+    OAHelper::updateTeamToken($team);
+    return $team->getOaAuth();
+  }
+
   public static function updateTeamToken($team)
   {
     $user = User::whereOaLastTeamId($team->oa_team_id)->first();
@@ -216,9 +222,5 @@ class OAHelper
     return CurlHelper::postData($url, $header, $dataStr);
   }
 
-  public static function refreshTokenByTeam($team) {
-    OAHelper::updateTeamToken($team);
-    return $team->getOaAuth();
-  }
 
 }

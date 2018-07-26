@@ -180,33 +180,40 @@ class FormController extends BaseAuthController {
   }
 
   protected function processCommand( $command ) {
+    $formId = \Input::get('formId');
+    $form = $this->model->find($formId);
+    if(is_null($form)) {
+      return response()->json([
+        'status'=>false,
+        'result'=>''
+      ]);
+    }
+
     OAHelper::refreshTeamToken($this->user, $this->team);
     $newStatus = '';
     switch ($command) {
       case 'generate':
         $newStatus = 'ready_for_processing';
+        $update = ['status'=>$newStatus];
+        $form->update($update);
+        $form->employees()->update($update);
         break;
       case 'terminate':
         $newStatus = 'terminated';
+        $update = ['status'=>$newStatus];
+        $form->update($update);
+        $form->employees()->where('status', '!=', 'ready')->update($update);
         break;
     }
-    $formId = \Input::get('formId');
-    $form = $this->model->find($formId);
+    EventHelper::send('form', ['form'=>$form]);
 
-    if(!is_null($form)) {
-      $update = ['status'=>$newStatus];
-      $form->update($update);
-      $form->employees()->update($update);
-      EventHelper::send('form', ['form'=>$form]);
-
-      $sheetNo = 1;
-      foreach($form->employees as $formEmployee) {
-        $form->employees()->whereEmployeeId( $formEmployee->employee_id )->update(['sheet_no'=>$sheetNo]);
-        EventHelper::send('formEmployee', [
-          'form'=>$form,
-          'formEmployee'=>$formEmployee]);
-        $sheetNo++;
-      }
+//    $sheetNo = 1;
+    foreach($form->employees as $formEmployee) {
+//        $form->employees()->whereEmployeeId( $formEmployee->employee_id )->update(['sheet_no'=>$sheetNo]);
+      EventHelper::send('formEmployee', [
+        'form'=>$form,
+        'formEmployee'=>$formEmployee]);
+//      $sheetNo++;
     }
 
     return response()->json([

@@ -10,7 +10,7 @@ class Ir56bHelper extends IrDataHelper
   public static function get($team, $employeeId, $options = [])
   {
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
-    $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
+    // $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
     $form = array_key_exists('form', $options) ? $options['form'] : null;
 
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
@@ -22,35 +22,35 @@ class Ir56bHelper extends IrDataHelper
     //***
     // form->fiscal_year is the year of fiscal year end date
     $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
-    if (isset($form)) {
-      $signatureName = $form->signature_name;
-      $designation = $form->designation;
-      $formDate = $form->form_date;
-//      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
-      if (array_key_exists('sheetNo', $options)) {
-        $sheetNo = $options['sheetNo'];
-      }
-    } else {
-      $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
-      $designation = $team->getSetting('designation', '(No designation)');
-      $formDate = date('Y-m-d');
-//      if(array_key_exists('year', $options)) {
-//        $year = $options['year'];
-//        $fiscalYearStart = ($year-1).'-04-01';
-//      } else {
-//        $fiscalYearStart = getCurrentFiscalYearStartDate();
+//    if (isset($form)) {
+//      $signatureName = $form->signature_name;
+//      $designation = $form->designation;
+//      $formDate = $form->form_date;
+////      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
+//      if (array_key_exists('sheetNo', $options)) {
+//        $sheetNo = $options['sheetNo'];
 //      }
-    }
-//    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
-//    $fiscalYearPeriod = [
-//      'startDate' => $fiscalStartYear . '-04-01',
-//      'endDate' => ($fiscalStartYear + 1) . '-03-31'
-//    ];
+//    } else {
+//      $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
+//      $designation = $team->getSetting('designation', '(No designation)');
+//      $formDate = date('Y-m-d');
+////      if(array_key_exists('year', $options)) {
+////        $year = $options['year'];
+////        $fiscalYearStart = ($year-1).'-04-01';
+////      } else {
+////        $fiscalYearStart = getCurrentFiscalYearStartDate();
+////      }
+//    }
+////    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
+////    $fiscalYearPeriod = [
+////      'startDate' => $fiscalStartYear . '-04-01',
+////      'endDate' => ($fiscalStartYear + 1) . '-03-31'
+////    ];
 
     // Grab data from OA
-    $oaTeam = self::getOATeam();
+//    $oaTeam = self::getOATeam();
     $oaEmployee = self::getOAAdminEmployee();
-    $oaSalaries = self::getOASalary();
+// $oaSalaries = self::getOASalary();
     $oaPayrollSummary = self::getOAPayrollSummary($fiscalYearInfo);
 
     if (is_null($oaEmployee)) {
@@ -68,40 +68,40 @@ class Ir56bHelper extends IrDataHelper
     $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
       str_replace('-', '', $empEndDate);
 
-    $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
+//    $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
 
-    // Company
-    $registrationNumber = $oaTeam['setting']['registrationNumber'];
-    $registrationNumberSegs = explode('-', $registrationNumber);
-    $section = $registrationNumberSegs[0];
-    $ern = $registrationNumberSegs[1];
-    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
+//    // Company
+//    $registrationNumber = $oaTeam['setting']['registrationNumber'];
+//    $registrationNumberSegs = explode('-', $registrationNumber);
+//    $section = $registrationNumberSegs[0];
+//    $ern = $registrationNumberSegs[1];
+//    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
 
-    $result = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [
-      // Non-ird fields
-      'HeaderPeriod' => strtoupper($headerPeriod),
-      'EmpPeriod' => $headerPeriod . ':',
-      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
-      'FileNo' => $registrationNumber,
-
-      // for Chinese version only
-      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
-      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
-      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
-      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-
-      // Ird fields
-      'Section' => $section,
-      'ERN' => $ern,
-      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
-      'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
-      'ErName' => $oaTeam['name'],
-      'Designation' => $designation,
-      'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
-      'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
-    ];
+//    $result = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [
+//      // Non-ird fields
+//      'HeaderPeriod' => strtoupper($headerPeriod),
+//      'EmpPeriod' => $headerPeriod . ':',
+//      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
+//      'FileNo' => $registrationNumber,
+//
+//      // for Chinese version only
+//      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
+//      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+//      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
+//      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+//      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
+//      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
+//
+//      // Ird fields
+//      'Section' => $section,
+//      'ERN' => $ern,
+//      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
+//      'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
+//      'ErName' => $oaTeam['name'],
+//      'Designation' => $designation,
+//      'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
+//      'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
+//    ];
 
     //*************************************************************************************
 
@@ -122,7 +122,7 @@ class Ir56bHelper extends IrDataHelper
       $defaults['martialStatus'] :
       ($oaEmployee['marital'] == 'married' ? 2 : 1);
 
-    $result = array_merge($result, [
+    $result = [
       // Ird fields
       'SheetNo' => $sheetNo,
       'HKID' => $oaEmployee['identityNumber'],
@@ -210,7 +210,7 @@ class Ir56bHelper extends IrDataHelper
 
       // Remark
       'Remarks' => array_key_exists('remarks', $defaults) ? $defaults['remarks'] : ''
-    ]);
+    ];
 
     // Income Particulars
     $tableMapping = [
@@ -283,6 +283,6 @@ class Ir56bHelper extends IrDataHelper
       $result['Remarks'] = $defaults['remarks'];
     }
 
-    return (object) $result;
+    return $result;
   }
 }

@@ -116,4 +116,8 @@ class Team extends BaseModel {
   public function employees() {
     return $this->hasMany('App\Models\TeamEmployee');
   }
+
+  public function sampleForms() {
+    return $this->hasMany('App\Models\SampleForm');
+  }
 }

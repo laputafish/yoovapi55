@@ -110,9 +110,7 @@ class TaxFormHelper
       $langCode = $form->lang->lang_code;
     }
 
-    $irdFormCompanyData = [];
-
-    IrdFormHelper::generate(
+    $irdEmployee = IrdFormHelper::generate(
       $team,
       $formEmployee->employee_id,
       $form->irdForm->form_code,
@@ -124,7 +122,11 @@ class TaxFormHelper
         'irdMaster'=>$irdMaster
       ]
     );
-    return $targetFilePath;
+
+    return [
+      'outputFilePath'=>$targetFilePath,
+      'irdEmployee'=>$irdEmployee
+    ];
 
 //    $formClass = get_class($form);
 //    switch ($formClass) {
@@ -347,10 +349,9 @@ class TaxFormHelper
       $form->status = 'terminated';
       $form->save();
       EventHelper::send( 'form', ['form'=>$form]);
-
     } else {
       $team = $form->team;
-      OAHelper::updateTeamToken($team);
+//      OAHelper::updateTeamToken($team);
 
       logConsole('team #'.$team->id.'  ('.$team->oa_team_id.')',1);
       if ($form->status != 'processing') {
@@ -358,32 +359,55 @@ class TaxFormHelper
         EventHelper::send('form', ['form' => $form]);
       }
       $employees = $form->employees()->get();
-      $sheetNo = 1;
 
       $irdMaster = IrdFormHelper::getIrdMaster($team,$form);
 
+      $sheetNo = 1;
       foreach ($employees as $formEmployee) {
+        $form = Form::find($form->id);
+        if($form->status != 'processing') {
+          break;
+        }
         $employeeId = $formEmployee->employee_id;
 
         echo 'processing employee #'.$employeeId.' ...'; nl();
         $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
+
+        // Status => "Processing"
         if($formEmployee->status != 'processing') {
           $form->employees()->whereEmployeeId($employeeId)->update(['status' => 'processing']);
           $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
           EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
         }
-        $outputFilePath = self::generateForm($formEmployee, $form, $sheetNo, $irdMaster);
+
+        // Process
+        $generationResult = self::generateForm($formEmployee, $form, $sheetNo, $irdMaster);
+        // generationResult = [
+        //    'irdEmployee'=>...
+        //    'outputFilePath'=>'....'
+        // ]
+        //
+
+        // Status => "Ready"
         $form->employees()->whereEmployeeId($employeeId)->update([
           'status' => 'ready',
-          'file' => pathinfo($outputFilePath, PATHINFO_BASENAME)
+          'file' => pathinfo( $generationResult['outputFilePath'], PATHINFO_BASENAME)
         ]);
         $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
-
         EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
         $sheetNo++;
+
+        // Calculation Summary
+        $irdEmployee = $generationResult['irdEmployee'];
+        $irdMaster['Employees'][] = $irdEmployee;
+        $irdMaster['TotIncomeBatch'] += (double) $irdEmployee['TotalIncome'];
       }
-      $form->update(['status' => 'ready']);
+      if($form->status == 'processing') {
+        $form->update(['status' => 'ready']);
+      }
       EventHelper::send('form', ['form' => $form]);
+      print_r( $irdMaster);
+
     }
   }
 
