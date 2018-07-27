@@ -41,7 +41,7 @@ class OAAuthController extends BaseController
 
     if ($connectOASuccess) {
       if (!isset($user)) {
-        $user = createUserEntry($email, $password);
+        $user = $this->createUserEntry($email, $password);
       }
       $user->fillOAAuth($oaAuth);
     }

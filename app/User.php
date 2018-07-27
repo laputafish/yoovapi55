@@ -20,6 +20,7 @@ class User extends Authenticatable
    * @var array
    */
   protected $fillable = [
+    'employee_id',
     'name',
     'alias',
     'first_name',
@@ -31,8 +32,8 @@ class User extends Authenticatable
     'lang_id',
     'oa_token_type',
     'oa_access_token',
-    'oa_expires_in',
     'oa_refresh_token',
+    'oa_expires_in',
     'oa_last_team_id'
   ];
 

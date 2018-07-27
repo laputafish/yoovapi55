@@ -9,6 +9,7 @@ class UserController extends BaseAuthController
 {
   protected $modelName = 'User';
   protected $rules = [
+    'employee_id' => 'integer',
     'oa_last_team_id'=> 'string'
   ];
 
@@ -138,15 +139,21 @@ class UserController extends BaseAuthController
   public function getUser()
   {
     $user = request()->user();
-    if(is_null($user->oa_last_team_id)) {
-      $user = null;
-    }
-    else {
+
+//    if(is_null($user->oa_last_team_id)) {
+//      $user = null;
+//    }
+//    else {
       $oaTokenValid = OAHelper::checkOAToken($user);
       $user = $oaTokenValid ?
         $this->model->find($user->id) :
         null;
-    }
+//    }
+      $user->roles = [
+        'id' => 79,
+        'name' => 'Payroll Management',
+        'description' => 'Payroll Management'
+      ];
     return response()->json($user);
   }
 
