@@ -6,18 +6,19 @@ class SampleForm extends BaseIRDForm {
 
   protected $fillable = [
     'team_id',
-//    'form_no',
-    'form_date',
     'lang_id',
-    'status',
-//    'subject',
-//    'published',
-    'ird_form_type_id',
-    'ird_form_id',
-    'fiscal_start_year',
-    'remark',
+    'application_date',
+    'apply_printed_forms',
+    'apply_softcopies',
+    'company_file_no',
+    'company_name',
+    'tel_no',
     'signature_name',
-    'designation'
+    'designation',
+    'fiscal_start_year',
+    'fiscal_years',
+    'is_update',
+    'remark'
   ];
 
   public function irdFormType() {

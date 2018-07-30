@@ -17,13 +17,69 @@ class SampleFormController extends BaseAuthController
 {
   protected $modelName = 'SampleForm';
 
+  public function show($teamId) {
+    $sampleForm = $this->team->sampleForm;
+    if(is_null($sampleForm)) {
+      $sampleForm = $this->team->sampleForm()->save(new SampleForm([
+        'status' => 'pending',
+        'lang_id' => 'en-us',
+        'application_date' => date('yyyy-mm-dd'),
+        'apply_printed_forms' => '',
+        'apply_softcopies' => '',
+        'company_file_no' => '',
+        'company_name' => '',
+        'tel_no' => '',
+        'signature_name' => '',
+        'designation' => '',
+        'fiscal_start_year' => 0,
+        'is_update' => 0,
+        'remark' => ''
+      ]));
+    }
+    return response()->json([
+      'status'=>true,
+      'result'=>$sampleForm
+    ]);
+  }
 
   public function store() {
     $command = \Input::get('command', '');
     switch($command) {
       case 'generate':
+        $this->saveSampleForm();
         $this->generateSampleForm();
         break;
+      default:
+        $this->saveSampleForm();
+        break;
+    }
+    return response()->json([
+      'status'=>true
+    ]);
+  }
+
+  public function saveSampleForm() {
+    $sampleForm = $this->team->sampleForm;
+    $langId = Lang::whereCode(\Input::get('lang', 'en-us'))->value('id');
+    $data = [
+      'lang_id' => $langId,
+      'application_date' => \Input::get('application_date'),
+      'apply_printed_forms' => \Input::get('apply_printed_forms'),
+      'apply_softcopies' => \Input::get('apply_softcopies'),
+      'company_file_no' => \Input::get('company_file_no'),
+      'company_name' => \Input::get('company_name'),
+      'tel_no' => \Input::get('telNo'),
+      'signature_name' => \Input::get('signature_name'),
+      'designation' => \Input::get('designation'),
+      'fiscal_start_year' => \Input::get('fiscal_start_year'),
+      'is_update' => \Input::get('is_update'),
+      'remark' => \Input::get('remark', '')
+    ];
+    if(is_null($sampleForm)) {
+      $data['status'] = 'pending';
+      $sampleForm = $this->team->sampleForm()->save(new SampleForm($data));
+    } else {
+      $this->team->sampleForm()->update($data);
     }
     return response()->json([
       'status'=>true
@@ -39,10 +95,10 @@ class SampleFormController extends BaseAuthController
       $irdForm = IrdForm::find($irdFormId);
     }
 
-    $sampleForm = $this->team->sampleForms()->whereIrdFormId($irdForm->id)->first();
+    $sampleForm = $this->team->sampleForm()->whereIrdFormId($irdForm->id)->first();
     if(is_null($sampleForm)) {
       $langId = Lang::whereCode(\Input::get('lang', 'en-us'))->value('id');
-      $sampleForm = $this->team->sampleForms()->save(new SampleForm([
+      $sampleForm = $this->team->sampleForm()->save(new SampleForm([
         'lang_id'=>$langId,
         'form_date'=>\Input::get('formDate'),
         'status'=>'pending',
