@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\SalaryFormStatusUpdatedEvent;
+use App\Events\xxxSalaryFormStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -21,10 +21,10 @@ class SalaryFormStatusUpdatedListener
     /**
      * Handle the event.
      *
-     * @param  SalaryFormStatusUpdatedEvent  $event
+     * @param  xxxSalaryFormStatusUpdatedEvent  $event
      * @return void
      */
-    public function handle(SalaryFormStatusUpdatedEvent $event)
+    public function handle(xxxSalaryFormStatusUpdatedEvent $event)
     {
         //
     }

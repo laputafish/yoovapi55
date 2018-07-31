@@ -60,15 +60,14 @@ class SampleFormController extends BaseAuthController
 
   public function saveSampleForm() {
     $sampleForm = $this->team->sampleForm;
-    $langId = Lang::whereCode(\Input::get('lang', 'en-us'))->value('id');
     $data = [
-      'lang_id' => $langId,
+      'lang_id' => \Input::get('lang_id'),
       'application_date' => \Input::get('application_date'),
       'apply_printed_forms' => \Input::get('apply_printed_forms'),
       'apply_softcopies' => \Input::get('apply_softcopies'),
       'company_file_no' => \Input::get('company_file_no'),
       'company_name' => \Input::get('company_name'),
-      'tel_no' => \Input::get('telNo'),
+      'tel_no' => \Input::get('tel_no'),
       'signature_name' => \Input::get('signature_name'),
       'designation' => \Input::get('designation'),
       'fiscal_start_year' => \Input::get('fiscal_start_year'),
@@ -87,28 +86,13 @@ class SampleFormController extends BaseAuthController
   }
 
   public function generateSampleForm() {
-    $irdFormId = \Input::get('irdFormId', '');
-    if(empty($irdFormId)) {
-      $formCode = \Input::get('formCode', 'IR56B');
-      $irdForm = IrdForm::whereFormCode(strtoupper($formCode))->first();
-    } else {
-      $irdForm = IrdForm::find($irdFormId);
-    }
+    $sampleForm = $this->team->sampleForm;
+    $sampleForm->status = 'ready_for_processing';
+    $sampleForm->processed_printed_forms = '';
+    $sampleForm->processed_softcopies = '';
+    $sampleForm->save();
 
-    $sampleForm = $this->team->sampleForm()->whereIrdFormId($irdForm->id)->first();
-    if(is_null($sampleForm)) {
-      $langId = Lang::whereCode(\Input::get('lang', 'en-us'))->value('id');
-      $sampleForm = $this->team->sampleForm()->save(new SampleForm([
-        'lang_id'=>$langId,
-        'form_date'=>\Input::get('formDate'),
-        'status'=>'pending',
-        'ird_form_type_id'=>$irdForm->ird_form_type_id,
-        'ird_form_id'=>$irdForm->id,
-        'fiscal_start_year'=>getCurrentFiscalYearStartYear() - 1,
-        'remark'=>'',
-        'designation'=>\Input::get('designation','Manager')
-      ]));
-    }
+    EventHelper::send('requestForm', ['sampleForm'=>$sampleForm]);
 
     $this->createSampleFormEmployees($sampleForm);
     return response()->json([

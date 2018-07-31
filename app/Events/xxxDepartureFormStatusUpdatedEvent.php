@@ -10,7 +10,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class FormEmployeeStatusUpdatedEvent implements ShouldBroadcast
+class xxxDepartureFormStatusUpdatedEvent implements ShouldBroadcast
 {
   use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -18,7 +18,8 @@ class FormEmployeeStatusUpdatedEvent implements ShouldBroadcast
   /*
     'team' => $form->team,
     'formId' => $form->id,
-    'employeeId' => $employee->employee_id,
+    'total' => $form->employees()->count(),
+    'progress' => 0,
     'status' => 'ready_for_processing'
    */
   /**
@@ -29,10 +30,6 @@ class FormEmployeeStatusUpdatedEvent implements ShouldBroadcast
   public function __construct($statusInfo)
   {
     $this->statusInfo = $statusInfo;
-//    echo 'formEmployee event created: ';
-//    nl();
-//    echo 'oa_team_id = ' . $this->statusInfo['team']['oa_team_id'];
-//    nl();
   }
 
   /**
@@ -42,12 +39,12 @@ class FormEmployeeStatusUpdatedEvent implements ShouldBroadcast
    */
   public function broadcastOn()
   {
-    return new Channel('team_' . $this->statusInfo['team']['oa_team_id']);
-    // return new PrivateChannel('channel-name');
+    return new Channel('team_' . $this->statusInfo['team']->oa_team_id);
+//        return new PrivateChannel('channel-name');
   }
 
   public function broadcastAs()
   {
-    return 'commencement_form_employee_status_updated';
+    return 'departure_form_status_updated';
   }
 }

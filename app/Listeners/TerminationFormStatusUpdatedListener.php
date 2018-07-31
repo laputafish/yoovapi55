@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\TerminationFormStatusUpdatedEvent;
+use App\Events\xxxTerminationFormStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -21,10 +21,10 @@ class TerminationFormStatusUpdatedListener
     /**
      * Handle the event.
      *
-     * @param  TerminationFormStatusUpdatedEvent  $event
+     * @param  xxxTerminationFormStatusUpdatedEvent  $event
      * @return void
      */
-    public function handle(TerminationFormStatusUpdatedEvent $event)
+    public function handle(xxxTerminationFormStatusUpdatedEvent $event)
     {
         //
     }

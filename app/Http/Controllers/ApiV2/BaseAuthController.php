@@ -7,8 +7,8 @@ use App\Models\Team;
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
 
-use App\Events\TaxFormNewJobEvent;
-use App\Events\TaxFormStatusUpdatedEvent;
+use App\Events\xxxTaxFormNewJobEvent;
+use App\Events\xxxTaxFormStatusUpdatedEvent;
 
 class BaseAuthController extends BaseController {
   protected $team = null;

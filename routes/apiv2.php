@@ -172,6 +172,8 @@ Route::group(['middleware'=>'auth:api'], function() {
 
     Route::resource('sample_forms', 'SampleFormController');
     Route::resource('oa_token', 'OATokenController', ['only'=>['store']]);
+
+    Route::resource('langs', 'LangController');
 //    Route::get('users/init', 'UserController@init');
 });
 

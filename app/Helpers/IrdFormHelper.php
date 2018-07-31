@@ -143,6 +143,41 @@ class IrdFormHelper {
     return $irdEmployee;
   }
 
+  public static function buildPdf( $options ) {
+    // options = {
+    //    title
+    //    data
+    //    fields
+    //    templateFile
+    //    outputFile,
+    //
+    //    topOffset,
+    //    rightMargin
+    // }
+    $pdfOptions = [
+      'title'=>$options['title'],
+      'topOffset'=>$options['topOffset'],
+      'rightMargin'=>$options['rightMargin'],
+      'templateFilePath'=>$options['templateFile']
+    ];
+    $pdf = new FormPdf($pdfOptions);
+    self::fillData($pdf, $options['fields'], $options['data']);
+
+    // create folder if not exists
+    $outputFile = $options['outputFile'];
+    $folder = pathinfo($outputFile, PATHINFO_DIRNAME);
+    FolderHelper::checkCreateFolders($folder);
+
+    if(isset($outputFile)) {
+      if(file_exists($outputFile)) {
+        unlink($outputFile);
+      }
+      $pdf->Output($outputFile, 'F');
+    } else {
+      $pdf->Output('output.pdf');
+    }
+  }
+
   private static function fillData($pdf, $fieldList, $data) {
     foreach($fieldList as $item) {
       if($item->hidden) {

@@ -22,7 +22,8 @@ class IrdFormFileField extends BaseModel {
     'lang',
     'append_asterisk',
     'to_currency',
-    'remark'
+    'remark',
+    'is_symbol'
   ];
 
   public $timestamps = false;

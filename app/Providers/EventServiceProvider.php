@@ -16,45 +16,45 @@ class EventServiceProvider extends ServiceProvider
       'App\Events\ScannedDocumentReceivedEvent' => [
         'App\Listeners\ScannedDocumentReceivedListener'
       ],
-      'App\Events\TaxFormNewJobEvent' => [
+      'App\Events\xxxTaxFormNewJobEvent' => [
         'App\Listeners\TaxFormNewJobListener'
       ],
-      'App\Events\TaxFormStatusUpdatedEvent' => [
+      'App\Events\xxxTaxFormStatusUpdatedEvent' => [
         'App\Listeners\TaxFormStatusUpdatedListener'
       ],
       // Form
-      'App\Events\FormStatusUpdatedEvent' => [
+      'App\Events\IrdFormStatusUpdatedEvent' => [
         'App\Listeners\FormStatusUpdatedListener',
       ],
-      'App\Events\FormEmployeeStatusUpdatedEvent' => [
+      'App\Events\IrdFormEmployeeStatusUpdatedEvent' => [
         'App\Listeners\FormEmployeeStatusUpdatedListener',
       ],
       // Commencement Form
-      'App\Events\CommencementFormStatusUpdatedEvent' => [
+      'App\Events\xxxCommencementFormStatusUpdatedEvent' => [
         'App\Listeners\CommencementFormStatusUpdatedListener',
       ],
-      'App\Events\CommencementFormEmployeeStatusUpdatedEvent' => [
+      'App\Events\xxxxxCommencementFormEmployeeStatusUpdatedEvent' => [
         'App\Listeners\CommencementFormEmployeeStatusUpdatedListener',
       ],
       // Termination Form
-      'App\Events\TerminationFormStatusUpdatedEvent' => [
+      'App\Events\xxxTerminationFormStatusUpdatedEvent' => [
         'App\Listeners\TerminationFormStatusUpdatedListener',
       ],
-      'App\Events\TerminationFormEmployeeStatusUpdatedEvent' => [
+      'App\Events\xxxTerminationFormEmployeeStatusUpdatedEvent' => [
         'App\Listeners\TerminationFormEmployeeStatusUpdatedListener',
       ],
       // Departure Form
-      'App\Events\DepartureFormStatusUpdatedEvent' => [
+      'App\Events\xxxDepartureFormStatusUpdatedEvent' => [
         'App\Listeners\DepartureFormStatusUpdatedListener',
       ],
-      'App\Events\DepartureFormEmployeeStatusUpdatedEvent' => [
+      'App\Events\xxxDepartureFormEmployeeStatusUpdatedEvent' => [
         'App\Listeners\DepartureFormEmployeeStatusUpdatedListener',
       ],
       // Salary Form
-      'App\Events\SalaryFormStatusUpdatedEvent' => [
+      'App\Events\xxxSalaryFormStatusUpdatedEvent' => [
         'App\Listeners\SalaryFormStatusUpdatedListener',
       ],
-      'App\Events\SalaryFormEmployeeStatusUpdatedEvent' => [
+      'App\Events\xxxSalaryFormEmployeeStatusUpdatedEvent' => [
         'App\Listeners\SalaryFormEmployeeStatusUpdatedListener',
       ]
 

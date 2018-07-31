@@ -3,11 +3,15 @@ function nl() {
     echo "<br/>\n";
 }
 
+function nf() {
+  echo "\n";
+}
+
 function logConsole($msg, $indentLevel=0) {
   if ($indentLevel > 0) {
     echo str_repeat('   ', $indentLevel);
   }
-  echo $msg; nl();
+  echo $msg; nf();
 }
 
 function getLocalDateTime()
@@ -187,4 +191,19 @@ function getRandomItem($ar) {
 
 function getRandomForProbability($str, $not, $probability) {
   return rand(1,10000) > ($probability*10000) ? $not : $str;
+}
+
+function tickIfExists($str, $ar=null) {
+  $tickMark = '3';
+  if(is_null($ar)) {
+    return empty($str) ? '' : $tickMark;
+  } else {
+    return in_array($str, $ar) ? $tickMark : '';
+  }
+}
+
+function tickIfTrue($value)
+{
+  $tickMark = '3';
+  return $value ? $tickMark : '';
 }

@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\TaxFormNewJobEvent;
+use App\Events\xxxTaxFormNewJobEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -21,10 +21,10 @@ class TaxFormNewJobListener
     /**
      * Handle the event.
      *
-     * @param  TaxFormNewJobEvent  $event
+     * @param  xxxTaxFormNewJobEvent  $event
      * @return void
      */
-    public function handle(TaxFormNewJobEvent $event)
+    public function handle(xxxTaxFormNewJobEvent $event)
     {
         //
     }

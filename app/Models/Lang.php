@@ -3,6 +3,8 @@
 class Lang extends BaseModel {
   protected $fillable = [
     'code',
-    'name'
+    'name',
+    'token',
+    'enabled'
   ];
 }

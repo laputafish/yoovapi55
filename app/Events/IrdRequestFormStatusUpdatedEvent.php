@@ -10,16 +10,14 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class SalaryFormStatusUpdatedEvent implements ShouldBroadcast
+class IrdRequestFormStatusUpdatedEvent implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+  use Dispatchable, InteractsWithSockets, SerializesModels;
 
   public $statusInfo;
   /*
     'team' => $form->team,
     'formId' => $form->id,
-    'total' => $form->employees()->count(),
-    'progress' => 0,
     'status' => 'ready_for_processing'
    */
   /**
@@ -39,11 +37,10 @@ class SalaryFormStatusUpdatedEvent implements ShouldBroadcast
    */
   public function broadcastOn()
   {
-    return new Channel( 'team_'.$this->statusInfo['team']->oa_team_id );
-//        return new PrivateChannel('channel-name');
+    return new Channel( 'team_'.$this->statusInfo['team']['oa_team_id']);
   }
 
   public function broadcastAs() {
-    return 'salary_form_status_updated';
+    return 'commencement_form_status_updated';
   }
 }

@@ -10,9 +10,9 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class FormStatusUpdatedEvent implements ShouldBroadcast
+class xxxTerminationFormStatusUpdatedEvent implements ShouldBroadcast
 {
-  use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
   public $statusInfo;
   /*
@@ -39,10 +39,11 @@ class FormStatusUpdatedEvent implements ShouldBroadcast
    */
   public function broadcastOn()
   {
-    return new Channel( 'team_'.$this->statusInfo['team']['oa_team_id']);
+    return new Channel( 'team_'.$this->statusInfo['team']->oa_team_id );
+//        return new PrivateChannel('channel-name');
   }
 
   public function broadcastAs() {
-    return 'commencement_form_status_updated';
+    return 'termination_form_status_updated';
   }
 }

@@ -22,6 +22,9 @@ class BaseIRDForm extends BaseModel {
     return $this->employees()->count();
   }
 
+  public function lang() {
+    return $this->belongsTo('App\Models\Lang' );
+  }
   public function team() {
     return $this->belongsTo('App\Models\Team', 'team_id');
   }

@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\FormStatusUpdatedEvent;
+use App\Events\IrdFormStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -21,10 +21,10 @@ class FormStatusUpdatedListener
   /**
    * Handle the event.
    *
-   * @param  FormStatusUpdatedEvent  $event
+   * @param  IrdFormStatusUpdatedEvent  $event
    * @return void
    */
-  public function handle(FormStatusUpdatedEvent $event)
+  public function handle(IrdFormStatusUpdatedEvent $event)
   {
     //
   }

@@ -10,7 +10,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class DepartureFormEmployeeStatusUpdatedEvent implements ShouldBroadcast
+class xxxSalaryFormStatusUpdatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -44,6 +44,6 @@ class DepartureFormEmployeeStatusUpdatedEvent implements ShouldBroadcast
   }
 
   public function broadcastAs() {
-    return 'departure_form_employee_status_updated';
+    return 'salary_form_status_updated';
   }
 }

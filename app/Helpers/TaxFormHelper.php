@@ -3,28 +3,15 @@
 use App\Models\TeamJob;
 use App\Models\IrdForm;
 use App\Models\Form;
-//use App\Models\FormCommencement;
-//use App\Models\FormTermination;
-//use App\Models\FormSalary;
-//use App\Models\formDeparture;
+use App\Models\SampleForm;
 use App\Models\FormType;
 
-use App\Events\TaxFormStatusUpdatedEvent;
+use App\Events\xxxTaxFormStatusUpdatedEvent;
 
-use App\Events\FormStatusUpdatedEvent;
-use App\Events\FormEmployeeStatusUpdatedEvent;
-
-//use App\Events\CommencementFormStatusUpdatedEvent;
-//use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
-//
-//use App\Events\TerminationFormStatusUpdatedEvent;
-//use App\Events\TerminationFormEmployeeStatusUpdatedEvent;
-//
-//use App\Events\DepartureFormStatusUpdatedEvent;
-//use App\Events\DepartureFormEmployeeStatusUpdatedEvent;
-//
-//use App\Events\SalaryFormStatusUpdatedEvent;
-//use App\Events\SalaryFormEmployeeStatusUpdatedEvent;
+use App\Events\IrdFormStatusUpdatedEvent;
+use App\Events\IrdFormEmployeeStatusUpdatedEvent;
+use App\Events\IrdRequestFormItemStatusUpdatedEvent;
+use App\Events\IrdRequestFormtatusUpdatedEvent;
 
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\OA\OATeamHelper;
@@ -34,6 +21,7 @@ use App\Helpers\IrData\IrDataHelper;
 use App\Helpers\IrData\Ir56eHelper;
 
 use App\Helpers\Forms\CommencementFormPdfHelper;
+use App\Helpers\IrData\IrdApplicationLetterHelper;
 
 class TaxFormHelper
 {
@@ -50,10 +38,16 @@ class TaxFormHelper
   {
     $jobs = [];
 
+    // IRD Forms
     $forms = Form::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillForms($jobs, $forms );
+    self::fillIrdForms($jobs, $forms );
+
+    // IRD Reqest Forms
+    $sampleForms = SampleForm::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
+    self::fillIrdSampleForm( $jobs, $sampleForms );
+
     usort($jobs, function ($a, $b) {
-      return ($a > $b) ? 1 : -1;
+      return ($a['updated_at'] > $b['updated_at']) ? 1 : -1;
     });
 
     foreach ($jobs as $job) {
@@ -63,26 +57,38 @@ class TaxFormHelper
     return false;
   }
 
-  public static function fillForms(&$jobs, $forms)
+  public static function fillIrdForms(&$jobs, $forms)
   {
     foreach ($forms as $form) {
       $jobs[] = [
         'form_id' => $form->id,
-        'updated_at' => $form->updated_at
+        'updated_at' => $form->updated_at,
+        'form_type' => 'ird_form'
       ];
     }
   }
 
-  public static function fillFormsWithType(&$jobs, $forms, $formType)
+  public static function fillIrdSampleForm(&$jobs, $sampleForms)
   {
-    foreach ($forms as $form) {
+    foreach ($sampleForms as $form) {
       $jobs[] = [
-        'form_type' => $formType,
         'form_id' => $form->id,
-        'updated_at' => $form->updated_at
+        'updated_at' => $form->updated_at,
+        'form_type' => 'ird_sample_form'
       ];
     }
   }
+
+//  public static function fillFormsWithType(&$jobs, $forms, $formType)
+//  {
+//    foreach ($forms as $form) {
+//      $jobs[] = [
+//        'form_type' => $formType,
+//        'form_id' => $form->id,
+//        'updated_at' => $form->updated_at
+//      ];
+//    }
+//  }
 
   public static function generateForm($formEmployee, $form, $sheetNo, $irdMaster)
   {
@@ -341,7 +347,75 @@ class TaxFormHelper
 
   public static function processJob($job)
   {
-    logConsole('Processing job form_id = '.$job['form_id'].' ...'); nl();
+    logConsole('Processing job form_id = ' . $job['form_id'] . ' (type='.$job['form_type'].') ...');
+    nf();
+    switch ($job['form_type']) {
+      case 'ird_form':
+        self::processJob_irdForm($job);
+        break;
+      case 'ird_sample_form':
+        self::processJob_irdSampleForm($job);
+        break;
+    }
+  }
+
+  public static function processJob_irdSampleForm($job) {
+    $sampleForm = SampleForm::find($job['form_id']);
+    if(is_null($sampleForm->team)) {
+      $sampleForm->message = __('messages.team_not_defined');
+      $sampleForm->status = 'terminated';
+      $sampleForm->save();
+      EventHelper::send( 'requestForm', ['form'=>$sampleForm]);
+    } else {
+      $team = $sampleForm->team;
+
+      // Status => 'processing'
+      if ($sampleForm->status != 'processing') {
+        $sampleForm->update(['status' =>'processing']);
+        EventHelper::send('requestForm', ['form'=>$sampleForm]);
+      }
+
+      // Build application letter
+      // path: storage/app/teams/{oa_team_id}/application_letters/{sample_form_id}/
+      //
+      // Letter: letter.pdf
+      // ir56b.xml
+      // ir56b.xsd
+      // ir56b_sample_sheets {
+      //    ir56b_sample_sheet_1
+      //    ir56b_sample_sheet_2
+      //    ir56b_sample_sheet_3
+      // }
+      // ir56b_control_list
+      //
+      // ir56m.xml
+      // ir56m.xsd
+      // ir56m_sample_sheets {
+      //    ir56m_sample_sheet_1
+      //    ir56m_sample_sheet_2
+      //    ir56m_sample_sheet_3
+      // }
+      // ir56m_control_list
+      //
+      // ir56e_sample_sheets
+      // ir56f_sample_sheets
+      // ir56g_sample_sheets
+      // ir56m_sample_sheets (if ir56m soft copies not ncessary)
+      //
+
+      IrdApplicationLetterHelper::build($team, $sampleForm);
+      EventHelper::send( 'requestForm', ['sampleForm'=>$sampleForm]);
+
+      $apply_softcopies = $sampleForm->apply_softcopies;
+      $apply_printed_forms = $sampleForm->apply_printed_forms;
+
+      $irdMaster = IrdFormHelper::getIrdMaster($team, $sampleForm);
+      $employees = $sampleForm->employees()->get();
+
+    }
+  }
+
+  public static function processJob_irdForm($job) {
     $form = Form::find($job['form_id']);
     if(is_null($form->team)) {
       logConsole( __('messages.team_not_defined'), 1 );
@@ -499,8 +573,6 @@ class TaxFormHelper
 
   public static function processJobsWithType($jobs)
   {
-    echo 'processJobs: ';
-    nl();
     foreach ($jobs as $job) {
       switch ($job['form_type']) {
         case 'commencement':
@@ -543,7 +615,7 @@ class TaxFormHelper
           $taxForm->save();
         }
         if ($taxForm->status == 'processing') {
-          event(new TaxFormStatusUpdatedEvent([
+          event(new xxxTaxFormStatusUpdatedEvent([
             'team' => $team,
             'index' => $i,
             'taxForm' => $taxForm,
@@ -559,7 +631,7 @@ class TaxFormHelper
         }
 
         if ($taxForm->status == 'ready') {
-          event(new TaxFormStatusUpdatedEvent([
+          event(new xxxTaxFormStatusUpdatedEvent([
             'team' => $team,
             'index' => $i,
             'taxForm' => $taxForm,

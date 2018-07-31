@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\CommencementFormEmployeeStatusUpdatedEvent;
+use App\Events\xxxxxCommencementFormEmployeeStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -21,10 +21,10 @@ class CommencementFormEmployeeStatusUpdatedListener
     /**
      * Handle the event.
      *
-     * @param  CommencementFormEmployeeStatusUpdatedEvent  $event
+     * @param  xxxxxCommencementFormEmployeeStatusUpdatedEvent  $event
      * @return void
      */
-    public function handle(CommencementFormEmployeeStatusUpdatedEvent $event)
+    public function handle(xxxxxCommencementFormEmployeeStatusUpdatedEvent $event)
     {
         //
     }

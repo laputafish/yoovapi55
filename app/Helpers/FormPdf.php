@@ -7,6 +7,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $tplId;
   protected $fontName = 'times';
   protected $fontNameChn = 'msungstdlight';
+  protected $fontNameSymbol = 'zapfdingbats';
   protected $topOffset = 0;
   protected $rightMargin = 0;
 
@@ -42,7 +43,20 @@ class FormPdf extends Fpdi\TcpdfFpdi
   function Footer() {}
 
   function outputText($x, $y, $fontSize, $width, $text, $align='L', $lang='eng',$valign='M',$fontStyle='') {
-    $fontName = $lang == 'eng' ? $this->fontName : $this->fontNameChn;
+
+    switch($lang) {
+      case 'eng':
+        $fontName = $this->fontName;
+        break;
+      case 'chn':
+        $fontName = $this->fontNameChn;
+        break;
+      case 'symbol':
+        $fontName = $this->fontNameSymbol;
+        break;
+      default:
+        $fontName = $this->fontName;
+    }
 
     if($width == 0) {
       $width = 200 - $x - $this->rightMargin;

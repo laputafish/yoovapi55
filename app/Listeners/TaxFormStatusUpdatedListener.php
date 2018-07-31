@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\TaxFormStatusUpdatedEvent;
+use App\Events\xxxTaxFormStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -22,10 +22,10 @@ class TaxFormStatusUpdatedListener
     /**
      * Handle the event.
      *
-     * @param  TaxFormStatusUpdatedEvent  $event
+     * @param  xxxTaxFormStatusUpdatedEvent  $event
      * @return void
      */
-    public function handle(TaxFormStatusUpdatedEvent $event)
+    public function handle(xxxTaxFormStatusUpdatedEvent $event)
     {
         //
     }

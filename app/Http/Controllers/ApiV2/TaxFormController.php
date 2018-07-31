@@ -15,8 +15,8 @@ use App\Helpers\TeamJobHelper;
 use App\Helpers\OA\OAHelper;
 use App\Helpers\EventHelper;
 
-use App\Events\TaxFormNewJobEvent;
-use App\Events\TaxFormStatusUpdatedEvent;
+use App\Events\xxxTaxFormNewJobEvent;
+use App\Events\xxxTaxFormStatusUpdatedEvent;
 
 class TaxFormController extends BaseAuthController
 {
@@ -162,7 +162,7 @@ class TaxFormController extends BaseAuthController
     $total = $job->items()->whereEnabled(0)->count();
     $job->team = $job->team;
 
-    event(new TaxFormNewJobEvent($job));
+    event(new xxxTaxFormNewJobEvent($job));
 
     return response()->json([
       'status'=>true,

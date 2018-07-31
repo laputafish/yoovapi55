@@ -6,17 +6,20 @@ class SampleForm extends BaseIRDForm {
 
   protected $fillable = [
     'team_id',
+    'status',
+    'message',
     'lang_id',
     'application_date',
     'apply_printed_forms',
     'apply_softcopies',
+    'processed_apply_printed_forms',
+    'processed_apply_softcopies',
     'company_file_no',
     'company_name',
     'tel_no',
     'signature_name',
     'designation',
     'fiscal_start_year',
-    'fiscal_years',
     'is_update',
     'remark'
   ];

@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\DepartureFormStatusUpdatedEvent;
+use App\Events\xxxDepartureFormStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -21,10 +21,10 @@ class DepartureFormStatusUpdatedListener
     /**
      * Handle the event.
      *
-     * @param  DepartureFormStatusUpdatedEvent  $event
+     * @param  xxxDepartureFormStatusUpdatedEvent  $event
      * @return void
      */
-    public function handle(DepartureFormStatusUpdatedEvent $event)
+    public function handle(xxxDepartureFormStatusUpdatedEvent $event)
     {
         //
     }
