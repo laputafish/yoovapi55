@@ -23,6 +23,7 @@ class IrdApplicationLetterHelper {
       'ApplyPrintedFormsIR56G' => tickIfExists('ir56g', $applyPrintedForms),
       'ApplyPrintedFormsIR56M' => tickIfExists('ir56m', $applyPrintedForms),
 
+      'CompanyFileNo' => $sampleForm->company_file_no,
       'SignatureName' => $sampleForm->signature_name,
       'Designation' => $sampleForm->designation,
       'ApplicationDate' => $sampleForm->application_date,

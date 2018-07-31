@@ -26,19 +26,19 @@ class CommandHelper
       $now = now();
       $lastCheckedAt = Carbon::parse($command->last_checked_at);
       $durationPassed = $now->diffInSeconds($lastCheckedAt);
-      if ($durationPassed < 60 && ($command->mode == 'auto')) {
-        echo "duration since last checking < 60sec => quit\n";
-        return;
-      }
+//      if ($durationPassed < 20 && ($command->mode == 'auto')) {
+//        echo "duration since last checking < 60sec => quit\n";
+//        return;
+//      }
     }
 
     while (true) {
       $now = now();
       $command->last_checked_at = $now;
-
-    //  $command->save();
+      $command->save();
       $pass = $handler($command);
       if(!$pass) {
+        echo 'Handler result not passed!'; nf();
         break;
       }
       sleep(1);

@@ -207,3 +207,17 @@ function tickIfTrue($value)
   $tickMark = '3';
   return $value ? $tickMark : '';
 }
+
+function getFieldMapping($options, $field) {
+  if(array_key_exists(',fieldMappings', $options)) {
+    return $options['fieldMappings'][$field];
+  }
+  return $field;
+}
+
+function checkCreateFolder($path) {
+  $folder = pathinfo($path, PATHINFO_DIRNAME);
+  if(!file_exists($folder)) {
+    mkdir($folder, 0776, true);
+  }
+}

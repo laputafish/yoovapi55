@@ -10,16 +10,27 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $fontNameSymbol = 'zapfdingbats';
   protected $topOffset = 0;
   protected $rightMargin = 0;
+  protected $fields = [];
+  protected $dataItems = [];
 
-  public function __construct($options) {
+  private function getOption($options, $key, $default) {
+    return array_key_exists($key, $options) ?
+      $options[$key] : $default;
+  }
+
+  public function __construct($options=[]) {
+//    unset($options['fields']);
+//    echo '__construct:: before parent __construct'; nf();
+//    print_r( $options ); nf();
     parent::__construct();
+//    echo '__construct:: after parent __construct'; nf();
+//    print_r( $options ); nf();
     $this->AddFont('times', 'B', 'timesb.php');
-    $this->setPrintHeader(false);
-    $this->SetPrintFooter(false);
-    $this->SetFooterMargin(5);
-//    dd( PDF_MARGIN_BOTTOM);
-    $this->SetAutoPageBreak(False);
-    $this->AddPage();
+    $this->setPrintHeader($this->getOption($options, 'printHeader', false));
+    $this->SetPrintFooter($this->getOption($options, 'printFooter', false));
+    $this->SetHeaderMargin($this->getOption($options, 'headerMargin', 0));
+    $this->SetFooterMargin($this->getOption($options, 'headerMargin', 5));
+    $this->SetAutoPageBreak($this->getOption($options, 'autoPageBreak', False));
 
     // options
     if(array_key_exists('topOffset', $options) ) {
@@ -28,19 +39,114 @@ class FormPdf extends Fpdi\TcpdfFpdi
     if(array_key_exists('rightMargin', $options) ) {
       $this->rightMargin = $options['rightMargin'];
     }
+    if(array_key_exists('title', $options)) {
+      $this->setTitle( $options['title'] );
+      $this->setSubject( $options['title'] );
+    }
+    if(array_key_exists('fields', $options)) {
+      $this->fields = $options['fields'];
+    }
+    if(array_key_exists('data', $options)) {
+      $this->dataItems = $options['data'];
+    }
+
+    $this->AddPage();
+
     if(array_key_exists('templateFilePath',  $options)) {
       $this->setSourceFile( $options['templateFilePath'] );
       $tplId = $this->importPage(1);
       $this->useTemplate($tplId);
     }
-    if(array_key_exists('title', $options)) {
-      $this->setTitle( $options['title'] );
-      $this->setSubject( $options['title'] );
+
+  }
+
+  function Header() {
+    $this->outputData();
+  }
+  function Footer() {}
+
+  function outputData() {
+    foreach($this->dataItems as $fieldName=>$fieldValue) {
+      $fieldConfig = $this->getFieldConfig($fieldName);
+      $this->outputDataItem($fieldConfig, $fieldValue);
     }
   }
 
-  function Header() {}
-  function Footer() {}
+  function outputDataItem($fieldConfig, $text) {
+    if($fieldConfig->hidden) {
+      return;
+    }
+    $align = isset($fieldConfig->align) ? $fieldConfig->align : 'L';
+    $lang = isset($fieldConfig->lang) ? $fieldConfig->lang : 'eng';
+    $fontStyle = isset($fieldConfig->font_style) ? $fieldConfig->font_style : '';
+    switch ($fieldConfig->type) {
+      case 'string':
+        if($text == '0') {
+          if ($fieldConfig->blank_if_zero) {
+            break;
+          }
+        } else if(empty($text)) {
+          break;
+        }
+
+        // lang
+        if(hasChinese($text)) {
+          $lang = 'chn';
+        }
+
+        // init
+        $x = $fieldConfig->x;
+        $y = $fieldConfig->y;
+        $width = $fieldConfig->width;
+        $fontSize = $fieldConfig->font_size;
+        $appendAsterisk = isset($fieldConfig->append_asterisk) ? $fieldConfig->append_asterisk : false;
+
+        // Check is currency
+        if(!empty($text)) {
+          if($fieldConfig->to_currency) {
+            $text = toCurrency(str_replace(',', '', $text));
+          }
+        }
+
+        // Append Asterisk
+        if($appendAsterisk) {
+          $x = 100;
+          $width = 0;
+          $align = 'R';
+          $fontStyle = 'B';
+          $text .= ' ****';
+        }
+
+        // Output
+        $this->outputText(
+          $x,
+          $y,
+          $fontSize,
+          $width,
+          $text,
+          $align,
+          $lang,
+          null,
+          $fontStyle
+        );
+        break;
+      case 'char':
+        break;
+      case 'segments':
+        break;
+    }
+  }
+  
+  function getFieldConfig( $fieldName ) {
+    $result = null;
+    foreach( $this->fields as $field ) {
+      if($field->key == $fieldName) {
+        $result = $field;
+        break;
+      }
+    }
+    return $result;
+  }
 
   function outputText($x, $y, $fontSize, $width, $text, $align='L', $lang='eng',$valign='M',$fontStyle='') {
 

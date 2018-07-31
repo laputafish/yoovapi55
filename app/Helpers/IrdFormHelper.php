@@ -43,7 +43,7 @@ class IrdFormHelper {
     'remarks' => 'Remarks'
   ];
 
-  public static function getIrdMaster($team, $options=[], $form=null) {
+  public static function getIrdMaster($team, $form=null, $options=[]) {
     // if $form = null, test mode
     $oaAuth = OAHelper::refreshTokenByTeam($team);
     $oaTeam = OATeamHelper::get($oaAuth, $team->oa_team_id);
@@ -60,7 +60,7 @@ class IrdFormHelper {
     $designation = 'Manager';
 
     if(isset($form)) {
-      $formDate = $form->form_date;
+      $formDate = $form->{getFieldMapping($options, 'form_date')};
       $designation = $form->designation;
     }
 
@@ -93,7 +93,7 @@ class IrdFormHelper {
     return $result;
   }
 
-  public static function generate($team, $employeeId, $formCode, $langCode, $options=[])
+  public static function fetchDataAndGeneratePdf($team, $employeeId, $formCode, $langCode, $options=[])
   {
     // IRD Master Data
     $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
@@ -111,12 +111,12 @@ class IrdFormHelper {
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
 
     // Prepare data
+    $options = array_merge($options, ['defaults'=>self::$defaults]);
+
     $irDataClassPrefix = substr(strtolower($formCode),-2)== 'pc' ?
       substr($formCode,0,strlen($formCode)-2) :
       $formCode;
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irDataClassPrefix.'Helper'));
-    $options = array_merge($options, ['defaults'=>self::$defaults]);
-
     $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
     $pdfData = array_merge($irdMaster, $irdEmployee);
 
@@ -140,6 +140,8 @@ class IrdFormHelper {
     } else {
       $pdf->Output('ird_'.$formCode.'.pdf');
     }
+//    $pdf->endPage();
+    unset($pdf);
     return $irdEmployee;
   }
 
