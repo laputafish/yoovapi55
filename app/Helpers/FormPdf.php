@@ -14,24 +14,54 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $headerData = [];
   protected $footerData = [];
 
+  protected $BORDER_STYLES = [
+    'T' => array(
+      'width' => 0.2,
+      'color' => array(0,0,0),
+      'dash' => 0,
+      'cap' => 'butt'
+    ),
+    'B' => array(
+      'width' => 0.2,
+      'color' => array(0,0,0),
+      'dash' => 0,
+      'cap' => 'butt'
+    ),
+    'L' => array(
+      'width' => 0.2,
+      'color' => array(0,0,0),
+      'dash' => 0,
+      'cap' => 'butt'
+    ),
+    'R' => array(
+      'width' => 0.2,
+      'color' => array(0,0,0),
+      'dash' => 0,
+      'cap' => 'butt'
+    )
+  ];
   private function getOption($options, $key, $default) {
     return array_key_exists($key, $options) ?
       $options[$key] : $default;
   }
 
   public function __construct($options=[]) {
-//    unset($options['fields']);
-//    echo '__construct:: before parent __construct'; nf();
-//    print_r( $options ); nf();
     parent::__construct();
-//    echo '__construct:: after parent __construct'; nf();
-//    print_r( $options ); nf();
+
+    $printFooter = $this->getOption($options, 'printFooter', false);
+    $autoPageBreak = $this->getOption($options, 'autoPageBreak', False);
+    $footerMargin = $this->getOption($options, 'headerMargin', 5);
+
     $this->AddFont('times', 'B', 'timesb.php');
-    $this->setPrintHeader($this->getOption($options, 'printHeader', false));
-    $this->SetPrintFooter($this->getOption($options, 'printFooter', false));
+    $this->SetPrintHeader($this->getOption($options, 'printHeader', false));
+    $this->SetPrintFooter($printFooter);
     $this->SetHeaderMargin($this->getOption($options, 'headerMargin', 0));
-    $this->SetFooterMargin($this->getOption($options, 'headerMargin', 5));
-    $this->SetAutoPageBreak($this->getOption($options, 'autoPageBreak', False));
+    $this->SetFooterMargin($footerMargin);
+    if($autoPageBreak) {
+      $this->SetAutoPageBreak($autoPageBreak, $footerMargin);
+    } else {
+      $this->SetAutoPageBreak($autoPageBreak);
+    }
 
     // options
     if(array_key_exists('topOffset', $options) ) {
@@ -61,23 +91,21 @@ class FormPdf extends Fpdi\TcpdfFpdi
       $tplId = $this->importPage(1);
       $this->useTemplate($tplId);
     }
+  }
 
+  function outputDataItems($dataItems) {
+    foreach($dataItems as $fieldName=>$fieldValue) {
+      $fieldConfig = $this->getFieldConfig($fieldName);
+      $this->outputDataItem($fieldConfig, $fieldValue);
+    }
   }
 
   function Header() {
-    foreach($this->headerData as $fieldName=>$fieldValue) {
-      $fieldConfig = $this->getFieldConfig($fieldName);
-      $this->outputDataItem($fieldConfig, $fieldValue);
-    }
+    $this->outputDataItems($this->headerData);
   }
-  function Footer() {
-    // Position at 15 mm from bottom
-    $this->SetY(-30);
 
-    foreach($this->footerData as $fieldName=>$fieldValue) {
-      $fieldConfig = $this->getFieldConfig($fieldName);
-      $this->outputDataItem($fieldConfig, $fieldValue);
-    }
+  function Footer() {
+    $this->outputDataItems($this->footerData);
 
     // Set font
     $this->SetFont('helvetica', 'I', 8);
@@ -198,7 +226,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
     }
 
     if($y != 0) {
-echo 'outputText y = '.$y; nf();
+// echo 'outputText y = '.$y; nf();
       $this->setY($this->topOffset + $y);
     }
     $this->setX($x);
@@ -210,19 +238,24 @@ echo 'outputText y = '.$y; nf();
 //    }
 
     $borders = $borderStyle;
-    $pos = strpos($borders, 'B');
-    if($pos === false) {
-
-    } else {
-      $borderStyle = [
-        'B' => array(
-          'width' => 0.2,
-          'color' => array(0,0,0),
-          'dash' => 0,
-          'cap' => 'butt'
-        )
-      ];
+//    $pos = strpos($borders, 'B');
+    $borderStyle = [];
+    for($i = 0; $i < strlen($borders); $i++) {
+      $key = $borders[$i];
+      $borderStyle[$key] = $this->BORDER_STYLES[$key];
     }
+//    if($pos === false) {
+//
+//    } else {
+//      $borderStyle = [
+//        'B' => array(
+//          'width' => 0.2,
+//          'color' => array(0,0,0),
+//          'dash' => 0,
+//          'cap' => 'butt'
+//        )
+//      ];
+//    }
     //$this->SetFont($fontName, strtolower($fontStyle), $fontSize);
     $this->SetFont($fontName, $fontStyle, $fontSize);
 

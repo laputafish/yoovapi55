@@ -67,10 +67,12 @@ class FormController extends BaseAuthController {
 
   protected function prepareForm($form) {
     $prefix = $this->team->getSetting( 'form_prefix', 'IR' );
+    $langCode = $this->team->getSetting('lang', 'en-us');
+    $lang = Lang::whereCode($langCode0)->first();
     $form['form_no'] = TaxFormHelper::getNextFormId($this->model, $prefix);
     $form['form_date'] = getToday();
     $form['team_id'] = $this->team->id;
-    $form['lang_id'] = $this->user->lang_id;
+    $form['lang_id'] = $lang->id;
     $form['fiscal_start_year'] = getLastValidFiscalStartYear();
     return $form;
   }

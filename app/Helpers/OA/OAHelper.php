@@ -95,7 +95,9 @@ class OAHelper
     $tokenType = $user->oa_token_type;
     $accessToken = $user->oa_access_token;
     $refreshToken = $user->oa_refresh_token;
-
+//echo 'tokenType = '.$tokenType; nf();
+//echo 'accessToken = '.$accessToken; nf();
+//echo 'refreshToken = '.$refreshToken; nf();
     if(isset($team)) {
       $newTokenInfo = self::doRefreshToken($tokenType, $accessToken, $refreshToken);
       $team->oa_access_token = $newTokenInfo['accessToken'];

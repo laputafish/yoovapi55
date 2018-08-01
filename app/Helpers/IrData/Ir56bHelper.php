@@ -9,6 +9,7 @@ class Ir56bHelper extends IrDataHelper
 
   public static function get($team, $employeeId, $options = [])
   {
+    $isSample = array_key_exists('mode', $options) ? $options['mode']=='sample' : false;
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     // $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
     $form = array_key_exists('form', $options) ? $options['form'] : null;

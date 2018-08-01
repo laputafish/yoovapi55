@@ -81,7 +81,8 @@ class TestFormController extends Controller
           'x' => $field['x'],
           'y' => $field['y'],
           'font_size' => $field['font_size'],
-          'font-style' => $field['font_style'],
+          'font_style' => $field['font_style'],
+          'border_style' => $field['border_style'],
           'relative_to' => $field['relative_to'],
           'relative_to_key_id' => $field['relative_to_key_id'],
           'width' => $field['width'],
@@ -91,6 +92,7 @@ class TestFormController extends Controller
           'lang' => $field['lang'],
           'append_asterisk' => $field['append_asterisk'],
           'to_currency' => $field['to_currency'],
+          'is_symbol' => $field['is_symbol'],
           'remark' => $field['remark']
         ]));
       }

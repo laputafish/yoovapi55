@@ -36,7 +36,7 @@ class IrdApplicationLetterHelper {
     $irdFormFile = $irdForm->getFile($langCode);
     $fields = $irdFormFile->fields;
     $templateFile = storage_path('forms/'.$irdFormFile->file);
-    $outputFile = storage_path('app/teams/'.$team->oa_team_id.'/application_letters/'.$sampleForm->id.'.pdf');
+    $outputFile = storage_path('app/teams/'.$team->oa_team_id.'/application_letters/letter.pdf');
 
     IrdFormHelper::buildPdf([
       'title'=>'Application Letter',
@@ -60,7 +60,7 @@ class IrdApplicationLetterHelper {
       '/application_letters/' .
       $sampleForm->id . '/' .
       $file);
-    checkCreateFolder($outputFilePath);
+    checkCreateFolder($path);
     return $path;
   }
 }

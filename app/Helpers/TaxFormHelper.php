@@ -405,20 +405,22 @@ class TaxFormHelper
 
       $applySoftcopiesStr = trim($sampleForm->apply_softcopies);
       $applySoftcopies = explode(',', $applySoftcopiesStr);
-      foreach( $applySoftcopies as $irdFormCode ) {
+      foreach( $applySoftcopies as $i=>$irdFormCode ) {
+        echo 'i='.$i.': irdFormCode: '.$irdFormCode; nf();
         $irdMaster = IrdFormHelper::getIrdMaster($team,$sampleForm,[
           'fieldMappings'=>[
             'form_date'=>'application_date'
           ]
         ]);
+        echo '1111';
         $employees = $sampleForm->employees;
         $sheetNo = 1;
         $sheetCount = 3;
+        $sheetsFulfilled = false;
         foreach($employees as $formEmployee) {
           if($sampleForm->status != 'processing') {
             break;
           }
-
           $generationResult = self::generateSampleForm($formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode);
           $irdEmployee = $generationResult['irdEmployee'];
           $irdMaster['Employees'][] = $irdEmployee;
@@ -427,7 +429,14 @@ class TaxFormHelper
         if($sampleForm->status != 'processing') {
           break;
         }
-
+        if(!$sheetsFulfilled) {
+          $sheetNo++;
+          if ($sheetNo > $sheetCount) {
+            $sheetsFulfilled = true;
+            $sheetNo = 0;
+          }
+        }
+        dd('finished softcopies forms: '.$irdFormCode );
       }
 
       $applyPrintedFormsStr = trim($sampleForm->apply_printed_forms);
@@ -457,13 +466,13 @@ class TaxFormHelper
   }
 
   public static function generateSampleForm($formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode) {
+    echo 'generateSampleForm:: '; nf();
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
 
     // Output path
-    if($sheetNo != 0) {
-      $outputFilePath = IrdApplicationLetterHelper::getPath( $sampleForm, $irdFormCode.'_sample_sheet_'.$sheetNo.'.pdf');
-    }
+    $outputFilePath = $sheetNo != 0 ?
+      $outputFilePath = IrdApplicationLetterHelper::getPath( $sampleForm, $irdFormCode.'_sample_sheet_'.$sheetNo.'.pdf') : null;
 
     // IRD Form File
     $irdForm = IrdForm::whereFormCode(strtoupper($irdFormCode))->first();
@@ -471,7 +480,13 @@ class TaxFormHelper
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
 
     // Fetch Employee Data
-    $irdEmployee = IrdFormHelper::getIrdFormData($irdForm, $formEmployee, $mode='testing');
+    $options = [
+      'mode'=>'sample',
+      'form'=>$sampleForm,
+      'sheetNo'=>$sheetNo
+    ];
+    $irdEmployee = IrdFormHelper::getIrdFormData($team, $irdForm, $formEmployee, $options);
+    echo 'after IrdformHelper::getIrdformData.'; nf();
     $pdfData = array_merge($irdMaster, $irdEmployee);
 
     // Generate PDF
@@ -559,7 +574,7 @@ class TaxFormHelper
         // Calculation Summary
         $irdEmployee = $generationResult['irdEmployee'];
         $irdMaster['Employees'][] = $irdEmployee;
-        $irdMaster['TotIncomeBatch'] += (double) $irdEmployee['TotalIncome'];
+        $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
       }
 
       // create control list
@@ -617,12 +632,12 @@ class TaxFormHelper
       'printHeader'=>true,
       'printFooter'=>true,
       'headerMargin'=>10,
-      'footerMargin'=>30,
+      'footerMargin'=>40,
       'autoPageBreak'=>true
     ];
     $pdf = new FormPdf($options);
 
-    $y = 52;
+    $y0 = 52;
 
     // Content
     $contentFields = $fields->filter(function($item) {
@@ -635,23 +650,47 @@ class TaxFormHelper
     });
 
     echo 'control list ***************************'; nf();
-    $pdf->setY($y);
-    for($i=0; $i<200; $i++) {
-      foreach ($irdMaster['Employees'] as $irdEmployee) {
-//        $contentFields->each(function ($item) use ($y) {
-//          $item->y = $y;
-//        });
+    $count = 0;
+    $employeeCount = count($irdMaster['Employees']);
+    $perPage = 40;
+    $rowsOccupiedBySummary = 5;
+    $totalPages = ceil(($employeeCount + $rowsOccupiedBySummary) / 40);
 
-        IrdFormHelper::fillData($pdf, $contentFields, [
-          'ContentSheetNo' => str_pad($irdEmployee['SheetNo'], 6, '0', STR_PAD_LEFT),
-          'ContentName' => strtoupper(concatNames([$irdEmployee['Surname'], $irdEmployee['GivenName']])),
-          'ContentHKICNo' => strtoupper($irdEmployee['HKID']),
-          'ContentTotalIncome' => $irdEmployee['TotalIncome']
-        ]);
-//        $y += 6;
+    $y = $y0;
+
+    $pdf->setY($y);
+    $pageNo = 1;
+    foreach ($irdMaster['Employees'] as $irdEmployee) {
+      $contentFields->each(function ($item) use ($y) {
+        $item->y = $y;
+      });
+
+      IrdFormHelper::fillData($pdf, $contentFields, [
+        'ContentSheetNo' => str_pad($irdEmployee['SheetNo'], 6, '0', STR_PAD_LEFT),
+        'ContentName' => strtoupper(concatNames([$irdEmployee['Surname'], $irdEmployee['GivenName']])),
+        'ContentHKICNo' => strtoupper($irdEmployee['HKID']),
+        'ContentTotalIncome' => $irdEmployee['TotalIncome']
+      ]);
+      $y += 5;
+      $count++;
+      if($count % 40 == 0) {
+        $y = $y0;
+        $pageNo++;
       }
     }
-    echo 'control list ***************************'; nf();
+
+    $itemCountOnLastPage = $count % $perPage;
+    if($itemCountOnLastPage + $rowsOccupiedBySummary > $perPage || ($itemCountOnLastPage==0 && $count>0)) {
+      $pdf->addPage();
+    } else {
+    }
+    $summaryFields = [
+      'SummaryTotalEmployeeCountLabel' => 'Total Number of Employees Per List',
+      'SummaryTotalIncomeLabel' => 'Grand Total of Income Per List',
+      'SummaryTotalEmployeeCount' => $employeeCount,
+      'SummaryTotalIncome' => '$'.toCurrency($irdMaster['TotIncomeBatch'])
+    ];
+    $pdf->outputDataItems($summaryFields);
 
     if(file_exists($outputFilePath)) {
       unlink($outputFilePath);
