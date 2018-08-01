@@ -221,3 +221,13 @@ function checkCreateFolder($path) {
     mkdir($folder, 0776, true);
   }
 }
+
+function concatNames($names) {
+  $ar = [];
+  foreach($names as $name) {
+    if(!empty(trim($name))) {
+      $ar[] = $name;
+    }
+  }
+  return implode(' ', $ar);
+}

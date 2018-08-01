@@ -41,6 +41,6 @@ class IrdRequestFormStatusUpdatedEvent implements ShouldBroadcast
   }
 
   public function broadcastAs() {
-    return 'commencement_form_status_updated';
+    return 'ird_request_form_status_updated';
   }
 }

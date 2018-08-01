@@ -14,7 +14,6 @@ class Ir56bHelper extends IrDataHelper
     $form = array_key_exists('form', $options) ? $options['form'] : null;
 
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
-
     self::$team = $team;
     self::$employeeId = $employeeId;
     self::$oaAuth = OAHelper::refreshTokenByTeam(self::$team);
@@ -116,7 +115,6 @@ class Ir56bHelper extends IrDataHelper
       $jobEndedDate = '';
       $fiscalYearStartBeforeCease = '';
     }
-
     // 1=Single/Widowed/Divorced/Living Apart, 2=Married
     $martialStatus = array_key_exists('martialStatus', $defaults) ?
       $defaults['martialStatus'] :

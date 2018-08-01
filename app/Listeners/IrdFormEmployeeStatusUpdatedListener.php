@@ -6,7 +6,7 @@ use App\Events\IrdFormEmployeeStatusUpdatedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class FormEmployeeStatusUpdatedListener
+class IrdFormEmployeeStatusUpdatedListener
 {
   /**
    * Create the event listener.

@@ -49,12 +49,11 @@ class IrdFormHelper {
     $oaTeam = OATeamHelper::get($oaAuth, $team->oa_team_id);
 
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
-
     $registrationNumber = $oaTeam['setting']['registrationNumber'];
     $registrationNumberSegs = explode('-', $registrationNumber);
     $section = $registrationNumberSegs[0];
     $ern = $registrationNumberSegs[1];
-    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
+    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']);
 
     $formDate = date('Y-m-d');
     $designation = 'Manager';
@@ -86,11 +85,19 @@ class IrdFormHelper {
       'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
       'ErName' => $oaTeam['name'],
       'Designation' => $designation,
+      'SignatureName' => $form->signature_name,
       'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
       'TotIncomeBatch' => 0, // isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
       'Employees' => []
     ];
     return $result;
+  }
+
+  public static function getIrdFormData($irdForm, $formEmployee, $mode='testing') {
+    $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irdForm->ird_code.'Helper'));
+    $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
+    $pdfData = array_merge($irdMaster, $irdEmployee);
+
   }
 
   public static function fetchDataAndGeneratePdf($team, $employeeId, $formCode, $langCode, $options=[])
@@ -180,7 +187,8 @@ class IrdFormHelper {
     }
   }
 
-  private static function fillData($pdf, $fieldList, $data) {
+  public static function fillData($pdf, $fieldList, $data) {
+    echo 'fillData :: '; nf();
     foreach($fieldList as $item) {
       if($item->hidden) {
         continue;

@@ -24,10 +24,17 @@ class EventServiceProvider extends ServiceProvider
       ],
       // Form
       'App\Events\IrdFormStatusUpdatedEvent' => [
-        'App\Listeners\FormStatusUpdatedListener',
+        'App\Listeners\IrdFormStatusUpdatedListener',
       ],
       'App\Events\IrdFormEmployeeStatusUpdatedEvent' => [
-        'App\Listeners\FormEmployeeStatusUpdatedListener',
+        'App\Listeners\IrdFormEmployeeStatusUpdatedListener',
+      ],
+      // Reqeust Form
+      'App\Events\IrdRequestFormStatusUpdatedEvent' => [
+        'App\Listeners\IrdRequestFormStatusUpdatedListener',
+      ],
+      'App\Events\IrdRequestFormItemStatusUpdatedEvent' => [
+        'App\Listeners\IrdRequestFormItemStatusUpdatedListener',
       ],
       // Commencement Form
       'App\Events\xxxCommencementFormStatusUpdatedEvent' => [

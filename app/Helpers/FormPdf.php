@@ -11,7 +11,8 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $topOffset = 0;
   protected $rightMargin = 0;
   protected $fields = [];
-  protected $dataItems = [];
+  protected $headerData = [];
+  protected $footerData = [];
 
   private function getOption($options, $key, $default) {
     return array_key_exists($key, $options) ?
@@ -46,8 +47,11 @@ class FormPdf extends Fpdi\TcpdfFpdi
     if(array_key_exists('fields', $options)) {
       $this->fields = $options['fields'];
     }
-    if(array_key_exists('data', $options)) {
-      $this->dataItems = $options['data'];
+    if(array_key_exists('headerData', $options)) {
+      $this->headerData = $options['headerData'];
+    }
+    if(array_key_exists('footerData', $options)) {
+      $this->footerData = $options['footerData'];
     }
 
     $this->AddPage();
@@ -61,15 +65,38 @@ class FormPdf extends Fpdi\TcpdfFpdi
   }
 
   function Header() {
-    $this->outputData();
-  }
-  function Footer() {}
-
-  function outputData() {
-    foreach($this->dataItems as $fieldName=>$fieldValue) {
+    foreach($this->headerData as $fieldName=>$fieldValue) {
       $fieldConfig = $this->getFieldConfig($fieldName);
       $this->outputDataItem($fieldConfig, $fieldValue);
     }
+  }
+  function Footer() {
+    // Position at 15 mm from bottom
+    $this->SetY(-30);
+
+    foreach($this->footerData as $fieldName=>$fieldValue) {
+      $fieldConfig = $this->getFieldConfig($fieldName);
+      $this->outputDataItem($fieldConfig, $fieldValue);
+    }
+
+    // Set font
+    $this->SetFont('helvetica', 'I', 8);
+    // Page number
+    $this->setX(15);
+    $this->Cell(
+      210,
+      10,
+      'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages(),
+      0, // borderStyle
+      false, // $ln
+      'L', // align
+      0, // fill
+      '', // link
+      0, // stretch
+      false, // ignore min height
+      'T', // calign
+      'M' // valign
+    );
   }
 
   function outputDataItem($fieldConfig, $text) {
@@ -100,6 +127,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
         $width = $fieldConfig->width;
         $fontSize = $fieldConfig->font_size;
         $appendAsterisk = isset($fieldConfig->append_asterisk) ? $fieldConfig->append_asterisk : false;
+        $borderStyle = $fieldConfig->border_style;
 
         // Check is currency
         if(!empty($text)) {
@@ -127,7 +155,8 @@ class FormPdf extends Fpdi\TcpdfFpdi
           $align,
           $lang,
           null,
-          $fontStyle
+          $fontStyle,
+          $borderStyle
         );
         break;
       case 'char':
@@ -148,7 +177,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
     return $result;
   }
 
-  function outputText($x, $y, $fontSize, $width, $text, $align='L', $lang='eng',$valign='M',$fontStyle='') {
+  function outputText($x, $y, $fontSize, $width, $text, $align='L', $lang='eng',$valign='M',$fontStyle='', $borderStyle='') {
 
     switch($lang) {
       case 'eng':
@@ -168,7 +197,10 @@ class FormPdf extends Fpdi\TcpdfFpdi
       $width = 200 - $x - $this->rightMargin;
     }
 
-    $this->setY($this->topOffset + $y);
+    if($y != 0) {
+echo 'outputText y = '.$y; nf();
+      $this->setY($this->topOffset + $y);
+    }
     $this->setX($x);
 
 //    if($fontStyle == 'B') {
@@ -177,12 +209,28 @@ class FormPdf extends Fpdi\TcpdfFpdi
 //      $this->setStyle('b', false);
 //    }
 
+    $borders = $borderStyle;
+    $pos = strpos($borders, 'B');
+    if($pos === false) {
+
+    } else {
+      $borderStyle = [
+        'B' => array(
+          'width' => 0.2,
+          'color' => array(0,0,0),
+          'dash' => 0,
+          'cap' => 'butt'
+        )
+      ];
+    }
     //$this->SetFont($fontName, strtolower($fontStyle), $fontSize);
     $this->SetFont($fontName, $fontStyle, $fontSize);
 
-    $this->Cell($width, $h=0,
+    $this->Cell(
+      $width,
+      $h=0,
       $text, // $txt='',
-      $border=0,
+      $borderStyle,
       $ln=0,
       $align,
       $fill=0,

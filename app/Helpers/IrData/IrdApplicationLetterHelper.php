@@ -49,4 +49,18 @@ class IrdApplicationLetterHelper {
       'rightMargin'=>$irdFormFile->right_margin
     ]);
   }
+
+  public static function getPath($sampleForm, $file)
+  {
+    $team = $sampleForm->team;
+
+    $path = storage_path(
+      'app/team/' .
+      $team->oa_team_id .
+      '/application_letters/' .
+      $sampleForm->id . '/' .
+      $file);
+    checkCreateFolder($outputFilePath);
+    return $path;
+  }
 }

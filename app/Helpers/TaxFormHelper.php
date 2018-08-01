@@ -19,7 +19,6 @@ use App\Helpers\OA\OAHelper;
 
 use App\Helpers\IrData\IrDataHelper;
 use App\Helpers\IrData\Ir56eHelper;
-
 use App\Helpers\Forms\CommencementFormPdfHelper;
 use App\Helpers\IrData\IrdApplicationLetterHelper;
 
@@ -461,17 +460,43 @@ class TaxFormHelper
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
 
+    // Output path
     if($sheetNo != 0) {
-      $outputFilePath = storage_path(
-        'app/team/' .
-        $team->oa_team_id .
-        '/application_letters/' .
-        $sampleForm->id . '/' .
-        $irdFormCode . '_sample_sheet_' . $sheetNo . '.pdf');
-      checkCreateFolder($outputFilePath);
+      $outputFilePath = IrdApplicationLetterHelper::getPath( $sampleForm, $irdFormCode.'_sample_sheet_'.$sheetNo.'.pdf');
     }
 
+    // IRD Form File
+    $irdForm = IrdForm::whereFormCode(strtoupper($irdFormCode))->first();
+    $irdFormFile = $irdForm->getFile($sampleForm->lang->code);
+    $templateFilePath = storage_path('forms/'.$irdFormFile->file);
 
+    // Fetch Employee Data
+    $irdEmployee = IrdFormHelper::getIrdFormData($irdForm, $formEmployee, $mode='testing');
+    $pdfData = array_merge($irdMaster, $irdEmployee);
+
+    // Generate PDF
+    $pdfOptions = [
+      'title'=>strtoupper($irdFormCode).'_sample_sheet_'.$sheetNo,
+      'topOffset'=>$irdFormFile->top_offset,
+      'rightMargin'=>$irdFormFile->right_margin,
+      'templateFilePath'=>$templateFilePath
+    ];
+    $pdf = new FormPdf($pdfOptions);
+    $fieldList = $irdFormFile->fields;
+    self::fillData($pdf, $fieldList, $pdfData);
+
+    // Output
+    if(isset($outputFilePath)) {
+      if (file_exists($outputFilePath)) {
+        unlink($outputFilePath);
+      }
+      $pdf->Output($outputFilePath, 'F');
+    } else {
+      $pdf->Output('ird_'.$irdFormCode.'.pdf');
+    }
+
+    unset($pdf);
+    return $irdEmployee;
   }
 
   public static function processJob_irdForm($job) {
@@ -524,6 +549,7 @@ class TaxFormHelper
         // Status => "Ready"
         $form->employees()->whereEmployeeId($employeeId)->update([
           'status' => 'ready',
+          'sheet_no' => $sheetNo,
           'file' => pathinfo( $generationResult['outputFilePath'], PATHINFO_BASENAME)
         ]);
         $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
@@ -565,19 +591,67 @@ class TaxFormHelper
     $outputFilePath = storage_path('app/teams/'.$team->oa_team_id.'/'.$form->id.'/control_list.pdf' );
     $options = [
       'fields'=>$fields,
-      'data'=>[
-        'HeaderCompanyName'=>$irdMaster['ErName'],
-        'HeaderFiscalYears'=>ucfirst(strtolower($irdMaster['HeaderPeriod'])),
+      'headerData'=>[
         'HeaderFileNo'=>'File No.               '.$irdMaster['FileNo'],
-        'HeaderPageSubject'=>'List of Employees with IR56Bs Prepared via Self-developed Software'
+        'HeaderCompanyName'=>$irdMaster['ErName'],
+        'HeaderPageSubject'=>'List of Employees with IR56Bs Prepared via Self-developed Software',
+        'HeaderFiscalYears'=>lcfirst(ucwords(strtolower($irdMaster['HeaderPeriod']))),
+        'HeaderSheetNo'=>'Sheet No.',
+        'HeaderName'=>'Name',
+        'HeaderHKICNo'=>'HKIC No.',
+        'HeaderTotalIncome'=>'Total Income',
+        'HeaderPerItem11'=>'per Item 11 of IR56B',
+        'HeaderHKD'=>'(HK $)'
+      ],
+      'footerData'=>[
+        'FooterSignatureLabel'=>'Signature',
+        'FooterNameLabel'=>'Name',
+        'FooterDesignationLabel'=>'Designation',
+        'FooterDateLabel'=>'Date',
+
+        'FooterSignature'=>' ',
+        'FooterName'=>$irdMaster['SignatureName'],
+        'FooterDesignation'=>$irdMaster['Designation'],
+        'FooterDate'=>phpDateFormat('d m yyyy', $irdMaster['SubDate'])
       ],
       'printHeader'=>true,
       'printFooter'=>true,
       'headerMargin'=>10,
-      'footerMargin'=>5,
+      'footerMargin'=>30,
       'autoPageBreak'=>true
     ];
     $pdf = new FormPdf($options);
+
+    $y = 52;
+
+    // Content
+    $contentFields = $fields->filter(function($item) {
+      return in_array($item->key, [
+        'ContentSheetNo',
+        'ContentName',
+        'ContentHKICNo',
+        'ContentTotalIncome'
+      ]);
+    });
+
+    echo 'control list ***************************'; nf();
+    $pdf->setY($y);
+    for($i=0; $i<200; $i++) {
+      foreach ($irdMaster['Employees'] as $irdEmployee) {
+//        $contentFields->each(function ($item) use ($y) {
+//          $item->y = $y;
+//        });
+
+        IrdFormHelper::fillData($pdf, $contentFields, [
+          'ContentSheetNo' => str_pad($irdEmployee['SheetNo'], 6, '0', STR_PAD_LEFT),
+          'ContentName' => strtoupper(concatNames([$irdEmployee['Surname'], $irdEmployee['GivenName']])),
+          'ContentHKICNo' => strtoupper($irdEmployee['HKID']),
+          'ContentTotalIncome' => $irdEmployee['TotalIncome']
+        ]);
+//        $y += 6;
+      }
+    }
+    echo 'control list ***************************'; nf();
 
     if(file_exists($outputFilePath)) {
       unlink($outputFilePath);

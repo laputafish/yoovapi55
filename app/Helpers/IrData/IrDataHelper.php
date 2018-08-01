@@ -126,8 +126,10 @@ class IrDataHelper
 
     // Filter payslips for related fiscal year
     $payslips = OAPayslipHelper::get(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
+
     $effectivePayslips = [];
-    foreach($payslips as $payslip) {
+    foreach($payslips as $i=>$payslip) {
+//      echo 'i='.$i.' (start:'.$payslip['startedDate'].' to '.$payslip['endedDate'].')'; nf();
       if(inBetween($payslip['startedDate'], $period) ||
         inBetween($payslip['endedDate'], $period)) {
         $effectivePayslips[] = $payslip;
@@ -138,6 +140,7 @@ class IrDataHelper
       foreach( $payslip['details'] as $detail ) {
         if($detail['isBasicSalary']) {
           $summary['salary'] += $detail['amount'];
+          $summary['totalIncome'] += $detail['amount'];
         } else {
           if($detail['payTypeId']) {
             $index = 'payType_'.$detail['payTypeId'];
@@ -152,10 +155,11 @@ class IrDataHelper
               } else {
                 $summary[$token] += $detail['amount'];
               }
+              $summary['totalIncome'] += $detail['amount'];
             }
           }
         }
-        $summary['totalIncome'] += $detail['amount'];
+
       }
     }
 

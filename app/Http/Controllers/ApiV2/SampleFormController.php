@@ -49,6 +49,9 @@ class SampleFormController extends BaseAuthController
         $this->saveSampleForm();
         $this->generateSampleForm();
         break;
+      case 'terminate':
+        $this->terminateGeneration();
+        break;
       default:
         $this->saveSampleForm();
         break;
@@ -80,6 +83,18 @@ class SampleFormController extends BaseAuthController
     } else {
       $this->team->sampleForm()->update($data);
     }
+    return response()->json([
+      'status'=>true
+    ]);
+  }
+
+  public function terminateGeneration() {
+    $sampleForm = $this->team->sampleForm;
+    $sampleForm->status = 'terminated';
+    $sampleForm->save();
+
+    EventHelper::send('requestForm', ['sampleForm'=>$sampleForm]);
+
     return response()->json([
       'status'=>true
     ]);
