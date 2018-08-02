@@ -13,6 +13,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $fields = [];
   protected $headerData = [];
   protected $footerData = [];
+  protected $langCode = 'en-us';
 
   protected $BORDER_STYLES = [
     'T' => array(
@@ -52,6 +53,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
     $autoPageBreak = $this->getOption($options, 'autoPageBreak', False);
     $footerMargin = $this->getOption($options, 'headerMargin', 5);
 
+    $this->langCode = $this->getOption($options, 'langCode', 'en-us');
     $this->AddFont('times', 'B', 'timesb.php');
     $this->SetPrintHeader($this->getOption($options, 'printHeader', false));
     $this->SetPrintFooter($printFooter);
@@ -107,6 +109,17 @@ class FormPdf extends Fpdi\TcpdfFpdi
   function Footer() {
     $this->outputDataItems($this->footerData);
 
+    if($this->langCode == 'en-us') {
+      $this->SetFont($fontName);
+    }
+    else {
+      $this->SetFont($fontNameChn);
+    }
+    
+    $pageMessage = $this->langCode == 'en-us' ?
+      'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages() :
+      '共 '.$this->getAliasNbPages().' 頁中之第 '.$this->getAliasNumPage().'頁';
+
     // Set font
     $this->SetFont('helvetica', 'I', 8);
     // Page number
@@ -114,7 +127,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
     $this->Cell(
       210,
       10,
-      'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages(),
+      $pageMessage,
       0, // borderStyle
       false, // $ln
       'L', // align

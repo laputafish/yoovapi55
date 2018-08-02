@@ -55,7 +55,7 @@ class IrdApplicationLetterHelper {
     $team = $sampleForm->team;
 
     $path = storage_path(
-      'app/team/' .
+      'app/teams/' .
       $team->oa_team_id .
       '/application_letters/' .
       $sampleForm->id . '/' .

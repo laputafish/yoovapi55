@@ -53,6 +53,7 @@ function preg_replace_all( $find, $replacement, $s )
 }
 
 function toCurrency($value, $digits=0, $decimals='.', $thousands=',') {
+  $value = (float) str_replace(',', '', $value);
   return number_format( $value, $digits, $decimals, $thousands);
 }
 
@@ -104,6 +105,15 @@ function getDMYSegs($dateStr) {
   $time = strtotime($dateStr);
   $segs = date('d-m-Y', $time);
   return explode('-', $segs);
+}
+
+function numberDateFormat( $yyyymmdd, $format) {
+  $dateStr = strtotime( substr($yyyymmdd,0,4).'-'.
+    substr($yyyymmdd,4,2).'-'.
+    substr($yyyymmdd, 6, 2)
+  );
+  $date = strtotime($dateStr);
+  return date($format, $date);
 }
 
 function phpDateFormat( $yyyy_mm_dd, $format ) {
@@ -209,7 +219,7 @@ function tickIfTrue($value)
 }
 
 function getFieldMapping($options, $field) {
-  if(array_key_exists(',fieldMappings', $options)) {
+  if(array_key_exists('fieldMappings', $options)) {
     return $options['fieldMappings'][$field];
   }
   return $field;

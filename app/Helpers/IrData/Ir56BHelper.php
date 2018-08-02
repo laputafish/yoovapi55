@@ -4,7 +4,7 @@ use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\FormHelper;
 
-class Ir56bHelper extends IrDataHelper
+class Ir56BHelper extends IrDataHelper
 {
 
   public static function get($team, $employeeId, $options = [])
@@ -226,7 +226,12 @@ class Ir56bHelper extends IrDataHelper
       'Pension' => 'pension'
     ];
     foreach($tableMapping as $irdField=>$token) {
-      $result['PerOf'.$irdField] = $oaPayrollSummary[$token] > 0 ? $perOfEmp : '';
+      if($irdField == 'Salary') {
+        $result['PerOf' . $irdField] = $perOfEmp;
+      } else {
+        $result['PerOf' . $irdField] = $oaPayrollSummary[$token] > 0 ? $perOfEmp : '';
+      }
+
       $result['AmtOf'.$irdField] = toCurrency($oaPayrollSummary[$token]);
     }
 

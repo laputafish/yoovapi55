@@ -3,7 +3,7 @@
 use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
 
-class Ir56fHelper extends IrDataHelper {
+class Ir56FHelper extends IrDataHelper {
 
   public static function get($team, $employeeId, $form=null, $options=[]) {
 

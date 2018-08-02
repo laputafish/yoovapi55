@@ -8,7 +8,8 @@ use App\Helpers\IrData;
 use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OATeamHelper;
 
-class IrdFormHelper {
+class IrdFormHelper
+{
   protected static $defaults = [];
   protected static $defaultsx = [
     'areaCodeResAddr' => 'H',
@@ -43,7 +44,8 @@ class IrdFormHelper {
     'remarks' => 'Remarks'
   ];
 
-  public static function getIrdMaster($team, $form=null, $options=[]) {
+  public static function getIrdMaster($team, $form = null, $options = [])
+  {
 // echo 'getIrdMaster ... '; nf();
     // if $form = null, test mode
 // echo 'team: ';
@@ -61,19 +63,20 @@ class IrdFormHelper {
 //echo '3';
     $formDate = date('Y-m-d');
     $designation = 'Manager';
-//echo '4';
 
-    if(isset($form)) {
+    if (isset($form)) {
       $formDate = $form->{getFieldMapping($options, 'form_date')};
       $designation = $form->designation;
     }
-//echo '5';
-
+//echo 'options: '; nf();
+//    dd($options);
+////echo '5';
+//dd( getFieldMapping($options, 'form_date') );
     $result = [
       // Non-ird fields
       'HeaderPeriod' => strtoupper($headerPeriod),
       'EmpPeriod' => $headerPeriod . ':',
-      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
+      'IncPeriod' => 'Particulars of income accuring ' . $headerPeriod,
       'FileNo' => $registrationNumber,
 
       // for Chinese version only
@@ -99,14 +102,19 @@ class IrdFormHelper {
     return $result;
   }
 
-  public static function getIrdFormData($team, $irdForm, $formEmployee, $options=[]) {
-    $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irdForm->ird_code.'Helper'));
-    $irdEmployee = $irDataHelperClassName::get($team, $formEmployee->employee_id, $options);
+  public static function getIrdFormData($team, $irdForm, $formEmployee, $options = [])
+  {
+    $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
+    $irdDataHelperClassName = '\\App\\Helpers\\IrData\\' .
+      camelize(strtolower($irdForm->ird_code)) .
+          ($isSample ? 'Sample' : '') .
+          'Helper';
+    $irdEmployee = $irdDataHelperClassName::get($team, $formEmployee->employee_id, $options);
     return $irdEmployee;
 
   }
 
-  public static function fetchDataAndGeneratePdf($team, $employeeId, $formCode, $langCode, $options=[])
+  public static function fetchDataAndGeneratePdf($outputFilePath, $team, $employeeId, $formCode, $langCode, $options = [])
   {
     // IRD Master Data
     $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
@@ -119,46 +127,47 @@ class IrdFormHelper {
     LangHelper::setLang($lang->code);
 
     // Prepare output file path
-    $outputFilePath = array_key_exists('outputFilePath', $options) ? $options['outputFilePath'] : null;
-    $irdFormFile = $irdForm->files()->whereLangId( $lang->id )->first();
-    $templateFilePath = storage_path('forms/'.$irdFormFile->file);
+//    $outputFilePath = array_key_exists('outputFilePath', $options) ? $options['outputFilePath'] : null;
+    $irdFormFile = $irdForm->files()->whereLangId($lang->id)->first();
+    $templateFilePath = storage_path('forms/' . $irdFormFile->file);
 
     // Prepare data
-    $options = array_merge($options, ['defaults'=>self::$defaults]);
+    $options = array_merge($options, ['defaults' => self::$defaults]);
 
-    $irDataClassPrefix = substr(strtolower($formCode),-2)== 'pc' ?
-      substr($formCode,0,strlen($formCode)-2) :
+    $irDataClassPrefix = substr(strtolower($formCode), -2) == 'pc' ?
+      substr($formCode, 0, strlen($formCode) - 2) :
       $formCode;
-    $irDataHelperClassName = '\\App\\Helpers\\IrData\\'.camelize(strtolower($irDataClassPrefix.'Helper'));
+    $irDataHelperClassName = '\\App\\Helpers\\IrData\\' . camelize(strtolower($irDataClassPrefix . 'Helper'));
     $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
     $pdfData = array_merge($irdMaster, $irdEmployee);
 
     // process
     $pdfOptions = [
-      'title'=>$formCode,
-      'topOffset'=>$irdFormFile->top_offset,
-      'rightMargin'=>$irdFormFile->right_margin,
-      'templateFilePath'=>$templateFilePath
+      'title' => $formCode,
+      'topOffset' => $irdFormFile->top_offset,
+      'rightMargin' => $irdFormFile->right_margin,
+      'templateFilePath' => $templateFilePath
     ];
     $pdf = new FormPdf($pdfOptions);
     $fieldList = $irdFormFile->fields;
     self::fillData($pdf, $fieldList, $pdfData);
 
     // Output
-    if(isset($outputFilePath)) {
+    if (isset($outputFilePath)) {
       if (file_exists($outputFilePath)) {
         unlink($outputFilePath);
       }
       $pdf->Output($outputFilePath, 'F');
     } else {
-      $pdf->Output('ird_'.$formCode.'.pdf');
+      $pdf->Output('ird_' . $formCode . '.pdf');
     }
 //    $pdf->endPage();
     unset($pdf);
     return $irdEmployee;
   }
 
-  public static function buildPdf( $options ) {
+  public static function buildPdf($options)
+  {
     // options = {
     //    title
     //    data
@@ -170,10 +179,10 @@ class IrdFormHelper {
     //    rightMargin
     // }
     $pdfOptions = [
-      'title'=>$options['title'],
-      'topOffset'=>$options['topOffset'],
-      'rightMargin'=>$options['rightMargin'],
-      'templateFilePath'=>$options['templateFile']
+      'title' => $options['title'],
+      'topOffset' => $options['topOffset'],
+      'rightMargin' => $options['rightMargin'],
+      'templateFilePath' => $options['templateFile']
     ];
     $pdf = new FormPdf($pdfOptions);
     self::fillData($pdf, $options['fields'], $options['data']);
@@ -183,8 +192,8 @@ class IrdFormHelper {
     $folder = pathinfo($outputFile, PATHINFO_DIRNAME);
     FolderHelper::checkCreateFolders($folder);
 
-    if(isset($outputFile)) {
-      if(file_exists($outputFile)) {
+    if (isset($outputFile)) {
+      if (file_exists($outputFile)) {
         unlink($outputFile);
       }
       $pdf->Output($outputFile, 'F');
@@ -193,9 +202,10 @@ class IrdFormHelper {
     }
   }
 
-  public static function fillData($pdf, $fieldList, $data) {
-    foreach($fieldList as $item) {
-      if($item->hidden) {
+  public static function fillData($pdf, $fieldList, $data)
+  {
+    foreach ($fieldList as $item) {
+      if ($item->hidden) {
         continue;
       }
       $align = isset($item->align) ? $item->align : 'L';
@@ -205,16 +215,16 @@ class IrdFormHelper {
         case 'string':
           $text = $data[$item->key];
 
-          if($text == '0') {
+          if ($text == '0') {
             if ($item->blank_if_zero) {
               break;
             }
-          } else if(empty($text)) {
+          } else if (empty($text)) {
             break;
           }
 
           // lang
-          if(hasChinese($text)) {
+          if (hasChinese($text)) {
             $lang = 'chn';
           }
 
@@ -226,14 +236,14 @@ class IrdFormHelper {
           $appendAsterisk = isset($item->append_asterisk) ? $item->append_asterisk : false;
 
           // Check is currency
-          if(!empty($text)) {
-            if($item->to_currency) {
+          if (!empty($text)) {
+            if ($item->to_currency) {
               $text = toCurrency(str_replace(',', '', $text));
             }
           }
 
           // Append Asterisk
-          if($appendAsterisk) {
+          if ($appendAsterisk) {
             $x = 100;
             $width = 0;
             $align = 'R';

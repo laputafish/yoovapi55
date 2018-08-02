@@ -18,7 +18,7 @@ use App\Helpers\OA\OATeamHelper;
 use App\Helpers\OA\OAHelper;
 
 use App\Helpers\IrData\IrDataHelper;
-use App\Helpers\IrData\Ir56eHelper;
+use App\Helpers\IrData\Ir56EHelper;
 use App\Helpers\Forms\CommencementFormPdfHelper;
 use App\Helpers\IrData\IrdApplicationLetterHelper;
 
@@ -88,7 +88,7 @@ class TaxFormHelper
 //    }
 //  }
 
-  public static function generateForm($formEmployee, $form, $sheetNo, $irdMaster)
+  public static function generateForm($outputFolder, $formEmployee, $form, $sheetNo, $irdMaster)
   {
     $team = $form->team;
     $oaAuth = $team->getOaAuth();
@@ -101,8 +101,8 @@ class TaxFormHelper
     TeamHelper::updateEmployee($team, $oaEmployee);
 
     // storage/app/{$filePath}
-    $filePath = self::getFormFilePath($form, $formEmployee);
-    $targetFilePath = storage_path('app/'.$filePath);
+    // $filePath = self::getFormFilePath($form, $formEmployee);
+    $targetFilePath = $outputFolder.'/sheet_'.$sheetNo.'.pdf'; // storage_path('app/'.$filePath);
     checkCreateFolder( $targetFilePath);
 //    $folder = pathinfo($targetFilePath, PATHINFO_DIRNAME);
 //    FolderHelper::checkCreateFolders($folder);
@@ -114,13 +114,13 @@ class TaxFormHelper
     }
 
     $irdEmployee = IrdFormHelper::fetchDataAndGeneratePdf(
+      $targetFilePath,
       $team,
       $formEmployee->employee_id,
       $form->irdForm->form_code,
       $langCode,
       [
         'form'=>$form,
-        'outputFilePath'=>$targetFilePath,
         'sheetNo'=>$sheetNo,
         'irdMaster'=>$irdMaster
       ]
@@ -161,7 +161,7 @@ class TaxFormHelper
       $irdForm = IrdForm::whereFormCode($formCode)->first();
     }
 
-    $data = Ir56eHelper::get($team, $employeeId, $form);
+    $data = Ir56EHelper::get($team, $employeeId, $form);
     // $data = self::getFormCommencementData($form, $employeeId);
 
     // language
@@ -186,7 +186,7 @@ class TaxFormHelper
 
   public static function xxxgetFormCommencementData($form, $employeeId) {
 
-    $ir56eData = Ir56eHelper::get($form, $employeeId);
+    $ir56eData = Ir56EHelper::get($form, $employeeId);
     return $ir56eData;
 //    return [
 //      // 'title' => 'MPF 2018',
@@ -365,6 +365,7 @@ class TaxFormHelper
       EventHelper::send( 'requestForm', ['sampleForm'=>$sampleForm]);
     } else {
       $team = $sampleForm->team;
+      $outputFolder = storage_path('app/teams/'.$team->oa_team_id.'/application_letters/'.$sampleForm->id);
 
       // Status => 'processing'
       if ($sampleForm->status != 'processing') {
@@ -412,29 +413,34 @@ class TaxFormHelper
             'form_date'=>'application_date'
           ]
         ]);
-        echo '1111';
+        $irdInfo = IrDataHelper::getIrdInfo($irdFormCode, $sampleForm->lang->code, [
+          'is_sample' => true
+        ]);
+
+        // [
+        //    'irdForm'=>...,
+        //    'fields'=>...
+        // ]
+
         $employees = $sampleForm->employees;
         $sheetNo = 1;
-        $sheetCount = 3;
-        $sheetsFulfilled = false;
+        $sampleCount = 3;
         foreach($employees as $formEmployee) {
           if($sampleForm->status != 'processing') {
             break;
           }
-          $generationResult = self::generateSampleForm($formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode);
+          $generationResult = self::generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount);
           $irdEmployee = $generationResult['irdEmployee'];
           $irdMaster['Employees'][] = $irdEmployee;
-          $irdMaster['TotIncomeBatch'] += (double) $irdEmployee['TotalIncome'];
+          $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
+          $sheetNo++;
         }
         if($sampleForm->status != 'processing') {
           break;
         }
-        if(!$sheetsFulfilled) {
-          $sheetNo++;
-          if ($sheetNo > $sheetCount) {
-            $sheetsFulfilled = true;
-            $sheetNo = 0;
-          }
+        $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
+        if($irdForm->requires_control_list) {
+          self::createControlList($outputFolder.'/'.$irdFormCode.'_control_list.pdf', $sampleForm, $irdMaster, $irdInfo);
         }
         dd('finished softcopies forms: '.$irdFormCode );
       }
@@ -465,17 +471,17 @@ class TaxFormHelper
     }
   }
 
-  public static function generateSampleForm($formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode) {
+  public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount) {
     echo 'generateSampleForm:: '; nf();
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
 
     // Output path
-    $outputFilePath = $sheetNo != 0 ?
-      $outputFilePath = IrdApplicationLetterHelper::getPath( $sampleForm, $irdFormCode.'_sample_sheet_'.$sheetNo.'.pdf') : null;
+    $outputFilePath = $sheetNo != 0 ? $outputFolder.'/'.$irdFormCode.'_sample_sheet_'.$sheetNo.'.pdf' : null;
 
     // IRD Form File
-    $irdForm = IrdForm::whereFormCode(strtoupper($irdFormCode))->first();
+    $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
+
     $irdFormFile = $irdForm->getFile($sampleForm->lang->code);
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
 
@@ -486,32 +492,35 @@ class TaxFormHelper
       'sheetNo'=>$sheetNo
     ];
     $irdEmployee = IrdFormHelper::getIrdFormData($team, $irdForm, $formEmployee, $options);
-    echo 'after IrdformHelper::getIrdformData.'; nf();
-    $pdfData = array_merge($irdMaster, $irdEmployee);
 
-    // Generate PDF
-    $pdfOptions = [
-      'title'=>strtoupper($irdFormCode).'_sample_sheet_'.$sheetNo,
-      'topOffset'=>$irdFormFile->top_offset,
-      'rightMargin'=>$irdFormFile->right_margin,
-      'templateFilePath'=>$templateFilePath
-    ];
-    $pdf = new FormPdf($pdfOptions);
-    $fieldList = $irdFormFile->fields;
-    self::fillData($pdf, $fieldList, $pdfData);
+    if ($sheetNo<=$sampleCount) {
+      $pdfData = array_merge($irdMaster, $irdEmployee);
 
-    // Output
-    if(isset($outputFilePath)) {
-      if (file_exists($outputFilePath)) {
-        unlink($outputFilePath);
+      // Generate PDF
+      $pdfOptions = [
+        'title' => strtoupper($irdFormCode) . '_sample_sheet_' . $sheetNo,
+        'topOffset' => $irdFormFile->top_offset,
+        'rightMargin' => $irdFormFile->right_margin,
+        'templateFilePath' => $templateFilePath
+      ];
+      $pdf = new FormPdf($pdfOptions);
+      $fieldList = $irdFormFile->fields;
+      IrdFormHelper::fillData($pdf, $fieldList, $pdfData);
+      $pdf->lastPage();
+
+      // Output
+      if (isset($outputFilePath)) {
+        if (file_exists($outputFilePath)) {
+          unlink($outputFilePath);
+        }
+        $pdf->Output($outputFilePath, 'F');
+      } else {
+        // $pdf->Output('ird_'.$irdFormCode.'.pdf');
       }
-      $pdf->Output($outputFilePath, 'F');
-    } else {
-      $pdf->Output('ird_'.$irdFormCode.'.pdf');
+      unset($pdf);
     }
 
-    unset($pdf);
-    return $irdEmployee;
+    return ['irdEmployee'=>$irdEmployee];
   }
 
   public static function processJob_irdForm($job) {
@@ -532,6 +541,7 @@ class TaxFormHelper
         EventHelper::send('form', ['form' => $form]);
       }
       $employees = $form->employees()->get();
+      $outputFolder = storage_path('app/teams/'.$team->oa_team_id.'/'.$form->id);
 
       $irdMaster = IrdFormHelper::getIrdMaster($team,$form);
 
@@ -554,7 +564,7 @@ class TaxFormHelper
         }
 
         // Process
-        $generationResult = self::generateForm($formEmployee, $form, $sheetNo, $irdMaster);
+        $generationResult = self::generateForm($outputFolder, $formEmployee, $form, $sheetNo, $irdMaster);
         // generationResult = [
         //    'irdEmployee'=>...
         //    'outputFilePath'=>'....'
@@ -581,7 +591,7 @@ class TaxFormHelper
       $irdForm = $form->irdForm;
 
       if($irdForm->requires_control_list) {
-        self::createControlList($form, $irdMaster);
+        self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster);
       }
       if($form->status == 'processing') {
         $form->update(['status' => 'ready']);
@@ -590,11 +600,15 @@ class TaxFormHelper
     }
   }
 
-  public static function createControlList( $form, $irdMaster ) {
-    $team = $form->team;
-    $irdForm = $form->irdForm;
+  public static function createControlList( $outputFilePath, $form, $irdMaster, $irdInfo ) {
+    // $irdInfo = [$irdForm, $fields]
+    //
+    $langCode = $irdInfo['langCode'];
+    $isEnglish = $langCode === 'en-us';
+
+    $irdForm = $irdInfo['irdForm'];
     $controlListIrdForm = IrdForm::whereFormCode($irdForm->ird_code.'_CL')->first();
-    $controlListIrdFile = $controlListIrdForm->getFile($form->lang->code);
+    $controlListIrdFile = $controlListIrdForm->getFile($irdInfo['langCode']);
     $fields = $controlListIrdFile->fields;
 
     // FileNo
@@ -603,32 +617,49 @@ class TaxFormHelper
     // TotIncomebatch
     // NoRecordBatch
     //
-    $outputFilePath = storage_path('app/teams/'.$team->oa_team_id.'/'.$form->id.'/control_list.pdf' );
-    $options = [
-      'fields'=>$fields,
-      'headerData'=>[
-        'HeaderFileNo'=>'File No.               '.$irdMaster['FileNo'],
-        'HeaderCompanyName'=>$irdMaster['ErName'],
-        'HeaderPageSubject'=>'List of Employees with IR56Bs Prepared via Self-developed Software',
-        'HeaderFiscalYears'=>lcfirst(ucwords(strtolower($irdMaster['HeaderPeriod']))),
-        'HeaderSheetNo'=>'Sheet No.',
-        'HeaderName'=>'Name',
-        'HeaderHKICNo'=>'HKIC No.',
-        'HeaderTotalIncome'=>'Total Income',
-        'HeaderPerItem11'=>'per Item 11 of IR56B',
-        'HeaderHKD'=>'(HK $)'
-      ],
-      'footerData'=>[
-        'FooterSignatureLabel'=>'Signature',
-        'FooterNameLabel'=>'Name',
-        'FooterDesignationLabel'=>'Designation',
-        'FooterDateLabel'=>'Date',
+    $headerData = [
+      'HeaderFileNo'=>($isEnglish ? 'File No.' : '檔案號碼').'               '.$irdMaster['FileNo'],
+      'HeaderCompanyName'=>$irdMaster['ErName'],
+      'HeaderPageSubject'=>($isEnglish ?
+        'List of Employees with IR56Bs Prepared via Self-developed Software' :
+        '以電腦格式遞交 IR56B 的僱員名單'),
+      'HeaderFiscalYears'=>lcfirst(ucwords(strtolower($irdMaster['HeaderPeriod']))),
+      'HeaderSheetNo'=>($isEnglish ? 'Sheet No.' : '表格編號'),
+      'HeaderName'=>($isEnglish ? 'Name' : '僱員姓名'),
+      'HeaderHKICNo'=>($isEnglish ? 'HKIC No.' : '香港身分證號碼'),
+      'HeaderTotalIncome'=>($isEnglish ? 'Total Income' : 'IR56B第11項內的入息總額'),
+      'HeaderHKD'=>'(港元)'
+    ];
 
-        'FooterSignature'=>' ',
-        'FooterName'=>$irdMaster['SignatureName'],
-        'FooterDesignation'=>$irdMaster['Designation'],
-        'FooterDate'=>phpDateFormat('d m yyyy', $irdMaster['SubDate'])
-      ],
+    if($isEnglish) {
+      $headerData['HeaderPerItem11'] = 'per Item 11 of IR56B';
+    }
+
+    if($irdInfo['is_sample']) {
+      $headerData['HeaderForTestingOnlyLabel'] =
+        $isEnglish ?
+          '<For Testing Only>' :
+          '<只供測試用>';
+
+    }//
+
+    $footerData = [
+      'FooterSignatureLabel'=>($isEnglish ? 'Signature' : '簽署'),
+      'FooterNameLabel'=>($isEnglish ? 'Name' : '姓名'),
+      'FooterDesignationLabel'=>($isEnglish ? 'Designation' : '職'),
+      'FooterDateLabel'=>($isEnglish ? 'Date': '日期'),
+
+      'FooterSignature'=>' ',
+      'FooterName'=>$irdMaster['SignatureName'],
+      'FooterDesignation'=>$irdMaster['Designation'],
+      'FooterDate'=>phpDateFormat('d m yyyy', $irdMaster['SubDate'])
+    ];
+
+    $options = [
+      'langCode'=>$langCode,
+      'fields'=>$fields,
+      'headerData'=>$headerData,
+      'footerData'=>$footerData,
       'printHeader'=>true,
       'printFooter'=>true,
       'headerMargin'=>10,

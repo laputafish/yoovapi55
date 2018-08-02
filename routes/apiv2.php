@@ -28,7 +28,7 @@ Route::get('/', function() {
 Route::get('/test/{formId}/{employeeId}', function($formId, $employeeId) {
   $form = \App\Models\FormCommencement::find($formId);
   $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
-  $ir56e = \App\Helpers\IrData\IR56eHelper::get($form, $formEmployee);
+  $ir56e = \App\Helpers\IrData\Ir56EHelper::get($form, $formEmployee);
   dd($ir56e);
 });
 

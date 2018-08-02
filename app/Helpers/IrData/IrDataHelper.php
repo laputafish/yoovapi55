@@ -7,6 +7,8 @@ use App\Helpers\OA\OATeamHelper;
 use App\Helpers\OA\OASalaryHelper;
 use App\Helpers\OA\OAPayslipHelper;
 
+use App\Models\IrdForm;
+
 class IrDataHelper
 {
   protected static $team = null;
@@ -50,6 +52,18 @@ class IrDataHelper
   public static function getOAAdminEmployee()
   {
     return OAEmployeeHelper::getAdminInfo(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
+  }
+
+  public static function getIrdInfo($irdCode, $langCode, $extra=[]) {
+    $irdForm = IrdForm::whereIrdCode($irdCode)->whereEnabled(1)->first();
+    $irdFormFile = $irdForm->getFile($langCode);
+
+    return array_merge([
+      'langCode'=>$langCode,
+      'irdForm'=>$irdForm,
+      'fields'=>$irdFormFile->fields->toArray(),
+      'is_sample'=>false
+    ], $extra);
   }
 
   public static function getOAPayrollSummary($fiscalYearInfo)

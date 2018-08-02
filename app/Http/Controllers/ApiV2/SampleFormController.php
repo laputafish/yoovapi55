@@ -118,6 +118,7 @@ class SampleFormController extends BaseAuthController
   private function createSampleFormEmployees($sampleForm) {
     // clear
     $sampleForm->employees()->delete();
+    $isEnglish = $sampleForm->lang->code == 'en-us';
 
     for($i=0; $i<30; $i++) {
       $index = $i + 1;
@@ -187,7 +188,7 @@ class SampleFormController extends BaseAuthController
         'spouse_pp_num'=>isset($martialStatus['spouse']) ? $martialStatus['spouse']['ppNum'] : '',
         'res_addr'=>'Flat A, 1/F., First Bldg., 1st Street, Central.',
         'area_code_res_addr'=>['H','K','N','F'][rand(0,3)],
-        'pos_addr'=>'',
+        'pos_addr'=>$isEnglish ? 'Same as Above' : '同上',
         'capacity'=>SampleHelper::getCapacity(),
         'pt_prin_emp'=>getRandomForProbability('Main Company', 0,.1),
         'start_date_of_emp'=>phpDateFormat($employmentPeriod['startDate'], 'Ymd'),
