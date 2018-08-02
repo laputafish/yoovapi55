@@ -1,6 +1,6 @@
 <?php namespace App\Models;
 
-class IrdFormFile extends BaseModel {
+class IrFieldMapping extends BaseModel {
   public $autoincrement = false;
 
   protected $fillable = [

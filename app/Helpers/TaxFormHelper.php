@@ -17,10 +17,12 @@ use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\OA\OATeamHelper;
 use App\Helpers\OA\OAHelper;
 
+use App\Helpers\Forms\CommencementFormPdfHelper;
+
 use App\Helpers\IrData\IrDataHelper;
 use App\Helpers\IrData\Ir56EHelper;
-use App\Helpers\Forms\CommencementFormPdfHelper;
 use App\Helpers\IrData\IrdApplicationLetterHelper;
+use App\Helpers\IrData\Ird56bXml;
 
 class TaxFormHelper
 {
@@ -88,7 +90,7 @@ class TaxFormHelper
 //    }
 //  }
 
-  public static function generateForm($outputFolder, $formEmployee, $form, $sheetNo, $irdMaster)
+  public static function generateForm($outputFolder, $formEmployee, $form, $sheetNo, $irdMaster, $irdInfo)
   {
     $team = $form->team;
     $oaAuth = $team->getOaAuth();
@@ -108,17 +110,18 @@ class TaxFormHelper
 //    FolderHelper::checkCreateFolders($folder);
 
     // language
-    $langCode = 'en-us';
-    if (isset($form->lang)) {
-      $langCode = $form->lang->code;
-    }
+//    $langCode = $irdInfo['langCode'];
+//    'en-us';
+//    if (isset($form->lang)) {
+//      $langCode = $form->lang->code;
+//    }
 
     $irdEmployee = IrdFormHelper::fetchDataAndGeneratePdf(
       $targetFilePath,
       $team,
       $formEmployee->employee_id,
       $form->irdForm->form_code,
-      $langCode,
+      $irdInfo,
       [
         'form'=>$form,
         'sheetNo'=>$sheetNo,
@@ -401,7 +404,7 @@ class TaxFormHelper
       // ir56m_sample_sheets (if ir56m soft copies not ncessary)
       //
 
-      IrdApplicationLetterHelper::build($team, $sampleForm);
+      IrdApplicationLetterHelper::build($outputFolder, $team, $sampleForm);
       EventHelper::send( 'requestForm', ['sampleForm'=>$sampleForm]);
 
       $applySoftcopiesStr = trim($sampleForm->apply_softcopies);
@@ -442,8 +445,23 @@ class TaxFormHelper
         if($irdForm->requires_control_list) {
           self::createControlList($outputFolder.'/'.$irdFormCode.'_control_list.pdf', $sampleForm, $irdMaster, $irdInfo);
         }
-        dd('finished softcopies forms: '.$irdFormCode );
+
+        // Output XML file
+        $xsdFile = storage_path('forms/'.strtolower($irdFormCode).'.xsd');
+        $outputFilePath = $outputFolder.'/'.strtolower($irdFormCode).'.xml';
+        $irdMaster = null;
+        $irdInfo = null;
+        $xml = new Ird56bXml($irdMaster, $irdInfo, $xsdFile);
+        $xml->validate();
+        $xml->output($outputFilePath);
+        // Copy scheme file
+        $targetSchemeFile = $outputFolder.'/'.strtolower($irdFormCode).'.xsd';
+        copy($xsdFile, $targetSchemeFile);
+
+        echo 'finished softcopies forms: '.$irdFormCode; nf();
+        dd('finish all soft copies');
       }
+
 
       $applyPrintedFormsStr = trim($sampleForm->apply_printed_forms);
       $applyPrintedForms = explode(',', $sampleForm->apply_printed_forms);
@@ -492,6 +510,9 @@ class TaxFormHelper
       'sheetNo'=>$sheetNo
     ];
     $irdEmployee = IrdFormHelper::getIrdFormData($team, $irdForm, $formEmployee, $options);
+    $irdEmployee['HeaderForTestingOnlyLabel'] = $sampleForm->lang->code=='en-us' ?
+      '<For Testing Only>' :
+      '<只供測試用>';
 
     if ($sheetNo<=$sampleCount) {
       $pdfData = array_merge($irdMaster, $irdEmployee);
@@ -544,7 +565,9 @@ class TaxFormHelper
       $outputFolder = storage_path('app/teams/'.$team->oa_team_id.'/'.$form->id);
 
       $irdMaster = IrdFormHelper::getIrdMaster($team,$form);
-
+      $irdInfo = IrDataHelper::getIrdInfo($form->irdForm->ird_code, $form->lang->code, [
+        'is_sample' => false
+      ]);
       $sheetNo = 1;
       foreach ($employees as $formEmployee) {
         $form = Form::find($form->id);
@@ -564,7 +587,7 @@ class TaxFormHelper
         }
 
         // Process
-        $generationResult = self::generateForm($outputFolder, $formEmployee, $form, $sheetNo, $irdMaster);
+        $generationResult = self::generateForm($outputFolder, $formEmployee, $form, $sheetNo, $irdMaster, $irdInfo);
         // generationResult = [
         //    'irdEmployee'=>...
         //    'outputFilePath'=>'....'
@@ -591,7 +614,7 @@ class TaxFormHelper
       $irdForm = $form->irdForm;
 
       if($irdForm->requires_control_list) {
-        self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster);
+        self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
       if($form->status == 'processing') {
         $form->update(['status' => 'ready']);
@@ -668,7 +691,7 @@ class TaxFormHelper
     ];
     $pdf = new FormPdf($options);
 
-    $y0 = 52;
+    $y0 = $isEnglish ? 52 : 48;
 
     // Content
     $contentFields = $fields->filter(function($item) {
@@ -716,8 +739,12 @@ class TaxFormHelper
     } else {
     }
     $summaryFields = [
-      'SummaryTotalEmployeeCountLabel' => 'Total Number of Employees Per List',
-      'SummaryTotalIncomeLabel' => 'Grand Total of Income Per List',
+      'SummaryTotalEmployeeCountLabel' => ($isEnglish ?
+        'Total Number of Employees Per List' :
+        '名單內僱員總數'),
+      'SummaryTotalIncomeLabel' => ($isEnglish ?
+        'Grand Total of Income Per List' :
+        '名單內的總入息'),
       'SummaryTotalEmployeeCount' => $employeeCount,
       'SummaryTotalIncome' => '$'.toCurrency($irdMaster['TotIncomeBatch'])
     ];

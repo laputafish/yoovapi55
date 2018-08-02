@@ -8,7 +8,7 @@ class SampleHelper {
     return $prefix.$body.$suffix;
   }
 
-  public static function getMartialStatus($sex) {
+  public static function getMaritalStatus($sex) {
     $married = rand(0,1);
     $result = [
       'married' => $married,

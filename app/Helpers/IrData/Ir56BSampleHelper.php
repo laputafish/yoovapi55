@@ -44,7 +44,7 @@ class Ir56BSampleHelper extends IrDataHelper
       'GivenName' => $formEmployee->given_name,
       'NameInChinese' => $formEmployee->name_in_chinese,
       'Sex' => $formEmployee->sex,
-      'MartialStatus' => $formEmployee->martial_status,
+      'MaritalStatus' => $formEmployee->marital_status,
       'PpNum' => $formEmployee->pp_num,
 
       // Employee's Spouse

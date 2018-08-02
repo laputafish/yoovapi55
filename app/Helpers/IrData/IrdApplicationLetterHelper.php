@@ -4,7 +4,7 @@ use App\Models\IrdForm;
 use App\Helpers\IrdFormHelper;
 
 class IrdApplicationLetterHelper {
-  public static function build($team, $sampleForm) {
+  public static function build($outputFolder, $team, $sampleForm) {
     $applySoftcopiesStr = $sampleForm->apply_softcopies;
     $applySoftcopies = explode(',',trim($applySoftcopiesStr));
 
@@ -36,7 +36,7 @@ class IrdApplicationLetterHelper {
     $irdFormFile = $irdForm->getFile($langCode);
     $fields = $irdFormFile->fields;
     $templateFile = storage_path('forms/'.$irdFormFile->file);
-    $outputFile = storage_path('app/teams/'.$team->oa_team_id.'/application_letters/letter.pdf');
+    $outputFile = $outputFolder.'/letter.pdf';
 
     IrdFormHelper::buildPdf([
       'title'=>'Application Letter',

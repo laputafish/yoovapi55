@@ -117,8 +117,8 @@ class Ir56BHelper extends IrDataHelper
       $fiscalYearStartBeforeCease = '';
     }
     // 1=Single/Widowed/Divorced/Living Apart, 2=Married
-    $martialStatus = array_key_exists('martialStatus', $defaults) ?
-      $defaults['martialStatus'] :
+    $maritalStatus = array_key_exists('maritalStatus', $defaults) ?
+      $defaults['maritalStatus'] :
       ($oaEmployee['marital'] == 'married' ? 2 : 1);
 
     $result = [
@@ -130,13 +130,13 @@ class Ir56BHelper extends IrDataHelper
       'GivenName' => $oaEmployee['firstName'],
       'NameInChinese' => getOAEmployeeChineseName($oaEmployee),
       'Sex' => $oaEmployee['gender'],
-      'MartialStatus' => $martialStatus,
+      'MaritalStatus' => $maritalStatus,
       'PpNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : '',
 
       // Employee's Spouse
-      'SpouseName' => $martialStatus == 1 ? '' : $defaults['spouseName'],
-      'SpouseHKID' => $martialStatus == 1 ? '' : $defaults['spouseHkid'],
-      'SpousePpNum' => $martialStatus == 1 ? '' : $defaults['spousePpNum'],
+      'SpouseName' => $maritalStatus == 1 ? '' : $defaults['spouseName'],
+      'SpouseHKID' => $maritalStatus == 1 ? '' : $defaults['spouseHkid'],
+      'SpousePpNum' => $maritalStatus == 1 ? '' : $defaults['spousePpNum'],
 
       // Correspondence
       'ResAddr' => $oaEmployee['address'][0]['text'],

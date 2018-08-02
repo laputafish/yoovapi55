@@ -123,7 +123,7 @@ class SampleFormController extends BaseAuthController
     for($i=0; $i<30; $i++) {
       $index = $i + 1;
       $nameInfo = SampleNameHelper::get();
-      $martialStatus = SampleHelper::getMartialStatus($nameInfo['sex']);
+      $maritalStatus = SampleHelper::getMaritalStatus($nameInfo['sex']);
       $employmentPeriod = SampleHelper::getEmploymentPeriod($sampleForm->fiscal_start_year);
       $period = phpDateFormat($employmentPeriod['startDate'], 'Ymd').'-'.
         phpDateFormat($employmentPeriod['endDate'], 'Ymd');
@@ -182,10 +182,10 @@ class SampleFormController extends BaseAuthController
         'given_name' => $nameInfo['givenName'],
         'name_in_chinese'=> $nameInfo['nameInChinese'],
         'sex'=>$nameInfo['sex'],
-        'martial_status'=>$martialStatus['married'] ? 2 : 1,
-        'spouse_name'=>isset($martialStatus['spouse']) ? $martialStatus['spouse']['name'] : '',
-        'spouse_hkid'=>isset($martialStatus['spouse']) ? $martialStatus['spouse']['hkid'] : '',
-        'spouse_pp_num'=>isset($martialStatus['spouse']) ? $martialStatus['spouse']['ppNum'] : '',
+        'marital_status'=>$maritalStatus['married'] ? 2 : 1,
+        'spouse_name'=>isset($maritalStatus['spouse']) ? $maritalStatus['spouse']['name'] : '',
+        'spouse_hkid'=>isset($maritalStatus['spouse']) ? $maritalStatus['spouse']['hkid'] : '',
+        'spouse_pp_num'=>isset($maritalStatus['spouse']) ? $maritalStatus['spouse']['ppNum'] : '',
         'res_addr'=>'Flat A, 1/F., First Bldg., 1st Street, Central.',
         'area_code_res_addr'=>['H','K','N','F'][rand(0,3)],
         'pos_addr'=>$isEnglish ? 'Same as Above' : '同上',

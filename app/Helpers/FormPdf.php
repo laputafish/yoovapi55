@@ -110,12 +110,12 @@ class FormPdf extends Fpdi\TcpdfFpdi
     $this->outputDataItems($this->footerData);
 
     if($this->langCode == 'en-us') {
-      $this->SetFont($fontName);
+      $this->SetFont($this->fontName);
     }
     else {
-      $this->SetFont($fontNameChn);
+      $this->SetFont($this->fontNameChn);
     }
-    
+
     $pageMessage = $this->langCode == 'en-us' ?
       'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages() :
       '共 '.$this->getAliasNbPages().' 頁中之第 '.$this->getAliasNumPage().'頁';

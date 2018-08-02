@@ -61,7 +61,7 @@ class Ir56FHelper extends IrDataHelper {
         'hkid' => $oaEmployee['identityNumber'],
         'ppNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : 'xxxxx',
         'gender' => $oaEmployee['gender'],
-        'martialStatus' => ($oaEmployee['marital'] == 'married' ? 2 : 1),
+        'maritalStatus' => ($oaEmployee['marital'] == 'married' ? 2 : 1),
         // 1=Single/Widowed/Divorced/Living Apart, 2=Married
 
         'endDateOfEmp' => $jobEndedDate,

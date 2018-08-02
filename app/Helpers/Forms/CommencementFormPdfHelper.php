@@ -213,7 +213,7 @@ class CommencementFormPdfHelper {
 //      'L');
 //
 //    //********************************************
-//    // Employee - Martial Status
+//    // Employee - Marital Status
 //    //********************************************
 //    $pdf->outputChars( 191.8, 85+ self::$yOffset,
 //      12,

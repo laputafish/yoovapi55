@@ -13,7 +13,7 @@ class IrdFormHelper
   protected static $defaults = [];
   protected static $defaultsx = [
     'areaCodeResAddr' => 'H',
-    'martialStatus' => '2',
+    'maritalStatus' => '2',
     'spouseName' => '(spouse name)',
     'spouseHkid' => 'C123456(7)',
     'spousePpNum' => 'PP12345678',
@@ -46,6 +46,11 @@ class IrdFormHelper
 
   public static function getIrdMaster($team, $form = null, $options = [])
   {
+    $isEnglish = true;
+    if(isset($form)) {
+      $isEnglish = $form->lang->code == 'en-us';
+    }
+
 // echo 'getIrdMaster ... '; nf();
     // if $form = null, test mode
 // echo 'team: ';
@@ -59,7 +64,9 @@ class IrdFormHelper
 //echo '2';
     $section = $registrationNumberSegs[0];
     $ern = $registrationNumberSegs[1];
-    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']);
+    $headerPeriod = $isEnglish ?
+      'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']) :
+      '在 '.$fiscalYearInfo['startYear'].' 年 4 月 1 日至 '.$fiscalYearInfo['endYear'].' 年 3 月 31 日 年內';
 //echo '3';
     $formDate = date('Y-m-d');
     $designation = 'Manager';
@@ -114,13 +121,14 @@ class IrdFormHelper
 
   }
 
-  public static function fetchDataAndGeneratePdf($outputFilePath, $team, $employeeId, $formCode, $langCode, $options = [])
+  public static function fetchDataAndGeneratePdf($outputFilePath, $team, $employeeId, $formCode, $irdInfo, $options = [])
   {
     // IRD Master Data
     $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
+    $langCode = $irdInfo['langCode'];
 
     // Fetch related IRD Form Record
-    $irdForm = IrdForm::whereFormCode(strtoupper($formCode))->first();
+    $irdForm = $irdInfo['irdForm']; // IrdForm::whereFormCode(strtoupper($formCode))->first();
 
     // Set language for text translation in case
     $lang = Lang::whereCode($langCode)->first();
@@ -149,7 +157,7 @@ class IrdFormHelper
       'templateFilePath' => $templateFilePath
     ];
     $pdf = new FormPdf($pdfOptions);
-    $fieldList = $irdFormFile->fields;
+    $fieldList = $irdFormFile->fields->where('for_testing_only', 0);
     self::fillData($pdf, $fieldList, $pdfData);
 
     // Output

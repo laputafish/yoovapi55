@@ -18,7 +18,7 @@ class Ir56e extends IrBase {
   public $hkid;
   public $ppNum;
   public $gender = 'M';
-  public $martialStatus = 1; // 1=Single/Widowed/Divorced/Living Apart, 2=Married
+  public $maritalStatus = 1; // 1=Single/Widowed/Divorced/Living Apart, 2=Married
 
   // Employee's Spouse
   public $spouseSurname = '';

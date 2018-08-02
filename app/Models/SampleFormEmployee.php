@@ -18,7 +18,7 @@ class SampleFormEmployee extends BaseIRDFormEmployee {
     'given_name',
     'name_in_chinese',
     'sex',
-    'martial_status',
+    'marital_status',
     'pp_num',
     'spouse_name',
     'spouse_hkid',
