@@ -16,88 +16,108 @@ class Ird56bXml extends IrdBaseXml
 
   private function process()
   {
-    $this->addChild('Section', '6A1');
-    $this->addChild('ERN', '01234561');
-    $this->addChild('YrErReturn', 2014);
-    $this->addChild('SubDate', '20140420');
-    $this->addChild('ErName', 'ABCD COMPANY');
-    $this->addChild('Designation', 'PARTNER');
-    $this->addChild('NoRecordBatch', '00002');
-    $this->addChild('TotIncomeBatch', '360000');
-    for ($i = 0; $i < 10; $i++) {
-      $employee = $this->addChild('Employee');
-      $this->addChild('SheetNo', 3, $employee);
-      $this->addChild('HKID', 'A1144556', $employee);
-      $this->addChild('TypeOfForm', 'O', $employee);
-      $this->addChild('Surname', 'AUYEUNG', $employee);
-      $this->addChild('GivenName', 'TAI MAN', $employee);
-      $this->addChild('NameInChinese', '歐陽大文', $employee);
-      $this->addChild('Sex', 'M', $employee);
-      $this->addChild('MaritalStatus', 2, $employee);
-      $this->addChild('PpNum', '', $employee);
-      $this->addChild('SpouseName', 'WONG, MEI MEI', $employee);
-      $this->addChild('SpouseHKID', 'A456789A', $employee);
-      $this->addChild('SpousePpNum', '', $employee);
-      $this->addChild('ResAddr', 'Flat A, 8/F., 5 Mei Lai Road', $employee);
-      $this->addChild('AreaCodeResAddr', 'K', $employee);
-      $this->addChild('PosAddr', '', $employee);
-      $this->addChild('Capacity', 'CLERK', $employee);
-      $this->addChild('PtPrinEmp', '', $employee);
-      $this->addChild('StartDateOfEmp', '20130401', $employee);
-      $this->addChild('EndDateOfEmp', '20140331', $employee);
-      $this->addChild('PerOfSalary', '20130401-20140331', $employee);
-      $this->addChild('AmtOfSalary', 100000, $employee);
-      $this->addChild('PerOfLeavePay', '', $employee);
-      $this->addChild('AmtOfLeavePay', 0, $employee);
-      $this->addChild('PerOfDirectorFee', '', $employee);
-      $this->addChild('AmtOfDirectorFee', 0, $employee);
-      $this->addChild('PerOfCommFee', '', $employee);
-      $this->addChild('AmtOfCommFee', 0, $employee);
-      $this->addChild('PerOfBonus', '', $employee);
-      $this->addChild('AmtOfBonus', 0, $employee);
-      $this->addChild('PerOfBpEtc', '', $employee);
-      $this->addChild('AmtOfBpEtc', 0, $employee);
-      $this->addChild('PerOfPayRetire', '', $employee);
-      $this->addChild('AmtOfPayRetire', 0, $employee);
-      $this->addChild('PerOfSalTaxPaid', 0, $employee);
-      $this->addChild('AmtOfSalTaxPaid', 0, $employee);
-      $this->addChild('PerOfEduBen', '', $employee);
-      $this->addChild('AmtOfEduBen', 0, $employee);
-      $this->addChild('PerOfGainShareOption', '', $employee);
-      $this->addChild('AmtOfGainShareOption', 0, $employee);
-      $this->addChild('NatureOtherRAP1', '', $employee);
-      $this->addChild('PerOfOtherRAP1', '', $employee);
-      $this->addChild('AmtOfOtherRAP1', 0, $employee);
-      $this->addChild('NatureOtherRAP2', '', $employee);
-      $this->addChild('PerOfOtherRAP2', '', $employee);
-      $this->addChild('AmtOfOtherRAP2', 0, $employee);
-      $this->addChild('NatureOtherRAP3', '', $employee);
-      $this->addChild('PerOfOtherRAP3', '', $employee);
-      $this->addChild('AmtOfOtherRAP3', 0, $employee);
-      $this->addChild('PerOfPension', '', $employee);
-      $this->addChild('AmtOfPension', 0, $employee);
-      $this->addChild('TotalIncome', '0', $employee);
-      $this->addChild('PlaceOfResInd', '0', $employee);
-      $this->addChild('AddrOfPlace1', 0, $employee);
-      $this->addChild('NatureOfPlace1', 0, $employee);
-      $this->addChild('PerOfPlace1', 0, $employee);
-      $this->addChild('RentPaidEr1', 0, $employee);
-      $this->addChild('RentPaidEe1', 0, $employee);
-      $this->addChild('RentRefund1', 0, $employee);
-      $this->addChild('RentPaidErByEe1', 0, $employee);
-      $this->addChild('AddrOfPlace2', 0, $employee);
-      $this->addChild('NatureOfPlace2', 0, $employee);
-      $this->addChild('PerOfPlace2', 0, $employee);
-      $this->addChild('RentPaidEr2', 0, $employee);
-      $this->addChild('RentPaidEe2', 0, $employee);
-      $this->addChild('RentRefund2', 0, $employee);
-      $this->addChild('RentPaidErByEe2', 0, $employee);
+    $this->addChild('Section', $this->irdMaster['Section']);
+    $this->addChild('ERN', $this->irdMaster['ERN']);
+    $this->addChild('YrErReturn', $this->irdMaster['YrErReturn']);
+    // irdDate: 'dd/mm/yyyy'
+    // numberDate: 'yyyymmdd
+    $this->addChild('SubDate', irdDate2numberDate($this->irdMaster['SubDate']));
+    $this->addChild('ErName', $this->irdMaster['ErName']);
+    $this->addChild('Designation', $this->irdMaster['Designation']);
+    $this->addChild('NoRecordBatch', str_pad($this->irdMaster['NoRecordBatch'],5, '0', STR_PAD_LEFT));
+    $this->addChild('TotIncomeBatch', str_replace(',','', $this->irdMaster['TotIncomeBatch']));
+    for ($i = 0; $i < count($this->irdMaster['Employees']); $i++) {
+      $employeeData = $this->irdMaster['Employees'][$i];
 
-      $this->addChild('OverseaIncInd', '0', $employee);
-      $this->addChild('AmtPaidOverseaCo', 0, $employee);
-      $this->addChild('NameOfOverseaCo', 0, $employee);
-      $this->addChild('AddrOfOverseaCo', 0, $employee);
-      $this->addChild('Remarks', 0, $employee);
+      $employee = $this->addChild('Employee');
+      $fields = [
+        'SheetNo',
+        'HKID',
+        'TypeOfForm',
+        'Surname',
+        'GivenName',
+        'NameInChinese',
+        'Sex',
+        'MaritalStatus',
+        'PpNum',
+        'SpouseName',
+        'SpouseHKID',
+        'SpousePpNum',
+        'ResAddr',
+        'AreaCodeResAddr',
+        'PosAddr',
+        'Capacity',
+        'PtPrinEmp',
+        'StartDateOfEmp',
+        'EndDateOfEmp',
+        'PerOfSalary',
+        'AmtOfSalary',
+        'PerOfLeavePay',
+        'AmtOfLeavePay',
+        'PerOfDirectorFee',
+        'AmtOfDirectorFee',
+        'PerOfCommFee',
+        'AmtOfCommFee',
+        'PerOfBonus',
+        'AmtOfBonus',
+        'PerOfBpEtc',
+        'AmtOfBpEtc',
+        'PerOfPayRetire',
+        'AmtOfPayRetire',
+        'PerOfSalTaxPaid',
+        'AmtOfSalTaxPaid',
+        'PerOfEduBen',
+        'AmtOfEduBen',
+        'PerOfGainShareOption',
+        'AmtOfGainShareOption',
+
+        'NatureOtherRAP1',
+        'PerOfOtherRAP1',
+        'AmtOfOtherRAP1',
+        'NatureOtherRAP2',
+        'PerOfOtherRAP2',
+
+        'AmtOfOtherRAP2',
+        'NatureOtherRAP3',
+        'PerOfOtherRAP3',
+        'AmtOfOtherRAP3',
+        'PerOfPension',
+        'AmtOfPension',
+        'TotalIncome',
+        'PlaceOfResInd',
+        'AddrOfPlace1',
+        'NatureOfPlace1',
+        'PerOfPlace1',
+        'RentPaidEr1',
+        'RentPaidEe1',
+        'RentRefund1',
+        'RentPaidErByEe1',
+        'AddrOfPlace2',
+        'NatureOfPlace2',
+        'PerOfPlace2',
+        'RentPaidEr2',
+        'RentPaidEe2',
+        'RentRefund2',
+        'RentPaidErByEe2',
+
+        'OverseaIncInd',
+        'AmtPaidOverseaCo',
+        'NameOfOverseaCo',
+        'AddrOfOverseaCo',
+        'Remarks'
+      ];
+      foreach($fields as $field) {
+        switch($field) {
+          case 'HKID':
+          case 'SpouseHKID':
+            $value = preg_replace('/[\)\(]/', '', $employeeData[$field] );
+            break;
+          default:
+            $value = $employeeData[$field];
+            break;
+        }
+        $this->addChild($field, $value, $employee);
+      }
     }
   }
 

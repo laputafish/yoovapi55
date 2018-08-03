@@ -125,6 +125,16 @@ function phpDateFormat( $yyyy_mm_dd, $format ) {
   }
 }
 
+function irdDate2numberDate($irdDate) {
+  $segs = explode('/', $irdDate);
+  $d = $segs[0];
+  $m = $segs[1];
+  $y = $segs[2];
+  return $y.
+    str_pad($m, 2, '0', STR_PAD_LEFT).
+    str_pad($d, 2, '0', STR_PAD_LEFT);
+}
+
 function getOAEmployeeChineseName($oaEmployee) {
   $result = '';
   if(isset($oaEmployee)) {

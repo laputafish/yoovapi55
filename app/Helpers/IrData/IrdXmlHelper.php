@@ -3,7 +3,7 @@
 use App\Helpers\XmlValidatorHelper;
 
 class IrdXmlHelper {
-  public static function outputDataFile($outputFolder, $irdMaster, $irdInfo) {
+  public static function outputDataFile($outputFolder, $irdMaster, $irdInfo, &$messages) {
     $irdCode = $irdInfo['irdForm']->ird_code;
 
     $schemaFile = storage_path('forms/'.strtolower($irdCode).'.xsd');
@@ -16,6 +16,9 @@ class IrdXmlHelper {
     copy($schemaFile, $targetSchemaFile);
 
     $result = XmlValidatorHelper::validateFeeds($outputFilePath, $targetSchemaFile);
+    if(!$result) {
+      $messages = $xml->validate();
+    }
     return $result;
   }
 }

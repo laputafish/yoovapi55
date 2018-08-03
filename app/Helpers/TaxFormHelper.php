@@ -611,10 +611,11 @@ class TaxFormHelper
       if($irdForm->requires_control_list) {
         self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
-      if(IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo)) {
+      if(IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
         echo 'XML file generated successfully.'; nf();
       } else {
         echo 'XML file generated with some errors'; nf();
+        print_r( $messages ); nf(); nf();
       }
 
       if($form->status == 'processing') {

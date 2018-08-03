@@ -51,34 +51,29 @@ class IrdFormHelper
       $isEnglish = $form->lang->code == 'en-us';
     }
 
-// echo 'getIrdMaster ... '; nf();
-    // if $form = null, test mode
-// echo 'team: ';
-// print_r( $team->toArray() ); nf();
+    // Fiscal Year Info
+    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+
+    //************************************
+    // Get OA Team & relevant company info
+    //************************************
     $oaAuth = OAHelper::refreshTokenByTeam($team);
     $oaTeam = OATeamHelper::get($oaAuth, $team->oa_team_id);
-// echo '1';
-    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+    // Registration Number
     $registrationNumber = $oaTeam['setting']['registrationNumber'];
     $registrationNumberSegs = explode('-', $registrationNumber);
-//echo '2';
     $section = $registrationNumberSegs[0];
     $ern = $registrationNumberSegs[1];
     $headerPeriod = $isEnglish ?
       'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']) :
       '在 '.$fiscalYearInfo['startYear'].' 年 4 月 1 日至 '.$fiscalYearInfo['endYear'].' 年 3 月 31 日 年內';
-//echo '3';
     $formDate = date('Y-m-d');
     $designation = 'Manager';
-
     if (isset($form)) {
       $formDate = $form->{getFieldMapping($options, 'form_date')};
       $designation = $form->designation;
     }
-//echo 'options: '; nf();
-//    dd($options);
-////echo '5';
-//dd( getFieldMapping($options, 'form_date') );
+
     $result = [
       // Non-ird fields
       'HeaderPeriod' => strtoupper($headerPeriod),
