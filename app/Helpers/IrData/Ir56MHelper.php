@@ -4,7 +4,7 @@ use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\FormHelper;
 
-class Ir56BHelper extends IrDataHelper
+class Ir56MHelper extends IrDataHelper
 {
 
   public static function get($team, $employeeId, $options = [])
@@ -19,38 +19,8 @@ class Ir56BHelper extends IrDataHelper
     self::$employeeId = $employeeId;
     self::$oaAuth = OAHelper::refreshTokenByTeam(self::$team);
 
-    //***
-    // form->fiscal_year is the year of fiscal year end date
     $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
-//    if (isset($form)) {
-//      $signatureName = $form->signature_name;
-//      $designation = $form->designation;
-//      $formDate = $form->form_date;
-////      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
-//      if (array_key_exists('sheetNo', $options)) {
-//        $sheetNo = $options['sheetNo'];
-//      }
-//    } else {
-//      $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
-//      $designation = $team->getSetting('designation', '(No designation)');
-//      $formDate = date('Y-m-d');
-////      if(array_key_exists('year', $options)) {
-////        $year = $options['year'];
-////        $fiscalYearStart = ($year-1).'-04-01';
-////      } else {
-////        $fiscalYearStart = getCurrentFiscalYearStartDate();
-////      }
-//    }
-////    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
-////    $fiscalYearPeriod = [
-////      'startDate' => $fiscalStartYear . '-04-01',
-////      'endDate' => ($fiscalStartYear + 1) . '-03-31'
-////    ];
-
-    // Grab data from OA
-//    $oaTeam = self::getOATeam();
     $oaEmployee = self::getOAAdminEmployee();
-// $oaSalaries = self::getOASalary();
     $oaPayrollSummary = self::getOAPayrollSummary($fiscalYearInfo);
 
     if (is_null($oaEmployee)) {
@@ -67,46 +37,6 @@ class Ir56BHelper extends IrDataHelper
 
     $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
       str_replace('-', '', $empEndDate);
-
-//    $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
-
-//    // Company
-//    $registrationNumber = $oaTeam['setting']['registrationNumber'];
-//    $registrationNumberSegs = explode('-', $registrationNumber);
-//    $section = $registrationNumberSegs[0];
-//    $ern = $registrationNumberSegs[1];
-//    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
-
-//    $result = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [
-//      // Non-ird fields
-//      'HeaderPeriod' => strtoupper($headerPeriod),
-//      'EmpPeriod' => $headerPeriod . ':',
-//      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
-//      'FileNo' => $registrationNumber,
-//
-//      // for Chinese version only
-//      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
-//      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-//      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
-//      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-//      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
-//      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-//
-//      // Ird fields
-//      'Section' => $section,
-//      'ERN' => $ern,
-//      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
-//      'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
-//      'ErName' => $oaTeam['name'],
-//      'Designation' => $designation,
-//      'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
-//      'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
-//    ];
-
-    //*************************************************************************************
-
-
-
 
     // Employee
     if (isset($oaEmployee['jobEndedDate'])) {
@@ -179,7 +109,7 @@ class Ir56BHelper extends IrDataHelper
 
       // total
       'TotalIncome' => toCurrency( $oaPayrollSummary['totalIncome'] ),
-      
+
       // Place of Residence
       'PlaceOfResInd' => '0',
 
@@ -200,7 +130,7 @@ class Ir56BHelper extends IrDataHelper
       'RentPaidEe2' => '',
       'RentRefund2' => '',
       'RentPaidErByEe2' => '',
-      
+
       // Non-Hong Kong Income
       'OverseaIncInd' => '0',
       'AmtPaidOverseaCo' => '',

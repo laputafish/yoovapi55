@@ -1,6 +1,6 @@
 <?php namespace App\Helpers\IrData;
 
-class Ir56b extends IrBase {
+class xxxxxIr56B extends IrBase {
   public $section = '';
   public $ern = '';
   public $erName = '';

@@ -27,7 +27,7 @@ class TestFormController extends Controller
     $langCode = \Input::get('langCode', 'en_us');
 
     $options = [
-      'irdMaster'=>IrdFormHelper::getIrdMaster($team)
+      'irdMaster'=>IrDataHelper::getIrdMaster($team)
     ];
 
     if(\Input::has('year')) {

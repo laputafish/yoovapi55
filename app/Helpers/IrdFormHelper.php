@@ -44,66 +44,6 @@ class IrdFormHelper
     'remarks' => 'Remarks'
   ];
 
-  public static function getIrdMaster($team, $form = null, $options = [])
-  {
-    $isEnglish = true;
-    if(isset($form)) {
-      $isEnglish = $form->lang->code == 'en-us';
-    }
-
-    // Fiscal Year Info
-    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
-
-    //************************************
-    // Get OA Team & relevant company info
-    //************************************
-    $oaAuth = OAHelper::refreshTokenByTeam($team);
-    $oaTeam = OATeamHelper::get($oaAuth, $team->oa_team_id);
-    // Registration Number
-    $registrationNumber = $oaTeam['setting']['registrationNumber'];
-    $registrationNumberSegs = explode('-', $registrationNumber);
-    $section = $registrationNumberSegs[0];
-    $ern = $registrationNumberSegs[1];
-    $headerPeriod = $isEnglish ?
-      'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']) :
-      '在 '.$fiscalYearInfo['startYear'].' 年 4 月 1 日至 '.$fiscalYearInfo['endYear'].' 年 3 月 31 日 年內';
-    $formDate = date('Y-m-d');
-    $designation = 'Manager';
-    if (isset($form)) {
-      $formDate = $form->{getFieldMapping($options, 'form_date')};
-      $designation = $form->designation;
-    }
-
-    $result = [
-      // Non-ird fields
-      'HeaderPeriod' => strtoupper($headerPeriod),
-      'EmpPeriod' => $headerPeriod . ':',
-      'IncPeriod' => 'Particulars of income accuring ' . $headerPeriod,
-      'FileNo' => $registrationNumber,
-
-      // for Chinese version only
-      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
-      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
-      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
-      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-
-      // Ird fields
-      'Section' => $section,
-      'ERN' => $ern,
-      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
-      'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
-      'ErName' => $oaTeam['name'],
-      'Designation' => $designation,
-      'SignatureName' => $form->signature_name,
-      'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
-      'TotIncomeBatch' => 0, // isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
-      'Employees' => []
-    ];
-    return $result;
-  }
-
   public static function getIrdFormData($team, $irdForm, $formEmployee, $options = [])
   {
     $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;

@@ -93,8 +93,9 @@ class TaxFormController extends BaseAuthController
     $oaTeamId = \Input::get('teamId');
     $team = Team::whereOaTeamId($oaTeamId)->first();
 
-    $lang = \Input::get('lang');
-    $team->setSetting('lang', $lang);
+    $team->setSetting('lang', \Input::get('lang', 'en-us'));
+    $team->setSetting('designation', \Input::get('designation', ''));
+    $team->setSetting('signatureName', \Input::get('signatureName', ''));
 
     $incomeParticulars = \Input::get('incomeParticulars');
     foreach($incomeParticulars as $particular) {

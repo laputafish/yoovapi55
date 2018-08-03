@@ -1,13 +1,13 @@
 <?php namespace App\Helpers\IrData;
 
-class Ird56bXml extends IrdBaseXml
+class Ird56mXml extends IrdBaseXml
 {
   protected $irdMaster = null;
   protected $irdInfo = null;
 
   public function __construct($irdMaster, $irdInfo, $xsdFile)
   {
-    parent::__construct('IR56B');
+    parent::__construct($irdInfo['irdForm']->ird_code);
     $this->irdMaster = $irdMaster;
     $this->irdInfo = $irdInfo;
     $this->xsdFile = $xsdFile;

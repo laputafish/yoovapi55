@@ -24,10 +24,16 @@ class TaxFormSettingController extends BaseAuthController
       }
     }
     $lang = $team->getSetting('lang', 'en-us');
+    $designation = $team->getSetting('designation', '');
+    $signatureName = $team->getSetting('signatureName', '');
+
     $data = [
       'income_particulars' => $rows->toArray(),
-      'lang' => $lang
+      'lang' => $lang,
+      'designation' => $designation,
+      'signatureName' => $signatureName
     ];
+
     return response()->json([
       'status' => true,
       'result' => $data

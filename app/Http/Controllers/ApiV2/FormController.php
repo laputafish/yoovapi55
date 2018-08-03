@@ -75,6 +75,9 @@ class FormController extends BaseAuthController {
     $form['form_date'] = getToday();
     $form['team_id'] = $this->team->id;
     $form['lang_id'] = $lang->id;
+    $form['designation'] = $this->team->getSetting('designation', '');
+    $form['signature_name'] = $this->team->getSetting('signatureName', '');
+
     $form['fiscal_start_year'] = getLastValidFiscalStartYear();
     return $form;
   }
@@ -198,7 +201,10 @@ class FormController extends BaseAuthController {
     switch ($command) {
       case 'generate':
         $newStatus = 'ready_for_processing';
-        $update = ['status'=>$newStatus];
+        $update = [
+          'status'=>$newStatus,
+          'sheet_no'=>0
+        ];
         $form->prepareFolder();
         $form->update($update);
         $form->employees()->update($update);

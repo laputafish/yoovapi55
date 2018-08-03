@@ -412,7 +412,7 @@ class TaxFormHelper
       $applySoftcopies = explode(',', $applySoftcopiesStr);
       foreach( $applySoftcopies as $i=>$irdFormCode ) {
         echo 'i='.$i.': irdFormCode: '.$irdFormCode; nf();
-        $irdMaster = IrdFormHelper::getIrdMaster($team,$sampleForm,[
+        $irdMaster = IrDataHelper::getIrdMaster($team,$sampleForm,[
           'fieldMappings'=>[
             'form_date'=>'application_date'
           ]
@@ -444,19 +444,22 @@ class TaxFormHelper
         if($sampleForm->status != 'processing') {
           break;
         }
+
+        // Output Control List
         $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
         if($irdForm->requires_control_list) {
           self::createControlList($outputFolder.'/'.$irdFormCode.'_control_list.pdf', $sampleForm, $irdMaster, $irdInfo);
         }
 
         // Output XML file
-        IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo);
-
-
-        echo 'finished softcopies forms: '.$irdFormCode; nf();
-        dd('finish all soft copies');
+        if(IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
+          echo 'XML file generated successfully.'; nf();
+        } else {
+          echo 'XML file generated with some errors'; nf();
+          print_r( $messages ); nf(); nf();
+        }
+        dd('ok');
       }
-
 
       $applyPrintedFormsStr = trim($sampleForm->apply_printed_forms);
       $applyPrintedForms = explode(',', $sampleForm->apply_printed_forms);
@@ -485,7 +488,7 @@ class TaxFormHelper
   }
 
   public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount) {
-    echo 'generateSampleForm:: '; nf();
+    echo 'generateSampleForm:: employee_id='.$formEmployee->employee_id.' Sheet #'.$sheetNo; nf();
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
 
@@ -559,7 +562,7 @@ class TaxFormHelper
       $employees = $form->employees()->get();
       $outputFolder = storage_path('app/teams/'.$team->oa_team_id.'/'.$form->id);
 
-      $irdMaster = IrdFormHelper::getIrdMaster($team,$form);
+      $irdMaster = IrDataHelper::getIrdMaster($team,$form);
       $irdInfo = IrDataHelper::getIrdInfo($form->irdForm->ird_code, $form->lang->code, [
         'is_sample' => false
       ]);

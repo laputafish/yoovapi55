@@ -38,7 +38,8 @@ class EventHelper {
           'team' => isset($team) ? $team->toArray() : null,
           'formId' => $options['form']->id,
           'employeeId' => $options['formEmployee']->employee_id,
-          'status' => $options['formEmployee']->status
+          'status' => $options['formEmployee']->status,
+          'sheetNo' => $options['formEmployee']->sheetNo
         ]));
         break;
       case 'requestForm':

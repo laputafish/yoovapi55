@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<IR56M xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='ir56m.xsd'>
+	<Section>6A1</Section>
+	<ERN>01234561</ERN>
+	<AssYr>2014</AssYr>
+	<SubDate>20140420</SubDate>
+	<PayerName>ABCD COMPANY</PayerName>
+	<Designation>Partner</Designation>
+	<NoRecordBatch>00002</NoRecordBatch>
+	<TotIncomeBatch>250000</TotIncomeBatch>
+	<Recipient>
+		<SheetNo>900001</SheetNo>
+		<ComRecNameEng />
+		<ComRecNameChi />
+		<ComRecBRN />
+		<HKID>A1144557</HKID>
+		<NameInEnglish>AUYEUNG, TAI MAN PETER</NameInEnglish>
+		<NameInChinese>歐陽大文</NameInChinese>
+		<Sex>M</Sex>
+		<MaritalStatus>2</MaritalStatus>
+		<SpouseName>WONG, MEI MEI</SpouseName>
+		<SpouseHKID />
+		<SpousePpNum>A4567891</SpousePpNum>
+		<PosAddr />
+		<AreaCodePosAddr />
+		<PhoneNum />
+		<Capacity />
+		<StartDateOfService>20130401</StartDateOfService>
+		<EndDateOfService>20140331</EndDateOfService>
+		<AmtOfType1>150000</AmtOfType1>
+		<AmtOfType2>0</AmtOfType2>
+		<AmtOfType3>0</AmtOfType3>
+		<AmtOfArtistFee>0</AmtOfArtistFee>
+		<AmtOfCopyright>0</AmtOfCopyright>
+		<AmtOfConsultFee>0</AmtOfConsultFee>
+		<NatureOtherInc1 />
+		<AmtOfOtherInc1>0</AmtOfOtherInc1>
+		<NatureOtherInc2 />
+		<AmtOfOtherInc2>0</AmtOfOtherInc2>
+		<TotalIncome>150000</TotalIncome>
+		<IndOfSumWithheld>0</IndOfSumWithheld>
+		<AmtOfSumWithheld>0</AmtOfSumWithheld>
+		<IndOfRemark>0</IndOfRemark>
+		<Remarks />
+	</Recipient>
+	<Recipient>
+		<SheetNo>900002</SheetNo>
+		<ComRecNameEng />
+		<ComRecNameChi />
+		<ComRecBRN />
+		<HKID>B2044557</HKID>
+		<NameInEnglish>CHAN, WAI KWONG</NameInEnglish>
+		<NameInChinese />
+		<Sex>M</Sex>
+		<MaritalStatus>2</MaritalStatus>
+		<SpouseName />
+		<SpouseHKID />
+		<SpousePpNum />
+		<PosAddr />
+		<AreaCodePosAddr />
+		<PhoneNum />
+		<Capacity />
+		<StartDateOfService>20130401</StartDateOfService>
+		<EndDateOfService>20140331</EndDateOfService>
+		<AmtOfType1>100000</AmtOfType1>
+		<AmtOfType2>0</AmtOfType2>
+		<AmtOfType3>0</AmtOfType3>
+		<AmtOfArtistFee>0</AmtOfArtistFee>
+		<AmtOfCopyright>0</AmtOfCopyright>
+		<AmtOfConsultFee>0</AmtOfConsultFee>
+		<NatureOtherInc1 />
+		<AmtOfOtherInc1>0</AmtOfOtherInc1>
+		<NatureOtherInc2 />
+		<AmtOfOtherInc2>0</AmtOfOtherInc2>
+		<TotalIncome>100000</TotalIncome>
+		<IndOfSumWithheld>0</IndOfSumWithheld>
+		<AmtOfSumWithheld>0</AmtOfSumWithheld>
+		<IndOfRemark>0</IndOfRemark>
+		<Remarks />
+	</Recipient>
+</IR56M>
