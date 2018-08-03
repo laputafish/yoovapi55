@@ -121,6 +121,11 @@ Route::get('media/forms/commencements/{formId}/{employeeId}', 'MediaController@s
 Route::get('media/forms/salaries/{formId}/{employeeId}', 'MediaController@showSalaryForm');
 Route::get('media/forms/terminations/{formId}/{employeeId}', 'MediaController@showTerminationForm');
 Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@showDepartureForm');
+Route::get('media/ird_forms/{formId}/control_list', 'MediaController@showIrdFormControlList');
+Route::get('media/ird_forms/{formId}/data_file', 'MediaController@showIrdFormDataFile');
+Route::get('media/ird_forms/{formId}/schema_file', 'MediaController@showIrdFormXsdFile');
+
+// Route below must be after previous 3 routes.
 Route::get('media/ird_forms/{formId}/{employeeId}', 'MediaController@showIrdForm');
 
 Route::get('media/download/{id}', 'MediaController@downloadDocument');

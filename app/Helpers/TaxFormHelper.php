@@ -23,6 +23,7 @@ use App\Helpers\IrData\IrDataHelper;
 use App\Helpers\IrData\Ir56EHelper;
 use App\Helpers\IrData\IrdApplicationLetterHelper;
 use App\Helpers\IrData\Ird56bXml;
+use App\Helpers\IrData\IrdXmlHelper;
 
 class TaxFormHelper
 {
@@ -421,8 +422,10 @@ class TaxFormHelper
         ]);
 
         // [
-        //    'irdForm'=>...,
-        //    'fields'=>...
+        //    'langCode' => ...,
+        //    'irdForm' => ...,
+        //    'fields' => ...,
+        //    'is_sample' => false
         // ]
 
         $employees = $sampleForm->employees;
@@ -447,16 +450,8 @@ class TaxFormHelper
         }
 
         // Output XML file
-        $xsdFile = storage_path('forms/'.strtolower($irdFormCode).'.xsd');
-        $outputFilePath = $outputFolder.'/'.strtolower($irdFormCode).'.xml';
-        $irdMaster = null;
-        $irdInfo = null;
-        $xml = new Ird56bXml($irdMaster, $irdInfo, $xsdFile);
-        $xml->validate();
-        $xml->output($outputFilePath);
-        // Copy scheme file
-        $targetSchemeFile = $outputFolder.'/'.strtolower($irdFormCode).'.xsd';
-        copy($xsdFile, $targetSchemeFile);
+        IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo);
+
 
         echo 'finished softcopies forms: '.$irdFormCode; nf();
         dd('finish all soft copies');
@@ -576,7 +571,7 @@ class TaxFormHelper
         }
         $employeeId = $formEmployee->employee_id;
 
-        echo 'processing employee #'.$employeeId.' ...'; nl();
+        echo 'processing employee #'.$employeeId.' ...'; nf();
         $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
 
         // Status => "Processing"
@@ -616,6 +611,12 @@ class TaxFormHelper
       if($irdForm->requires_control_list) {
         self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
+      if(IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo)) {
+        echo 'XML file generated successfully.'; nf();
+      } else {
+        echo 'XML file generated with some errors'; nf();
+      }
+
       if($form->status == 'processing') {
         $form->update(['status' => 'ready']);
       }
@@ -758,7 +759,7 @@ class TaxFormHelper
 
   public static function processCommencementJob($job)
   {
-    logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nl();
+    logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nf();
     $form = FormCommencement::find($job['form_id']);
     if(is_null($form->team)) {
       logConsole( __('messages.team_not_defined'), 1 );

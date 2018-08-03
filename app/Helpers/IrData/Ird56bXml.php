@@ -1,6 +1,6 @@
 <?php namespace App\Helpers\IrData;
 
-class Ird56bXml extends IrdFormXml
+class Ird56bXml extends IrdBaseXml
 {
   protected $irdMaster = null;
   protected $irdInfo = null;

@@ -6,6 +6,7 @@ use App\Helpers\OA\OAHelper;
 use App\Helpers\FormHelper;
 
 use App\Models\FormEmployee;
+use App\Models\Lang;
 
 class FormController extends BaseAuthController {
   protected $modelName = 'Form';
@@ -61,6 +62,7 @@ class FormController extends BaseAuthController {
       $result = $this->prepareForm($this->BLANK_FORM);
     } else {
       $result->employees;
+      $result->files = $result->getAttachments();
     }
     return $result;
   }
@@ -68,7 +70,7 @@ class FormController extends BaseAuthController {
   protected function prepareForm($form) {
     $prefix = $this->team->getSetting( 'form_prefix', 'IR' );
     $langCode = $this->team->getSetting('lang', 'en-us');
-    $lang = Lang::whereCode($langCode0)->first();
+    $lang = Lang::whereCode($langCode)->first();
     $form['form_no'] = TaxFormHelper::getNextFormId($this->model, $prefix);
     $form['form_date'] = getToday();
     $form['team_id'] = $this->team->id;
@@ -197,6 +199,7 @@ class FormController extends BaseAuthController {
       case 'generate':
         $newStatus = 'ready_for_processing';
         $update = ['status'=>$newStatus];
+        $form->prepareFolder();
         $form->update($update);
         $form->employees()->update($update);
         break;

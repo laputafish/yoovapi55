@@ -107,21 +107,18 @@ class FormPdf extends Fpdi\TcpdfFpdi
   }
 
   function Footer() {
-    $this->outputDataItems($this->footerData);
+    $isEnglish = $this->langCode == 'en-us';
 
-    if($this->langCode == 'en-us') {
-      $this->SetFont($this->fontName);
+    $this->outputDataItems($this->footerData);
+    if($isEnglish) {
+      $pageMessage = 'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages();
+      $this->SetFont($this->fontName, '', 8);
     }
     else {
-      $this->SetFont($this->fontNameChn);
+      $pageMessage = '共 '.$this->getAliasNbPages().' 頁中之第 '.$this->getAliasNumPage().'頁';
+      $this->SetFont($this->fontNameChn, '', 8);
     }
 
-    $pageMessage = $this->langCode == 'en-us' ?
-      'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages() :
-      '共 '.$this->getAliasNbPages().' 頁中之第 '.$this->getAliasNumPage().'頁';
-
-    // Set font
-    $this->SetFont('helvetica', 'I', 8);
     // Page number
     $this->setX(15);
     $this->Cell(

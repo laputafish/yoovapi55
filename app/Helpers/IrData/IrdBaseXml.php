@@ -1,6 +1,6 @@
 <?php namespace App\Helpers\IrData;
 
-class IrdFormXml extends \DomDocument {
+class IrdBaseXml extends \DomDocument {
   protected $root = null;
   protected $xsdFile = null;
 

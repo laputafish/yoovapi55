@@ -238,6 +238,48 @@ class MediaController extends BaseController
     ]);
   }
 
+  public function showIrdFormControlList($formId) {
+    $form = Form::find($formId);
+    $team = $form->team;
+    $irdForm = $form->irdForm;
+    $filePath = '/teams/'.$team->oa_team_id.'/'.$form->id.'/control_list.pdf';
+    $fileContent = Storage::get($filePath);
+    $contentType = \Config::get('content_types')['pdf']['type'];
+    $filename = $irdForm->ird_code.'_control_list_'.startYear2FiscalYearLabel($form->fiscal_start_year).'.pdf';
+    return response()->make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'inline; filename="' . $filename.'"'
+    ]);
+  }
+
+  public function showIrdFormDataFile($formId) {
+    $form = Form::find($formId);
+    $team = $form->team;
+    $irdForm = $form->irdForm;
+    $filePath = '/teams/'.$team->oa_team_id.'/'.$form->id.'/'.strtolower($irdForm->ird_code).'.xml';
+    $fileContent = Storage::get($filePath);
+    $contentType = \Config::get('content_types')['xml']['type'];
+    $filename = strtolower($irdForm->ird_code).'.xml';
+    return response()->make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'attachment; filename="' . $filename.'"'
+    ]);
+  }
+
+  public function showIrdFormXsdFile($formId) {
+    $form = Form::find($formId);
+    $team = $form->team;
+    $irdForm = $form->irdForm;
+    $filePath = '/teams/'.$team->oa_team_id.'/'.$form->id.'/'.strtolower($irdForm->ird_code).'.xsd';
+    $fileContent = Storage::get($filePath);
+    $contentType = \Config::get('content_types')['xsd']['type'];
+    $filename = strtolower($irdForm->ird_code).'.xsd';
+    return response()->make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'attachment; filename="' . $filename.'"'
+    ]);
+  }
+
   private function getIrdFormFilename($irdForm, $teamEmployee, $fiscalYearLabel=null) {
     $segs = [];
     $segs[] = $irdForm->ird_code;
@@ -372,4 +414,5 @@ class MediaController extends BaseController
   public function showTerminationForm($formId, $employeeId) {
 
   }
+
 }

@@ -11,7 +11,9 @@ class IrdForm extends BaseModel {
     'description',
     'partial_path',
     'publishable',
-    'requires_fiscal_year'
+    'requires_fiscal_year',
+    'requires_control_list',
+    'can_use_softcopy'
   ];
 
   public $timestamps = false;
