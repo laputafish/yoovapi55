@@ -51,6 +51,19 @@ class Ir56MHelper extends IrDataHelper
       $defaults['maritalStatus'] :
       ($oaEmployee['marital'] == 'married' ? 2 : 1);
 
+    // IR56M Fields
+    //      SheetNo
+    //      ComRecNameEng (Company Recipient Name)
+    //      ComRecNameChi (Company Recipient Name in Chinese)
+    //      ComRecBRN (Company Recipient BR Number)
+    //      HKID
+    //      
+
+
+
+
+    // Ends
+
     $result = [
       // Ird fields
       'SheetNo' => $sheetNo,

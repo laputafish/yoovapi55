@@ -252,7 +252,8 @@ class IrDataHelper
       'SignatureName' => $form->signature_name,
       'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
       'TotIncomeBatch' => 0, // isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
-      'Employees' => []
+      'Employees' => [],
+      'Recipient' => []
     ];
     return $result;
   }
