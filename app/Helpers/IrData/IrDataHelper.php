@@ -285,8 +285,8 @@ class IrDataHelper
       $jobEndedDate = '';
       $fiscalYearStartBeforeCease = '';
     }
-    $remarks = array_key_exists('remarks', $defaults) ?
-      $defaults['aremarks'] : '';
+    $remarks = array_key_exists('Remarks', $defaults) ?
+      $defaults['Remarks'] : '';
 
     return [
       // Original, Supplementary, Replacement
@@ -298,6 +298,8 @@ class IrDataHelper
       'EmpEndDate' => $empEndDate,
       'PerOfEmp' => $perOfEmp,
       'FiscalYearStartBeforeCease' => $fiscalYearStartBeforeCease,
+      'Remarks' => $remarks,
+      'IndOfRemark' => empty($remarks) ? '0' : '1',
       'Remarks' => $remarks
     ];
   }
@@ -322,6 +324,15 @@ class IrDataHelper
       'NameInChinese' => getOAEmployeeChineseName($oaEmployee),
       'PhoneNum' => empty($oaEmployee['officePhone']) ? $oaEmployee['mobilePhone'] : $oaEmployee['officePhone'],
       'PpNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : '',
+
+      'ComRecNameEng' => array_key_exists('ComRecNameEng', $defaults) ? $defaults['ComRecNameEng'] :
+        (array_key_exists('ComRecNameEng', $oaEmployee) ? $oaEmployee['ComRecNameEng'] : ''),
+
+      'ComRecNameChi' => array_key_exists('ComRecNameChi', $defaults) ? $defaults['ComRecNameChi'] :
+        (array_key_exists('ComRecNameEng', $oaEmployee) ? $oaEmployee['ComRecNameChi'] : ''),
+
+      'ComRecBRN' => array_key_exists('ComRecBRN', $defaults) ? $defaults['ComRecBRN'] :
+        (array_key_exists('ComRecBRN', $oaEmployee) ? $oaEmployee['ComRecBRN'] : ''),
 
       'Sex' => $oaEmployee['gender'],
       'Capacity' => $capacity,
@@ -350,9 +361,9 @@ class IrDataHelper
     }
     return [
       'MaritalStatus' => $maritalStatus,
-      'SpouseName' => $spouseName,
-      'SpouseHKID' => $spouseHKID,
-      'SpousePpNum' => $spousePpNum
+      'SpouseName' => array_key_exists('SpouseName', $defaults) ? $defaults['SpouseName'] : $spouseName,
+      'SpouseHKID' => array_key_exists( 'SpouseHKID', $defaults) ? $defaults['SpouseHKID'] : $spouseHKID,
+      'SpousePpNum' => array_key_exists( 'SpousePpNum', $defaults) ? $defaults['SpousePpNum'] : $spousePpNum
     ];
   }
 
@@ -461,7 +472,58 @@ class IrDataHelper
         $result['AddrOfOverseaCo'] = $defaults['addrOfOverseaCo'];
       }
     }
-    
+
+    // For IR56M
+    // Service Period
+    $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
+    $jobEndedDate = substr($oaEmployee['jobEndedDate'], 0, 10);
+
+    $empStartDate = $fiscalYearInfo['startDate'] > $joinedDate ? $fiscalYearInfo['startDate'] : $joinedDate;
+    $empEndDate = isset($oaEmployee['jobEndedDate']) ?
+      ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearInfo['endDate'] : $jobEndedDate) :
+      $fiscalYearInfo['endDate'];
+    $perOfService = phpDateFormat($empStartDate, 'd/m/Y').' - '.phpDateFormat($empEndDate, 'd/m/Y');
+    $amtOfType1 = array_key_exists('AmtOfType1', $defaults) ? $defaults['AmtOfType1'] : 0;
+    $amtOfType2 = array_key_exists('AmtOfType2', $defaults) ? $defaults['AmtOfType2'] : 0;
+    $amtOfType3 = array_key_exists('AmtOfType3', $defaults) ? $defaults['AmtOfType3'] : 0;
+    $amtOfArtistFee = array_key_exists( 'AmtOfArtistFee', $defaults) ? $defaults['AmtOfArtistFee'] : 0;
+    $amtOfCopyright = array_key_exists( 'AmtOfCopyright', $defaults) ? $defaults['AmtOfCopyright'] : 0;
+    $amtOfConsultFee = array_key_exists( 'AmtOfConsultFee', $defaults) ? $defaults['AmtOfConsultFee'] : 0;
+    $natureOtherInc1 = 'Services Fee';
+    $amtOfOtherInc1 = array_key_exists( 'AmtOfOtherInc1', $defaults) ? $defaults['AmtOfOtherInc1'] : 0;
+    $natureOtherInc2 =  array_key_exists( 'NatureOtherInc2', $defaults) ? $defaults['NatureOtherInc2'] : 0;
+    $amtOfOtherInc2 = array_key_exists( 'AmtOfOtherInc2', $defaults) ? $defaults['AmtOfOtherInc2'] : 0;
+    $totalIncome = array_key_exists( 'TotalIncome', $defaults) ? $defaults['TotalIncome'] :
+      $amtOfType1 +
+      $amtOfType2 +
+      $amtOfType3 +
+      $amtOfArtistFee +
+      $amtOfCopyright +
+      $amtOfConsultFee +
+      $amtOfOtherInc1 +
+      $amtOfOtherInc2;
+
+    $perOfType1 = empty($amtOfType1) ? '' : $perOfService;
+    $perOfType2 = empty($amtOfType2) ? '' : $perOfService;
+    $perOfType3 = empty($amtOfType3) ? '' : $perOfService;
+    $perOfArtistFee = empty($amtOfArtistFee) ? '' : $perOfService;
+    $perOfCopyright = empty($amtOfCopyright) ? '' : $perOfService;
+    $perOfConsultFee = empty($amtOfConsultFee) ? '' : $perOfService;
+    $perOfOtherInc1 = empty($amtOfOtherInc1) ? '' : $perOfService;
+    $perOfOtherInc2 = empty($amtOfOtherInc2) ? '' : $perOfService;
+    if ($amtOfOtherInc1 == 0) {
+      $natureOtherInc1 = '';
+    }
+    if ($amtOfOtherInc2 == 0) {
+      $natureOtherInc2 = '';
+    }
+
+    $amtOfSumWithheld = array_key_exists('AmtOfSumWithheld', $defaults) ? $defaults['AmtOfSumWithheld'] : 0;
+    $indOfSumWithheld = empty($amtOfSumWithheld) ? '0' : '1';
+
+    $remarks = array_key_exists('Remarks', $defaults) ? $defaults['Remarks'] : '';
+    $indOfRemark = empty($remarks) ? '0' : '1';
+
     return [
       // Income Particulars
       // 1. Salary
@@ -554,22 +616,34 @@ class IrDataHelper
       'AddrOfOverseaCo' => '',
 
       // For IR56M
-      'AmtOfType1' => 0,
-      'AmtOfType2' => 0,
-      'AmtOfType3' => 0,
-      'AmtOfArtistFee' => 0,
-      'AmtOfCopyright' => 0,
-      'AmtOfConsultFee' => 0,
-      'NatureOtherInc1' => 'Services Fee',
-      'AmtOfOtherInc1' => 0,
-      'NatureOtherInc2' => '',
-      'AmtOfOtherInc2' => 0,
-      'TotalIncome' => 0,
+      'AmtOfType1' => $amtOfType1,
+      'PerOfType1' => $perOfType1,
+      'AmtOfType2' => $amtOfType2,
+      'PerOfType2' => $perOfType2,
+      'AmtOfType3' => $amtOfType3,
+      'PerOfType3' => $perOfType3,
+      'AmtOfArtistFee' => $amtOfArtistFee,
+      'PerOfArtistFee' => $perOfArtistFee,
+      'AmtOfCopyright' => $amtOfCopyright,
+      'PerOfCopyright' => $perOfCopyright,
+      'AmtOfConsultFee' => $amtOfConsultFee,
+      'PerOfConsultFee' => $perOfConsultFee,
 
-      'IndOfSumWithheld' => '0',
-      'AmtOfSumWithheld' => 0,
-      'IndOfRemark' => '0',
-      'Remarks' => ''
+      'NatureOtherInc1' => $natureOtherInc1,
+      'AmtOfOtherInc1' => $amtOfOtherInc1,
+      'PerOfOtherInc1' => $perOfOtherInc1,
+
+      'NatureOtherInc2' => $natureOtherInc2,
+      'AmtOfOtherInc2' => $amtOfOtherInc2,
+      'PerOfOtherInc2' => $perOfOtherInc2,
+
+      'TotalIncome' => $totalIncome,
+
+      'IndOfSumWithheld' => $indOfSumWithheld,
+      'AmtOfSumWithheld' => $amtOfSumWithheld,
+
+      'IndOfRemark' => $indOfRemark,
+      'Remarks' => $remarks
     ];
   }
 }

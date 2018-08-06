@@ -76,6 +76,7 @@ class TestFormController extends Controller
           'type' => $field['type'],
           'is_ird_fields' => $field['is_ird_fields'],
           'hidden' => $field['hidden'],
+          'blank_if_zero' => $field['blank_if_zero'],
           'seq_no' => $field['seq_no'],
           'seq_sub_no' => $field['seq_sub_no'],
           'x' => $field['x'],
@@ -92,8 +93,9 @@ class TestFormController extends Controller
           'lang' => $field['lang'],
           'append_asterisk' => $field['append_asterisk'],
           'to_currency' => $field['to_currency'],
+          'remark' => $field['remark'],
           'is_symbol' => $field['is_symbol'],
-          'remark' => $field['remark']
+          'for_testing_only' => $field['for_testing_only']
         ]));
       }
     }

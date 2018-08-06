@@ -82,6 +82,8 @@ class IrdFormHelper
       $formCode;
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\' . camelize(strtolower($irDataClassPrefix . 'Helper'));
     $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
+
+    echo 'irdEmployee'; nf();
     $pdfData = array_merge($irdMaster, $irdEmployee);
 
     // process
@@ -93,6 +95,16 @@ class IrdFormHelper
     ];
     $pdf = new FormPdf($pdfOptions);
     $fieldList = $irdFormFile->fields->where('for_testing_only', 0);
+echo 'irdFormFile->id = '.$irdFormFile->id; nf();
+    $a = array_map(function($item) {
+      return $item['key'];
+    }, $fieldList->toArray());
+//    dd( $a );
+//    array_walk($fieldList->toArray(), function($obj) {
+//      echo $obj->key; nf();
+//    });
+//    dd('ok');
+//dd($fieldList->toArray());
     self::fillData($pdf, $fieldList, $pdfData);
 
     // Output

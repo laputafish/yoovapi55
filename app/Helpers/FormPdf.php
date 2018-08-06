@@ -121,7 +121,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
 
       $this->SetFont($this->fontNameChn, '', 8);
     }
-
+echo 'footer'; nf();
     // Page number
     $this->setX(15);
     $this->Cell(
