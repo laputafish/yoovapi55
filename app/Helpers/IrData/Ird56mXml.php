@@ -18,128 +18,73 @@ class Ird56mXml extends IrdBaseXml
   {
     $this->addChild('Section', $this->irdMaster['Section']);
     $this->addChild('ERN', $this->irdMaster['ERN']);
-    $this->addChild('YrErReturn', $this->irdMaster['YrErReturn']);
+    $this->addChild('AssYr', $this->irdMaster['YrErReturn']);
     // irdDate: 'dd/mm/yyyy'
     // numberDate: 'yyyymmdd
     $this->addChild('SubDate', irdDate2numberDate($this->irdMaster['SubDate']));
-    $this->addChild('ErName', $this->irdMaster['ErName']);
+    $this->addChild('PayerName', $this->irdMaster['ErName']);
     $this->addChild('Designation', $this->irdMaster['Designation']);
     $this->addChild('NoRecordBatch', str_pad($this->irdMaster['NoRecordBatch'],5, '0', STR_PAD_LEFT));
     $this->addChild('TotIncomeBatch', str_replace(',','', $this->irdMaster['TotIncomeBatch']));
     for ($i = 0; $i < count($this->irdMaster['Employees']); $i++) {
       $employeeData = $this->irdMaster['Employees'][$i];
 
-      $employee = $this->addChild('Employee');
+      $employee = $this->addChild('Recipient');
       $fields = [
         'SheetNo',
+        'ComRecNameEng',
+        'ComRecNameChi',
+        'ComRecBRN',
         'HKID',
-        'TypeOfForm',
-        'Surname',
-        'GivenName',
+        'NameInEnglish',
         'NameInChinese',
         'Sex',
         'MaritalStatus',
-        'PpNum',
         'SpouseName',
         'SpouseHKID',
         'SpousePpNum',
-        'ResAddr',
-        'AreaCodeResAddr',
         'PosAddr',
+        'AreaCodePosAddr',
+        'PhoneNum',
         'Capacity',
-        'PtPrinEmp',
-        'StartDateOfEmp',
-        'EndDateOfEmp',
-        'PerOfSalary',
-        'AmtOfSalary',
-        'PerOfLeavePay',
-        'AmtOfLeavePay',
-        'PerOfDirectorFee',
-        'AmtOfDirectorFee',
-        'PerOfCommFee',
-        'AmtOfCommFee',
-        'PerOfBonus',
-        'AmtOfBonus',
-        'PerOfBpEtc',
-        'AmtOfBpEtc',
-        'PerOfPayRetire',
-        'AmtOfPayRetire',
-        'PerOfSalTaxPaid',
-        'AmtOfSalTaxPaid',
-        'PerOfEduBen',
-        'AmtOfEduBen',
-        'PerOfGainShareOption',
-        'AmtOfGainShareOption',
-
-        'NatureOtherRAP1',
-        'PerOfOtherRAP1',
-        'AmtOfOtherRAP1',
-        'NatureOtherRAP2',
-        'PerOfOtherRAP2',
-
-        'AmtOfOtherRAP2',
-        'NatureOtherRAP3',
-        'PerOfOtherRAP3',
-        'AmtOfOtherRAP3',
-        'PerOfPension',
-        'AmtOfPension',
+        'StartDateOfService',
+        'EndDateOfService',
+        'AmtOfType1',
+        'AmtOfType2',
+        'AmtOfType3',
+        'AmtOfArtistFee',
+        'AmtOfCopyright',
+        'AmtOfConsultFee',
+        'NatureOtherInc1',
+        'AmtOfOtherInc1',
+        'NatureOtherInc2',
+        'AmtOfOtherInc2',
         'TotalIncome',
-        'PlaceOfResInd',
-        'AddrOfPlace1',
-        'NatureOfPlace1',
-        'PerOfPlace1',
-        'RentPaidEr1',
-        'RentPaidEe1',
-        'RentRefund1',
-        'RentPaidErByEe1',
-        'AddrOfPlace2',
-        'NatureOfPlace2',
-        'PerOfPlace2',
-        'RentPaidEr2',
-        'RentPaidEe2',
-        'RentRefund2',
-        'RentPaidErByEe2',
-
-        'OverseaIncInd',
-        'AmtPaidOverseaCo',
-        'NameOfOverseaCo',
-        'AddrOfOverseaCo',
+        'IndOfSumWithheld',
+        'AmtOfSumWithheld',
+        'IndOfRemark',
         'Remarks'
       ];
       foreach($fields as $field) {
         switch($field) {
-          case 'AmtOfSalary':
-
-          case 'AmtOfLeavePay':
-          case 'AmtOfDirectorFee':
-          case 'AmtOfCommFee':
-          case 'AmtOfBonus':
-          case 'AmtOfBpEtc':
-          case 'AmtOfPayRetire':
-          case 'AmtOfSalTaxPaid':
-          case 'AmtOfEduBen':
-          case 'AmtOfGainShareOption':
-          case 'AmtOfOtherRAP1':
-          case 'AmtOfOtherRAP2':
-          case 'AmtOfOtherRAP3':
-          case 'AmtOfPension':
-          case 'AmtPaidOverseaCo':
+          case 'AmtOfType1':
+          case 'AmtOfType2':
+          case 'AmtOfType3':
+          case 'AmtOfArtistFee':
+          case 'AmtOfCopyright':
+          case 'AmtOfConsultFee':
+          case 'NatureOtherInc1':
+          case 'AmtOfOtherInc1':
+          case 'NatureOtherInc2':
+          case 'AmtOfOtherInc2':
           case 'TotalIncome':
-
-          case 'RentPaidEr1':
-          case 'RentPaidEe1':
-          case 'RentRefund1':
-          case 'RentPaidErByEe1':
-
-          case 'RentPaidEr2':
-          case 'RentPaidEe2':
-          case 'RentRefund2':
-          case 'RentPaidErByEe2':
+          case 'IndOfS`umWithheld':
+          case 'AmtOfSumWithheld':
             $value = str_replace(',', '', $employeeData[$field]);
             break;
 
-          case 'StartDateOfEmp':
-          case 'EndDateOfEmp':
+          case 'StartDateOfService':
+          case 'EndDateOfService':
             $value = irdDate2numberDate($employeeData[$field]);
             break;
           case 'HKID':

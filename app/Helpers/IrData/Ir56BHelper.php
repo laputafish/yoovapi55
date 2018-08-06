@@ -9,7 +9,165 @@ class Ir56BHelper extends IrDataHelper
 
   public static function get($team, $employeeId, $options = [])
   {
-    $isSample = array_key_exists('mode', $options) ? $options['mode']=='sample' : false;
+    $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
+    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
+    // $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
+    $form = array_key_exists('form', $options) ? $options['form'] : null;
+
+    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+
+    self::$team = $team;
+    $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
+
+    self::$employeeId = $employeeId;
+    self::$oaAuth = $oaAuth;
+
+    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
+    $oaEmployee = self::getOAAdminEmployee();
+    if (is_null($oaEmployee)) {
+      return null;
+    }
+
+    $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
+    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
+    $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);
+    $incomeInfo = self::getIncomeInfo(
+      $oaAuth,
+      $team,
+      $oaEmployee,
+      $fiscalYearInfo,
+      $formInfo['PerOfEmp'],
+      $defaults);
+
+    $result = [
+      // Ird fields
+      'SheetNo' => $sheetNo,
+      'HKID' => $employeeInfo['HKID'],
+      'TypeOfForm' => $formInfo['TypeOfForm'],'O', // Original, Supplementary, Replacement
+      'Surname' => $oaEmployee['lastName'],
+      'GivenName' => $oaEmployee['firstName'],
+      'NameInChinese' => $employeeInfo['NameInChinese'],
+      'NameInEnglish' => $employeeInfo['NameInEnglish'], // for Control List
+      'Sex' => $employeeInfo['Sex'],
+      'PpNum' => $employeeInfo['PpNum'],
+
+      // Employee's Spouse
+      'MaritalStatus' => $maritalInfo['MaritalStatus'],
+      'SpouseName' => $maritalInfo['SpouseName'],
+      'SpouseHKID' => $maritalInfo['SpouseHKID'],
+      'SpousePpNum' => $maritalInfo['SpousePpNum'],
+
+      // Correspondence
+      'ResAddr' => $employeeInfo['ResAddr'],
+      'AreaCodeResAddr' => $employeeInfo['AreaCodeResAddr'],
+      'PosAddr' => $employeeInfo['PosAddr'],
+      'AreaCodePosAddr' => $employeeInfo['AreaCodePosAddr'],
+
+      // Position
+      'Capacity' => $employeeInfo['Capacity'],
+      'PtPrinEmp' => $employeeInfo['PtPrinEmp'],
+
+      'StartDateOfEmp' => phpDateFormat($formInfo['EmpStartDate'], 'd/m/Y'),
+      'EndDateOfEmp' => phpDateFormat($formInfo['EmpEndDate'], 'd/m/Y'),
+
+      // Income Particulars
+      // 1. Salary
+      'PerOfSalary' => $incomeInfo['PerOfSalary'],
+      'AmtOfSalary' => toCurrency($incomeInfo['AmtOfSalary']),
+      //
+      // 2. LeavePay
+      'PerOfLeavePay' => $incomeInfo['PerOfLeavePay'],
+      'AmtOfLeavePay' => toCurrency($incomeInfo['AmtOfLeavePay']),
+      //
+      // 3. DirectorFee
+      'PerOfDirectorFee' => $incomeInfo['PerOfDirectorFee'],
+      'AmtOfDirectorFee' => toCurrency($incomeInfo['AmtOfDirectorFee']),
+      //
+      // 4. CommFee
+      'PerOfCommFee' => $incomeInfo['PerOfCommFee'],
+      'AmtOfCommFee' => toCurrency($incomeInfo['AmtOfCommFee']),
+      //
+      // 5. Bonus
+      'PerOfBonus' => $incomeInfo['PerOfBonus'],
+      'AmtOfBonus' => toCurrency($incomeInfo['AmtOfBonus']),
+      //
+      // 6. BpEtc
+      'PerOfBpEtc' => $incomeInfo['PerOfBpEtc'],
+      'AmtOfBpEtc' => toCurrency($incomeInfo['AmtOfBpEtc']),
+      //
+      // 7. PayRetire
+      'PerOfPayRetire' => $incomeInfo['PerOfPayRetire'],
+      'AmtOfPayRetire' => toCurrency($incomeInfo['AmtOfPayRetire']),
+      //
+      // 8. SalTaxPaid
+      'PerOfSalTaxPaid' => $incomeInfo['PerOfSalTaxPaid'],
+      'AmtOfSalTaxPaid' => toCurrency($incomeInfo['AmtOfSalTaxPaid']),
+      //
+      // 9. EduBen
+      'PerOfEduBen' => $incomeInfo['PerOfEduBen'],
+      'AmtOfEduBen' => toCurrency($incomeInfo['AmtOfEduBen']),
+      //
+      // 10. GainShareOption
+      'PerOfGainShareOption' => $incomeInfo['PerOfGainShareOption'],
+      'AmtOfGainShareOption' => toCurrency($incomeInfo['AmtOfGainShareOption']),
+      //
+      // 11.1
+      'NatureOtherRAP1' => $incomeInfo['NatureOtherRAP1'],
+      'PerOfOtherRAP1' => $incomeInfo['PerOfOtherRAP1'],
+      'AmtOfOtherRAP1' => $incomeInfo['AmtOfOtherRAP1'],
+      // 11.2
+      'NatureOtherRAP2' => $incomeInfo['NatureOtherRAP2'],
+      'PerOfOtherRAP2' => $incomeInfo['PerOfOtherRAP2'],
+      'AmtOfOtherRAP2' => $incomeInfo['AmtOfOtherRAP2'],
+      // 11.3
+      'NatureOtherRAP3' => $incomeInfo['NatureOtherRAP3'],
+      'PerOfOtherRAP3' => $incomeInfo['PerOfOtherRAP3'],
+      'AmtOfOtherRAP3' => $incomeInfo['AmtOfOtherRAP3'],
+      //
+      // 12. Pension
+      'PerOfPension' => $incomeInfo['PerOfPension'],
+      'AmtOfPension' => toCurrency($incomeInfo['AmtOfPension']),
+
+      // total
+      'TotalIncome' => toCurrency($incomeInfo['TotalIncome']),
+
+      // Place of Residence
+      'PlaceOfResInd' => '0',
+
+      // Place #1
+      'AddrOfPlace1' => $incomeInfo['AddrOfPlace1'],
+      'NatureOfPlace1' => $incomeInfo['NatureOfPlace1'],
+      'PerOfPlace1' => $incomeInfo['PerOfPlace1'],
+      'RentPaidEr1' => toCurrency($incomeInfo['RentPaidEr1']),
+      'RentPaidEe1' => toCurrency($incomeInfo['RentPaidEe1']),
+      'RentRefund1' => toCurrency($incomeInfo['RentRefund1']),
+      'RentPaidErByEe1' => toCurrency($incomeInfo['RentPaidErByEe1']),
+
+      // Place #2
+      'AddrOfPlace2' => $incomeInfo['AddrOfPlace2'],
+      'NatureOfPlace2' => $incomeInfo['NatureOfPlace2'],
+      'PerOfPlace2' => $incomeInfo['PerOfPlace2'],
+      'RentPaidEr2' => toCurrency($incomeInfo['RentPaidEr2']),
+      'RentPaidEe2' => toCurrency($incomeInfo['RentPaidEe2']),
+      'RentRefund2' => toCurrency($incomeInfo['RentRefund2']),
+      'RentPaidErByEe2' => toCurrency($incomeInfo['RentPaidErByEe2']),
+
+      // Non-Hong Kong Income
+      'OverseaIncInd' => $incomeInfo['OverseaIncInd'],
+      'AmtPaidOverseaCo' => $incomeInfo['AmtPaidOverseaCo'],
+      'NameOfOverseaCo' => $incomeInfo['NameOfOverseaCo'],
+      'AddrOfOverseaCo' => $incomeInfo['AddrOfOverseaCo'],
+
+      // Remark
+      'Remarks' => $formInfo['Remarks']
+    ];
+
+    return $result;
+  }
+
+  public static function getxxx($team, $employeeId, $options = [])
+  {
+    $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     // $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
     $form = array_key_exists('form', $options) ? $options['form'] : null;
@@ -19,39 +177,19 @@ class Ir56BHelper extends IrDataHelper
     self::$employeeId = $employeeId;
     self::$oaAuth = OAHelper::refreshTokenByTeam(self::$team);
 
+    $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
+
     //***
     // form->fiscal_year is the year of fiscal year end date
     $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
-//    if (isset($form)) {
-//      $signatureName = $form->signature_name;
-//      $designation = $form->designation;
-//      $formDate = $form->form_date;
-////      $fiscalYearStart = ($form->fiscal_start_year - 1) . '-04-01';
-//      if (array_key_exists('sheetNo', $options)) {
-//        $sheetNo = $options['sheetNo'];
-//      }
-//    } else {
-//      $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
-//      $designation = $team->getSetting('designation', '(No designation)');
-//      $formDate = date('Y-m-d');
-////      if(array_key_exists('year', $options)) {
-////        $year = $options['year'];
-////        $fiscalYearStart = ($year-1).'-04-01';
-////      } else {
-////        $fiscalYearStart = getCurrentFiscalYearStartDate();
-////      }
-//    }
-////    $fiscalStartYear = (int)substr($fiscalYearStart, 0, 4);
-////    $fiscalYearPeriod = [
-////      'startDate' => $fiscalStartYear . '-04-01',
-////      'endDate' => ($fiscalStartYear + 1) . '-03-31'
-////    ];
 
     // Grab data from OA
-//    $oaTeam = self::getOATeam();
     $oaEmployee = self::getOAAdminEmployee();
-// $oaSalaries = self::getOASalary();
-    $oaPayrollSummary = self::getOAPayrollSummary($fiscalYearInfo);
+    $oaPayrollSummary = self::getOAPayrollSummary(
+      $oaAuth,
+      $team,
+      $oaEmployee,
+      $fiscalYearInfo);
 
     if (is_null($oaEmployee)) {
       return null;
@@ -67,46 +205,6 @@ class Ir56BHelper extends IrDataHelper
 
     $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
       str_replace('-', '', $empEndDate);
-
-//    $irdMaster = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [];
-
-//    // Company
-//    $registrationNumber = $oaTeam['setting']['registrationNumber'];
-//    $registrationNumberSegs = explode('-', $registrationNumber);
-//    $section = $registrationNumberSegs[0];
-//    $ern = $registrationNumberSegs[1];
-//    $headerPeriod = 'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear'] + 1);
-
-//    $result = array_key_exists('irdMaster', $options) ? $options['irdMaster'] : [
-//      // Non-ird fields
-//      'HeaderPeriod' => strtoupper($headerPeriod),
-//      'EmpPeriod' => $headerPeriod . ':',
-//      'IncPeriod' => 'Particulars of income accuring '.$headerPeriod,
-//      'FileNo' => $registrationNumber,
-//
-//      // for Chinese version only
-//      'HeaderPeriodFromYear' => $fiscalYearInfo['startYear'],
-//      'HeaderPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-//      'EmpPeriodFromYear' => $fiscalYearInfo['startYear'],
-//      'EmpPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-//      'IncPeriodFromYear' => $fiscalYearInfo['startYear'],
-//      'IncPeriodToYear' => $fiscalYearInfo['startYear'] + 1,
-//
-//      // Ird fields
-//      'Section' => $section,
-//      'ERN' => $ern,
-//      'YrErReturn' => $fiscalYearInfo['startYear'] + 1,
-//      'SubDate' => phpDateFormat($formDate, 'd/m/Y'),
-//      'ErName' => $oaTeam['name'],
-//      'Designation' => $designation,
-//      'NoRecordBatch' => isset($form) ? $form->employees->count() : 1,
-//      'TotIncomeBatch' => isset($formSummary) ? $formSummary['totalEmployeeIncome'] : 0,
-//    ];
-
-    //*************************************************************************************
-
-
-
 
     // Employee
     if (isset($oaEmployee['jobEndedDate'])) {
@@ -178,8 +276,8 @@ class Ir56BHelper extends IrDataHelper
       // 12. Pension
 
       // total
-      'TotalIncome' => toCurrency( $oaPayrollSummary['totalIncome'] ),
-      
+      'TotalIncome' => toCurrency($oaPayrollSummary['totalIncome']),
+
       // Place of Residence
       'PlaceOfResInd' => '0',
 
@@ -200,7 +298,7 @@ class Ir56BHelper extends IrDataHelper
       'RentPaidEe2' => '',
       'RentRefund2' => '',
       'RentPaidErByEe2' => '',
-      
+
       // Non-Hong Kong Income
       'OverseaIncInd' => '0',
       'AmtPaidOverseaCo' => '',
@@ -225,14 +323,14 @@ class Ir56BHelper extends IrDataHelper
       'GainShareOption' => 'gain_share_option',
       'Pension' => 'pension'
     ];
-    foreach($tableMapping as $irdField=>$token) {
-      if($irdField == 'Salary') {
+    foreach ($tableMapping as $irdField => $token) {
+      if ($irdField == 'Salary') {
         $result['PerOf' . $irdField] = $perOfEmp;
       } else {
         $result['PerOf' . $irdField] = $oaPayrollSummary[$token] > 0 ? $perOfEmp : '';
       }
 
-      $result['AmtOf'.$irdField] = toCurrency($oaPayrollSummary[$token]);
+      $result['AmtOf' . $irdField] = toCurrency($oaPayrollSummary[$token]);
     }
 
     if (count($oaPayrollSummary['other_raps']) > 0) {
@@ -253,9 +351,9 @@ class Ir56BHelper extends IrDataHelper
       $result['AmtOfOtherRAP3'] = $oaPayrollSummary['other_raps'][2]['amt'];
     }
 
-    if(array_key_exists('placeOfResInd', $defaults)) {
+    if (array_key_exists('placeOfResInd', $defaults)) {
       $result['PlaceOfResInd'] = $defaults['placeOfResInd'];
-      if($defaults['placeOfResInd'] == '1') {
+      if ($defaults['placeOfResInd'] == '1') {
         $result['AddrOfPlace1'] = $defaults['addrOfPlace1'];
         $result['NatureOfPlace1'] = $defaults['natureOfPlace1'];
         $result['PerOfPlace1'] = $defaults['perOfPlace1'];
@@ -274,7 +372,7 @@ class Ir56BHelper extends IrDataHelper
       }
     }
 
-    if(array_key_exists('overseaIncInd', $defaults)) {
+    if (array_key_exists('overseaIncInd', $defaults)) {
       $result['OverseaIncInd'] = $defaults['overseaIncInd'];
       if ($defaults['overseaIncInd'] == '1') {
         $result['AmtPaidOverseaCo'] = $defaults['amtPaidOverseaCo'];
@@ -283,7 +381,7 @@ class Ir56BHelper extends IrDataHelper
       }
     }
 
-    if(array_key_exists('remarks', $defaults)) {
+    if (array_key_exists('remarks', $defaults)) {
       $result['Remarks'] = $defaults['remarks'];
     }
 

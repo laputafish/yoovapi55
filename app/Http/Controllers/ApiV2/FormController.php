@@ -132,6 +132,8 @@ class FormController extends BaseAuthController {
     if(!is_null($input['submitted_on'])) {
       $input['status'] = 'completed';
     }
+    $input['lang_id'] = Lang::whereCode($this->team->getSetting('lang','en-us'))->value('id');
+
     $form->update($input);
     $dataEmployeeIds = $form->employees()->pluck('employee_id')->toArray();
     $inputEmployeeIds = array_map(function($formEmployee) {
@@ -163,6 +165,7 @@ class FormController extends BaseAuthController {
     }
     else {
       $input = $this->getInput();
+      $input['lang_id'] = Lang::whereCode($this->team->getSetting('lang','en-us'))->value('id');
       $form = $this->model->create($input);
 
       $formEmployees = \Input::get('employees', []);

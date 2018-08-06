@@ -115,7 +115,10 @@ class FormPdf extends Fpdi\TcpdfFpdi
       $this->SetFont($this->fontName, '', 8);
     }
     else {
-      $pageMessage = '共 '.$this->getAliasNbPages().' 頁中之第 '.$this->getAliasNumPage().'頁';
+      $pageNo = $this->getAliasNbPages();
+      $totalPages = $this->getAliasNumPage();
+      $pageMessage = '共 '.$pageNo.' 頁中之第 '.$totalPages.'頁';
+
       $this->SetFont($this->fontNameChn, '', 8);
     }
 

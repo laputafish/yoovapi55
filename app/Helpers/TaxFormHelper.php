@@ -711,6 +711,7 @@ class TaxFormHelper
     echo 'control list ***************************'; nf();
     $count = 0;
     $employeeCount = count($irdMaster['Employees']);
+
     $perPage = 40;
     $rowsOccupiedBySummary = 5;
     $totalPages = ceil(($employeeCount + $rowsOccupiedBySummary) / 40);
@@ -723,10 +724,11 @@ class TaxFormHelper
       $contentFields->each(function ($item) use ($y) {
         $item->y = $y;
       });
-
       IrdFormHelper::fillData($pdf, $contentFields, [
         'ContentSheetNo' => str_pad($irdEmployee['SheetNo'], 6, '0', STR_PAD_LEFT),
-        'ContentName' => strtoupper(concatNames([$irdEmployee['Surname'], $irdEmployee['GivenName']])),
+        'ContentName' => $isEnglish ?
+          str_replace(',', '', strtoupper($irdEmployee['NameInEnglish']) ):
+          $irdEmployee['NameInChinese'],
         'ContentHKICNo' => strtoupper($irdEmployee['HKID']),
         'ContentTotalIncome' => $irdEmployee['TotalIncome']
       ]);
