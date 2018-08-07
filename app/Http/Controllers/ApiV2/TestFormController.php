@@ -52,6 +52,22 @@ class TestFormController extends Controller
 
   }
 
+  public function testIrdForm($irdFormId) {
+    $irdForm = IrdForm::whereId($irdFormId)->first();
+    $langCode = \Input::get('lang', 'en-us');
+    $outputFolder = null;
+    $irdMaster = IrDataHelper::getIrdMaster($this->team,null,['lang'=>$langCode]);
+    $irdInfo = IrDataHelper::getIrdInfo($irdForm->ird_code, $langCode, ['is_testing'=>true]);
+    // [
+    //    'langCode',
+    //    'irdForm',
+    //    'fields',
+    //    'is_sample'
+    // ]
+
+
+
+  }
   public function copyTemplateFields($fromId, $toId) {
     $fromIrdFormFileId = $fromId;
     $toIrdFormFileId = $toId;

@@ -5,107 +5,139 @@ use App\Helpers\OA\OAEmployeeHelper;
 
 class Ir56FHelper extends IrDataHelper {
 
-  public static function get($team, $employeeId, $form=null, $options=[]) {
+  protected static $irdCode = 'IR56F';
 
-    self::$team = $team;
-    self::$employeeId = $employeeId;
-    self::$oaAuth = OAHelper::refreshTokenByTeam(self::$team);
+  protected static function prepareResult($sheetNo, $formInfo, $employeeInfo, $maritalInfo, $incomeInfo) {
+    $otherRapsNatures = [];
+    $otherRapsAmounts = [];
 
-    if(isset($form)) {
-      $signatureName = $form->signature_name;
-      $designation = $form->designation;
-      $formDate = $form->form_date;
-      $fiscalYearStart = ($form->fiscal_year-1).'-04-01';
-    } else {
-      $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
-      $designation = $team->getSetting('designation', '(No designation)');
-      $formDate = date('Y-m-d');
-      $fiscalYearStart = getCurrentFiscalYearStartDate();
-    }
-
-    // Grab data from OA
-    $oaTeam = self::getOATeam();
-    $oaEmployee = self::getOAAdminEmployee();
-    $oaSalaries = self::getOASalary();
-
-    // Company
-    $registrationNumber = $oaTeam['setting']['registrationNumber'];
-    $registrationNumberSegs = explode('-', $registrationNumber);
-
-    $section = $registrationNumberSegs[0];
-    $ern = $registrationNumberSegs[1];
-
-    $result = [
-      'fileNo' => $registrationNumber,
-      'ern' => $ern,
-      'erName' => $oaTeam['name'],
-      'erAddress' => $oaTeam['setting']['companyAddress'],
-      'signatureName' => $signatureName,
-      'designation' => $designation,
-      'formDate' => phpDateFormat($formDate, 'd/m/Y')
-    ];
-
-    // Employee
-    if(isset($oaEmployee)) {
-      if(isset($oaEmployee['jobEndedDate'])) {
-        $jobEndedDate = phpDateFormat($oaEmployee['jobEndedDate'],'d/m/Y');
-        $fiscalYearStartBeforeCease = phpDateFormat(getFiscalYearStartOfDate($jobEndedDate), 'd/m/Y');
-      } else {
-        $jobEndedDate = '';
-        $fiscalYearStartBeforeCease = '';
+    if(!empty($incomeInfo['NatureOtherRAP1'])) {
+      $otherRapsPeriod = $incomeInfo['PerOfOtherRAP1'];
+      $otherRapsNatures[] = $incomeInfo['NatureOtherRAP1'];
+      $otherRapsAmount[] = $incomeInfo['AmtOfOtherRAP1'];
+      if(!empty($incomeInfo['NatureOtherRAP2'])) {
+        $otherRapsNatures[] = $incomeInfo['NatureOtherRAP2'];
+        $otherRapsAmount[] = $incomeInfo['AmtOfOtherRAP2'];
+        if (!empty($incomeInfo['NatureOtherRAP3'])) {
+          $otherRapsNatures[] = $incomeInfo['NatureOtherRAP3'];
+          $otherRapsAmount[] = $incomeInfo['AmtOfOtherRAP3'];
+        }
       }
-      $result = array_merge($result, [
-        'name' => $oaEmployee['lastName'].', '.$oaEmployee['firstName'],
-        'surname' => $oaEmployee['lastName'],
-        'nameInChinese' => getOAEmployeeChineseName($oaEmployee),
-        'hkid' => $oaEmployee['identityNumber'],
-        'ppNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : 'xxxxx',
-        'gender' => $oaEmployee['gender'],
-        'maritalStatus' => ($oaEmployee['marital'] == 'married' ? 2 : 1),
-        // 1=Single/Widowed/Divorced/Living Apart, 2=Married
-
-        'endDateOfEmp' => $jobEndedDate,
-        'fiscalYearStartDateBeforeCease' => $fiscalYearStartBeforeCease
-      ]);
     }
 
+    $otherRapsNature = implode(', ', $otherRapsNatures);
+    $otherRapsAmount = array_reduce($otherRapsAmounts, function($carry, $item) {
+      $carry += $item;
+      return $carry;
+    });
 
-    $result = array_merge($result, [
-      // Employee's Spouse
-      'spouseName' => '(spouse name)',
-      'spouseHkid' => '(spouse hkid)',
-      'spousePpNum' => '(spouse ppnum)',
+    return [
+      // Employee's Info
+      'SheetNo' => $sheetNo,
+
+      'NameInEnglish' => $employeeInfo['NameInEnglish'],
+      'NameInChinese' => $employeeInfo['NameInChinese'],
+      'HKID' => $employeeInfo['HKID'],
+      'PpNum' => $employeeInfo['PpNum'],
+      'Sex' => $employeeInfo['Sex'],
+
+      // Employee's marital status
+      'MaritalStatus' => $maritalInfo['MaritalStatus'],
+      'SpouseName' => $maritalInfo['SpouseName'],
+      'SpouseHKID' => $maritalInfo['SpouseHKID'],
+      'SpousePpNum' => $maritalInfo['SpousePpNum'],
 
       // Correspondence
-      'resAddress' => $oaEmployee['address'][0]['text'],
-      'posAddress' => count($oaEmployee['address'])>1 ? $oaEmployee['address'][1] : trans('tax.same_as_above'),
+      'ResAddr' => $employeeInfo['ResAddr'],
+      'PosAddr' => $employeeInfo['PosAddr'],
 
       // Position
-      'capacity' => strtoupper( $oaEmployee['jobTitle'] ),
-      'startDateOfEmp' => phpDateFormat($oaEmployee['joinedDate'], 'd/m/Y'),
-      'monthlyFixedIncome' => toCurrency(OAEmployeeHelper::getCommencementSalary(
-        phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'), $oaSalaries)),
-      'monthlyAllowance' => toCurrency(110 ),
-      'fluctuatingIncome' => toCurrency(120),
+      'Capacity' => $employeeInfo['Capacity'],
+      'StartDateOfEmp' => phpDateFormat($formInfo['EmpStartDate'], 'd/m/Y'),
+      'EndDateOfEmp' => phpDateFormat($formInfo['EmpEndDate'], 'd/m/Y'),
+      'MonthlyFixedIncome' => toCurrency($incomeInfo['MonthlyFixedIncome']),
+      'MonthlyAllowance' => toCurrency($incomeInfo['MonthlyAllowance']),
+      'FluctuatingIncome' => toCurrency($incomeInfo['FluctuatingIncome']),
+
+      // Income
+      // 1. Salary
+      'PerOfSalary' => $incomeInfo['PerOfSalary'],
+      'AmtOfSalary' => toCurrency($incomeInfo['AmtOfSalary']),
+      //
+      // 2. LeavePay
+      'PerOfLeavePay' => $incomeInfo['PerOfLeavePay'],
+      'AmtOfLeavePay' => toCurrency($incomeInfo['AmtOfLeavePay']),
+      //
+      // 4. CommFee
+      'PerOfCommFee' => $incomeInfo['PerOfCommFee'],
+      'AmtOfCommFee' => toCurrency($incomeInfo['AmtOfCommFee']),
+      //
+      // 6. BpEtc
+      'PerOfBpEtc' => $incomeInfo['PerOfBpEtc'],
+      'AmtOfBpEtc' => toCurrency($incomeInfo['AmtOfBpEtc']),
+      //
+      // 7. PayRetire
+      'PerOfPayRetire' => $incomeInfo['PerOfPayRetire'],
+      'AmtOfPayRetire' => toCurrency($incomeInfo['AmtOfPayRetire']),
+      //
+      // 8. SalTaxPaid
+      'PerOfSalTaxPaid' => $incomeInfo['PerOfSalTaxPaid'],
+      'AmtOfSalTaxPaid' => toCurrency($incomeInfo['AmtOfSalTaxPaid']),
+      //
+      // 10. GainShareOption
+      'PerOfGainShareOption' => $incomeInfo['PerOfGainShareOption'],
+      'AmtOfGainShareOption' => toCurrency($incomeInfo['AmtOfGainShareOption']),
+      //
+      // 5. BonusEduBen
+      'PerOfBonusEduBen' => $incomeInfo['PerOfBonusEduBen'],
+      'AmtOfBonusEduBen' => toCurrency($incomeInfo['AmtOfBonus'] + $incomeInfo['AmtOfEduBen']),
+      //
+      // 11.1
+      'NatureOtherRAP' => $otherRapsNature,
+      'PerOfOtherRAP' => $otherRapsPeriod,
+      'AmtOfOtherRAP' => $otherRapsAmount,
+
+      // total
+      'TotalIncome' => $incomeInfo['AmtOfSalary'] +
+        $incomeInfo['AmtOfLeavePay'] +
+        $incomeInfo['AmtOfCommFee'] +
+        $incomeInfo['AmtOfBpEtc'] +
+        $incomeInfo['AmtOfPayRetire'] +
+        $incomeInfo['AmtOfSalTaxPaid'] +
+        $incomeInfo['AmtOfGainShareOption'] +
+        $incomeInfo['AmtOfBonusEduBen'] +
+        $otherRapsAmount,
+
+      // Employment Status
+      'CessationReason' => $employeeInfo['CessationReason'],
 
       // Place of residence
-      'placeProvided' => toCurrency(0),
-      'addrOfPlace' => '(address of place)',
-      'natureOfPlace' => '(nature of place)',
-      'rentPaidEr' => 1,
-      'rentPaidEe' => 2,
-      'rentRefund' => 3,
-      'rentPaidErByEe' => 4,
+      'PlaceProvided' => empty($incomeInfo['addrOfPlace']) ? '0': '1',
+
+      'AddrOfPlace' => $incomeInfo['AddrOfPlace'],
+      'NatureOfPlace' => $incomeInfo['NatureOfPlace'],
+      'PerOfPlace' => $incomeInfo['PerOfPlace1'],
+      'RentPaidEr' => $incomeInfo['RentPaidEr1'],
+      'RentPaidEe' => $incomeInfo['RentPaidEe1'],
+      'RentRefund' => $incomeInfo['RentRefund'],
+      'RentPaidErByEe' => $incomeInfo['RentPaidErByEe'],
 
       // Non-Hong Kong Income
-      'overseaIncInd' => 1, // 0' => not wholly or partly paid, 1' => yes
-      'amtPaidOverseaCo' => '9999',
-      'nameOfOverseaCo' => '(non Hong Kong comapny)',
-      'addrOfOverseaCo' => '(non Hong Kong company address)',
+      'OverseaIncInd' => empty($incomeInfo['AddrOfOverseaCo']) ? '0' : '1',
+      'AmtPaidOverseaCo' => toCurrency($incomeInfo['AmtPaidOverseaCo']),
+      'NameOfOverseaCo' => $incomeInfo['NameOfOverseaCo'],
+      'AddrOfOverseaCo' => $incomeInfo['AddrOfOverseaCo']
+    ];
+  }
 
-      // share option
-      'shareBeforeEmp' => 0, // 0' => no, 1' => yes
-    ]);
-    return (object) $result;
+  protected static function getEmployeeInfo($oaEmployee, $defaults) {
+    echo 'getEmployeeInfo'; nf();
+    $oaSalaries = self::getOASalary();
+    $result = parent::getEmployeeInfo($oaEmployee, $defaults);
+    $result['MonthlyFixedIncome'] = OAEmployeeHelper::getCommencementSalary(
+      phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'),
+      $oaSalaries
+    );
+    return
   }
 }

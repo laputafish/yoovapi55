@@ -2,96 +2,89 @@
 
 use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
+use App\Helpers\FormHelper;
 
 class Ir56EHelper extends IrDataHelper {
 
-  public static function get($team, $employeeId, $form=null, $options=[]) {
-    self::$team = $team;
-    self::$employeeId = $employeeId;
-    self::$oaAuth = OAHelper::refreshTokenByTeam(self::$team);
+  protected static $irdCode = 'IR56E';
 
-    if(isset($form)) {
-      $signatureName = $form->signature_name;
-      $designation = $form->designation;
-      $formDate = $form->form_date;
-    } else {
-      $signatureName = $team->getSetting('default_signature_name', '(No signature name)');
-      $designation = $team->getSetting('designation', '(No designation)');
-      $formDate = date('Y-m-d');
+  public static function get($team, $employeeId, $options=[]) {
+    $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
+    $isTesting = array_key_exists('mode', $options) ? $options['mode'] == 'testing' : false;
+    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
+    $form = array_key_exists('form', $options) ? $options['form'] : null;
+
+    if($isTesting) {
+      $defaults = self::getTestingDefaults();
     }
 
-    // Grab data from OA
-    $oaTeam = self::getOATeam();
+    self::$team = $team;
+    $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
+    self::$employeeId = $employeeId;
+    self::$oaAuth = $oaAuth;
     $oaEmployee = self::getOAAdminEmployee();
-    $oaSalaries = self::getOASalary();
+    if (is_null($oaEmployee)) {
+      return null;
+    }
 
-    // Company
-    $registrationNumber = $oaTeam['setting']['registrationNumber'];
-    $registrationNumberSegs = explode('-', $registrationNumber);
-
-    $section = $registrationNumberSegs[0];
-    $ern = $registrationNumberSegs[1];
+    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
+    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+    $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
+    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
+    $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);
+    $incomeInfo = self::getIncomeInfo(
+      $oaAuth,
+      $team,
+      $oaEmployee,
+      $fiscalYearInfo,
+      $formInfo['PerOfEmp'],
+      $defaults);
 
     $result = [
-      'fileNo' => $registrationNumber,
-      'ern' => $ern,
-      'erName' => $oaTeam['name'],
-      'erAddress' => $oaTeam['setting']['companyAddress'],
-      'signatureName' => $signatureName,
-      'designation' => $designation,
-      'formDate' => phpDateFormat($formDate, 'd/m/Y')
-    ];
+      // Employee Info
+      'NameInEnglish' => $employeeInfo['NameInEnglish'],
+      'NameInChinese' => $employeeInfo['NameInChinese'],
+      'HKID' => $employeeInfo['HKID'],
+      'PpNum' => $employeeInfo['PpNum'],
+      'Sex' => $employeeInfo['Sex'],
 
-    // Employee
-    if(isset($oaEmployee)) {
-      $result = array_merge($result, [
-        'name' => $oaEmployee['displayName'],
-        'nameInChinese' => getOAEmployeeChineseName($oaEmployee),
-        'hkid' => $oaEmployee['identityNumber'],
-        'ppNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : '',
-        'gender' => $oaEmployee['gender'],
-        'maritalStatus' => ($oaEmployee['marital'] == 'married' ? 2 : 1)
-        // 1=Single/Widowed/Divorced/Living Apart, 2=Married
-      ]);
-    }
-
-
-    $result = array_merge($result, [
-      // Employee's Spouse
-      'spouseName' => '(spouse name)',
-      'spouseHkid' => '(spouse hkid)',
-      'spousePpNum' => '(spouse ppnum)',
+      // Employee's marital info
+      // 1=Single/Widowed/Divorced/Living Apart, 2=Married
+      'MaritalStatus' => $maritalInfo['MaritalStatus'],
+      'SpouseName' => $maritalInfo['SpouseName'],
+      'SpouseHkid' => $maritalInfo['SpouseHKID'],
+      'SpousePpNum' => $maritalInfo['SpousePpNum'],
   
       // Correspondence
-      'resAddress' => $oaEmployee['address'][0]['text'],
-      'posAddress' => count($oaEmployee['address'])>1 ? $oaEmployee['address'][1] : trans('tax.same_as_above'),
-  
+      'ResAddr' => $employeeInfo['ResAddr'],
+      'PosAddr' => $employeeInfo['PosAddr'],
+
       // Position
-      'capacity' => strtoupper( $oaEmployee['jobTitle'] ),
-      'startDateOfEmp' => phpDateFormat($oaEmployee['joinedDate'], 'd/m/Y'),
-      'monthlyFixedIncome' => toCurrency(OAEmployeeHelper::getCommencementSalary(
-        phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'), $oaSalaries)),
-      'monthlyAllowance' => toCurrency(110 ),
-      'fluctuatingIncome' => toCurrency(120),
+      'Capacity' => $employeeInfo['Capacity'],
+      'StartDateOfEmp' => phpDateFormat($oaEmployee['joinedDate'], 'd/m/Y'),
+
+      'MonthlyFixedIncome' => toCurrency($incomeInfo['MonthlyFixedIncome']),
+      'MonthlyAllowance' => toCurrency($incomeInfo['MonthlyAllowance']),
+      'FluctuatingIncome' => toCurrency($incomeInfo['FluctuatingIncome']),
   
       // Place of residence
-      'placeProvided' => toCurrency(0),
-      'addrOfPlace' => '(address of place)',
-      'natureOfPlace' => '(nature of place)',
-      'rentPaidEr' => 1,
-      'rentPaidEe' => 2,
-      'rentRefund' => 3,
-      'rentPaidErByEe' => 4,
+      'PlaceProvided' => $incomeInfo['PlaceProvided'],
+      'AddrOfPlace' => $incomeInfo['AddrOfPlace'],
+      'NatureOfPlace' => $incomeInfo['NatureOfPlace'],
+      'RentPaidEr' => $incomeInfo['RentPaidEr'],
+      'RentPaidEe' => $incomeInfo['RentPaidEe'],
+      'RentRefund' => $incomeInfo['RentRefund'],
+      'RentPaidErByEe' => $incomeInfo['RentPaidErByEe'],
   
       // Non-Hong Kong Income
-      'overseaIncInd' => 0, // 0' => not wholly or partly paid, 1' => yes
-      'amtPaidOverseaCo' => '',
-      'nameOfOverseaCo' => '(non Hong Kong comapny)',
-      'addrOfOverseaCo' => '(non Hong Kong company address)',
+      'OverseaIncInd' => $incomeInfo['OverseaIncInd'],
+      'AmtPaidOverseaCo' => $incomeInfo['AmtPaidOverseaCo'],
+      'NameOfOverseaCo' => $incomeInfo['NameOfOverseaCo'],
+      'AddrOfOverseaCo' => $incomeInfo['AddrOfOverseaCo'],
   
       // share option
-      'shareBeforeEmp' => 0, // 0' => no, 1' => yes
-    ]);
-    return (object) $result;
+      'ShareBeforeEmp' => $incomeInfo['ShareBeforeEmp']
+    ];
+    return $result;
   }
 }

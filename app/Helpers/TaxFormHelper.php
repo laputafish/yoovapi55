@@ -102,20 +102,8 @@ class TaxFormHelper
     }
 
     TeamHelper::updateEmployee($team, $oaEmployee);
-
-    // storage/app/{$filePath}
-    // $filePath = self::getFormFilePath($form, $formEmployee);
     $targetFilePath = $outputFolder.'/sheet_'.$sheetNo.'.pdf'; // storage_path('app/'.$filePath);
     checkCreateFolder( $targetFilePath);
-//    $folder = pathinfo($targetFilePath, PATHINFO_DIRNAME);
-//    FolderHelper::checkCreateFolders($folder);
-
-    // language
-//    $langCode = $irdInfo['langCode'];
-//    'en-us';
-//    if (isset($form->lang)) {
-//      $langCode = $form->lang->code;
-//    }
 
     $irdEmployee = IrdFormHelper::fetchDataAndGeneratePdf(
       $targetFilePath,
@@ -605,20 +593,31 @@ class TaxFormHelper
         // Calculation Summary
         $irdEmployee = $generationResult['irdEmployee'];
         $irdMaster['Employees'][] = $irdEmployee;
-        $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
+        if(array_key_exists('TotalIncome', $irdEmployee)) {
+          $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
+        }
       }
 
       // create control list
       $irdForm = $form->irdForm;
 
+      // Generation of Control List
       if($irdForm->requires_control_list) {
         self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
-      if(IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
-        echo 'XML file generated successfully.'; nf();
-      } else {
-        echo 'XML file generated with some errors'; nf();
-        print_r( $messages ); nf(); nf();
+
+      // Generation of soft copy
+      if($irdForm->can_use_softcopy) {
+        if (IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
+          echo 'XML file generated successfully.';
+          nf();
+        } else {
+          echo 'XML file generated with some errors';
+          nf();
+          print_r($messages);
+          nf();
+          nf();
+        }
       }
 
       if($form->status == 'processing') {

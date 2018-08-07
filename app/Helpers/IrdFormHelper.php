@@ -64,7 +64,6 @@ class IrdFormHelper
 
     // Fetch related IRD Form Record
     $irdForm = $irdInfo['irdForm']; // IrdForm::whereFormCode(strtoupper($formCode))->first();
-
     // Set language for text translation in case
     $lang = Lang::whereCode($langCode)->first();
     LangHelper::setLang($lang->code);
@@ -72,6 +71,7 @@ class IrdFormHelper
     // Prepare output file path
 //    $outputFilePath = array_key_exists('outputFilePath', $options) ? $options['outputFilePath'] : null;
     $irdFormFile = $irdForm->files()->whereLangId($lang->id)->first();
+
     $templateFilePath = storage_path('forms/' . $irdFormFile->file);
 
     // Prepare data
@@ -83,7 +83,7 @@ class IrdFormHelper
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\' . camelize(strtolower($irDataClassPrefix . 'Helper'));
     $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
 
-    echo 'irdEmployee'; nf();
+//    echo 'irdEmployee'; nf();
     $pdfData = array_merge($irdMaster, $irdEmployee);
 
     // process
@@ -95,16 +95,11 @@ class IrdFormHelper
     ];
     $pdf = new FormPdf($pdfOptions);
     $fieldList = $irdFormFile->fields->where('for_testing_only', 0);
-echo 'irdFormFile->id = '.$irdFormFile->id; nf();
-    $a = array_map(function($item) {
-      return $item['key'];
-    }, $fieldList->toArray());
-//    dd( $a );
-//    array_walk($fieldList->toArray(), function($obj) {
-//      echo $obj->key; nf();
-//    });
-//    dd('ok');
-//dd($fieldList->toArray());
+//echo 'irdFormFile->id = '.$irdFormFile->id; nf();
+//    $a = array_map(function($item) {
+//      return $item['key'];
+//    }, $fieldList->toArray());
+
     self::fillData($pdf, $fieldList, $pdfData);
 
     // Output

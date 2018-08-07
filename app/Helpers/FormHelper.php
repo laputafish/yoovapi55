@@ -29,7 +29,6 @@ class FormHelper {
     $result = [];
 
     $fiscalYearStart = getCurrentFiscalYearStartDate();
-
     if(isset($form)) {
       $fiscalYearStart = $form->fiscal_start_year . '-04-01';
     } else if(array_key_exists('year', $options)) {

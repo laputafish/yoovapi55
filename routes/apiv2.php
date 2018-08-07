@@ -117,10 +117,11 @@ Route::get('media/static_forms/{name}', 'StaticFormController@getFormImage');
 Route::get('media/document/{id}', 'MediaController@showDocument');
 Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
 
-Route::get('media/forms/commencements/{formId}/{employeeId}', 'MediaController@showCommencementForm');
-Route::get('media/forms/salaries/{formId}/{employeeId}', 'MediaController@showSalaryForm');
-Route::get('media/forms/terminations/{formId}/{employeeId}', 'MediaController@showTerminationForm');
-Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@showDepartureForm');
+//Route::get('media/forms/commencements/{formId}/{employeeId}', 'MediaController@showCommencementForm');
+//Route::get('media/forms/salaries/{formId}/{employeeId}', 'MediaController@showSalaryForm');
+//Route::get('media/forms/terminations/{formId}/{employeeId}', 'MediaController@showTerminationForm');
+//Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@showDepartureForm');
+
 Route::get('media/ird_forms/{formId}/control_list', 'MediaController@showIrdFormControlList');
 Route::get('media/ird_forms/{formId}/data_file', 'MediaController@showIrdFormDataFile');
 Route::get('media/ird_forms/{formId}/schema_file', 'MediaController@showIrdFormXsdFile');
@@ -134,6 +135,7 @@ Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsI
 Route::get('ird_forms/{employeeFormId}/icon', 'IrdFormController@showFormIcon');
 Route::get('ird_forms/{employeeFormId}', 'IrdFormController@showFormPdf');
 
+Route::get('media/ird_forms/{irdFormId?}/test', 'TestFormController@testIrdForm');
 //Route::get('xmedia/download/{id}', function($id) {
 //  $media = Media::find($id);
 //  $filename = urlencode($media->filename);

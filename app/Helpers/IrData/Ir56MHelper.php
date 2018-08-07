@@ -6,13 +6,10 @@ use App\Helpers\FormHelper;
 
 class Ir56MHelper extends IrDataHelper
 {
+  protected static $irdCode = 'IR56M';
 
-  public static function get($team, $employeeId, $options = [])
-  {
-    $isSample = array_key_exists('mode', $options) ? $options['mode']=='sample' : false;
-    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
-
-    $defaults = [
+  protected static function getTestingDefaults() {
+    return [
       'ComRecNameEng' => 'ComRecNameEng',
       'ComRecNameChi' => 'ComRecNameChi',
       'ComRecBRN' => 'ComRecBRN',
@@ -35,26 +32,31 @@ class Ir56MHelper extends IrDataHelper
       'AmtOfSumWithheld' => 100000,
       'IndOfRemark' => '1',
       'Remarks' => 'This is remarks'
-
     ];
+  }
 
-    // $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
+  public static function get($team, $employeeId, $options = [])
+  {
+    $isSample = array_key_exists('mode', $options) ? $options['mode']=='sample' : false;
+    $isTesting = array_key_exists('mode', $options) ? $options['mode']=='testing' : false;
+    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     $form = array_key_exists('form', $options) ? $options['form'] : null;
 
-    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+    if($isTesting || static::$forceDefaults) {
+      $defaults = static::getTestingDefaults();
+    }
 
     self::$team = $team;
     $oaAuth = $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
-
     self::$employeeId = $employeeId;
     self::$oaAuth = $oaAuth;
-
-    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
     $oaEmployee = self::getOAAdminEmployee();
     if (is_null($oaEmployee)) {
       return null;
     }
 
+    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
+    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
     $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
     $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
     $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);

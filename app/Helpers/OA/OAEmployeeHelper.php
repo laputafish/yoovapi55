@@ -28,10 +28,6 @@ class OAEmployeeHelper
         'effectiveDate' => $salary['effectiveDate'],
         'payRate' => $salary['payRate']
       ];
-//      $salaryList = array_prepend($salaryList, [
-//        'effectiveDate' => $salary['effectiveDate'],
-//        'payRate' => $salary['payRate']
-//      ]);
     }
     $salaryList = array_sort($salaryList, function( $salaryItem ) {
       return $salaryItem['effectiveDate'];

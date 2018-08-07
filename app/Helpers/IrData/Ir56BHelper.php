@@ -6,48 +6,51 @@ use App\Helpers\FormHelper;
 
 class Ir56BHelper extends IrDataHelper
 {
+  protected static $irdCode = 'IR56B';
 
-  public static function get($team, $employeeId, $options = [])
-  {
-    $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
-    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
-    // $formSummary = array_key_exists('formSummary', $options) ? $options['formSummary'] : null;
-    $form = array_key_exists('form', $options) ? $options['form'] : null;
+  public static function prepareResult($sheetNo, $formInfo, $employeeInfo, $maritalInfo, $incomeInfo) {
 
-    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+//    $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
+//    $isTesting = array_key_exists('mode', $options) ? $options['mode'] == 'testing' : false;
+//    $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
+//    $form = array_key_exists('form', $options) ? $options['form'] : null;
+//
+//    if($isTesting) {
+//      $defaults = static::getTestingDefaults();
+//    }
+//
+//    self::$team = $team;
+//    $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
+//    self::$employeeId = $employeeId;
+//    self::$oaAuth = $oaAuth;
+//    $oaEmployee = self::getOAAdminEmployee();
+//    if (is_null($oaEmployee)) {
+//      return null;
+//    }
+//
+//    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
+//    $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
+//    $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
+//    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
+//    $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);
+//    $incomeInfo = self::getIncomeInfo(
+//      $oaAuth,
+//      $team,
+//      $oaEmployee,
+//      $fiscalYearInfo,
+//      $formInfo['PerOfEmp'],
+//      $defaults);
 
-    self::$team = $team;
-    $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
-
-    self::$employeeId = $employeeId;
-    self::$oaAuth = $oaAuth;
-
-    $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
-    $oaEmployee = self::getOAAdminEmployee();
-    if (is_null($oaEmployee)) {
-      return null;
-    }
-
-    $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
-    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
-    $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);
-    $incomeInfo = self::getIncomeInfo(
-      $oaAuth,
-      $team,
-      $oaEmployee,
-      $fiscalYearInfo,
-      $formInfo['PerOfEmp'],
-      $defaults);
-
-    $result = [
+    return [
       // Ird fields
       'SheetNo' => $sheetNo,
-      'HKID' => $employeeInfo['HKID'],
       'TypeOfForm' => $formInfo['TypeOfForm'],'O', // Original, Supplementary, Replacement
-      'Surname' => $oaEmployee['lastName'],
-      'GivenName' => $oaEmployee['firstName'],
+
+      'Surname' => $employeeInfo['Surname'],
+      'GivenName' => $employeeInfo['GivenName'],
       'NameInChinese' => $employeeInfo['NameInChinese'],
       'NameInEnglish' => $employeeInfo['NameInEnglish'], // for Control List
+      'HKID' => $employeeInfo['HKID'],
       'Sex' => $employeeInfo['Sex'],
       'PpNum' => $employeeInfo['PpNum'],
 
@@ -161,8 +164,6 @@ class Ir56BHelper extends IrDataHelper
       // Remark
       'Remarks' => $formInfo['Remarks']
     ];
-
-    return $result;
   }
 
   public static function getxxx($team, $employeeId, $options = [])
