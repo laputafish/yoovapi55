@@ -49,12 +49,12 @@ class IrDataHelper
 
   public static function getOAEmployee()
   {
-    return OAEmployeeHelper::get(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
+    return OAEmployeeHelper::get(static::$oaAuth, static::$employeeId, static::$team->oa_team_id);
   }
 
   public static function getOAAdminEmployee()
   {
-    return OAEmployeeHelper::getAdminInfo(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
+    return OAEmployeeHelper::getAdminInfo(static::$oaAuth, static::$employeeId, static::$team->oa_team_id);
   }
 
   public static function getIrdInfo($irdCode, $langCode, $extra = [])
@@ -95,7 +95,9 @@ class IrDataHelper
       'edu_ben' => 0, // 9
       'gain_share_option' => 0, // 10
       'other_raps' => [], // 11
-      'pension' => 0 // 12
+      'pension' => 0, // 12
+      'special_payments'=>0,
+      'special_payments_nature'=>''
     ];
     // dd($period);
 
@@ -109,11 +111,50 @@ class IrDataHelper
     //
     // Init all summary item to 0;
     //
-    $teamIncomeParticulars = $team->incomeParticulars()->with('incomeParticular')->get();
+
+    $incomeMappings = [];
     $payTypeToTokenMappings = [];
     $summary['totalIncome'] = 0;
     // $otherRapPayTypeIds = [];
     $otherRaps = [];
+    $specialPayments = [];
+
+    if(static::$irdCode == 'IR56B') {
+      $incomeMappings = $team->teamIr56bIncomes()->with('ir56bIncome')->get();
+      foreach ($incomeMappings as $item) {
+        $token = $item->ir56bIncome->token;
+        $payTypeIds = trim($item->pay_type_ids);
+        if ($payTypeIds != '') {
+          $arPayTypeIds = explode(',', $payTypeIds);
+          foreach ($arPayTypeIds as $payTypeId) {
+            $payTypeToTokenMappings['payType_' . $payTypeId] = $token;
+          }
+        }
+        if ($token == 'other_raps') {
+          $summary[$token] = [];
+        } else {
+          $summary[$token] = 0;
+        }
+      }
+    } else {
+      $incomeMappings = $team->teamIr56fIncomes()->with('ir56fIncome')->get();
+      foreach ($incomeMappings as $item) {
+        $token = $item->ir56fIncome->token;
+        $payTypeIds = trim($item->pay_type_ids);
+        if ($payTypeIds != '') {
+          $arPayTypeIds = explode(',', $payTypeIds);
+          foreach ($arPayTypeIds as $payTypeId) {
+            $payTypeToTokenMappings['payType_' . $payTypeId] = $token;
+          }
+        }
+        if ($token == 'other_raps') {
+          $summary[$token] = [];
+        } else {
+          $summary[$token] = 0;
+        }
+      }
+    }
+
     // $otherRaps = [
     //    [
     //      'nature'=>'xxx',
@@ -124,24 +165,6 @@ class IrDataHelper
     //      'amt'=>0
     //    ]
     // ]
-    foreach ($teamIncomeParticulars as $item) {
-      $token = $item->incomeParticular->token;
-      $payTypeIds = trim($item->pay_type_ids);
-      if ($payTypeIds != '') {
-        $arPayTypeIds = explode(',', $payTypeIds);
-        foreach ($arPayTypeIds as $payTypeId) {
-          $payTypeToTokenMappings['payType_' . $payTypeId] = $token;
-//          if($token == 'other_raps') {
-//            $otherRapPayTypeIds[] = $payTypeId;
-//          }
-        }
-      }
-      if ($token == 'other_raps') {
-        $summary[$token] = [];
-      } else {
-        $summary[$token] = 0;
-      }
-    }
 
     //****************************************
     // Fetch payslips amount of each pay type
@@ -152,7 +175,6 @@ class IrDataHelper
 
     $effectivePayslips = [];
     foreach ($payslips as $i => $payslip) {
-//      echo 'i='.$i.' (start:'.$payslip['startedDate'].' to '.$payslip['endedDate'].')'; nf();
       if (inBetween($payslip['startedDate'], $period) ||
         inBetween($payslip['endedDate'], $period)) {
         $effectivePayslips[] = $payslip;
@@ -163,7 +185,6 @@ class IrDataHelper
       foreach ($payslip['details'] as $detail) {
         if ($detail['isBasicSalary']) {
           $summary['salary'] += $detail['amount'];
-          $summary['totalIncome'] += $detail['amount'];
         } else {
           if ($detail['payTypeId']) {
             $index = 'payType_' . $detail['payTypeId'];
@@ -175,14 +196,23 @@ class IrDataHelper
                 } else {
                   $otherRaps[$detail['name']] = $detail['amount'];
                 }
+              } else if ($token == 'special_payments') {
+                if (array_key_exists($detail['name'], $specialPayments)) {
+                  $specialPayments[$detail['name']] += $detail['amount'];
+                } else {
+                  $specialPayments[$detail['name']] = $detail['amount'];
+                }
               } else {
                 $summary[$token] += $detail['amount'];
               }
-              $summary['totalIncome'] += $detail['amount'];
+            } else {
+              $summary['salary'] += $detail['amount'];
             }
+          } else {
+            $summary['salary'] += $detail['amount'];
           }
         }
-
+        $summary['totalIncome'] += $detail['amount'];
       }
     }
 
@@ -192,17 +222,32 @@ class IrDataHelper
         'amt' => $amount
       ];
     }
+    if(count($summary['other_raps'])>3) {
+      for($i=3; $i<count($summary['other_raps']); $i++) {
+        $summary['other_raps'][2]['nature'] += ','.$summary['other_raps'][$i]['nature'];
+        $summary['other_raps'][2]['amt'] += $summary['other_raps'][$i]['amt'];
+      }
+      $summary['other_raps'] = array_slice($summary['other_raps'], 0, 3);
+    }
+
+    $specialNatures = [];
+    foreach( $specialPayments as $nature => $amount) {
+      $summary['special_payments'] += $amount;
+      $specialNatures[] = $nature;
+    }
+    $summary['special_payments_nature'] = implode(', ', $specialNatures);
+
     return $summary;
   }
 
   public static function getOATeam()
   {
-    return OATeamHelper::get(self::$oaAuth, self::$team->oa_team_id);
+    return OATeamHelper::get(static::$oaAuth, static::$team->oa_team_id);
   }
 
   public static function getOASalary()
   {
-    return OASalaryHelper::get(self::$oaAuth, self::$employeeId, self::$team->oa_team_id);
+    return OASalaryHelper::get(static::$oaAuth, static::$employeeId, static::$team->oa_team_id);
   }
 
   public static function getIrdMaster($team, $form = null, $options = [])
@@ -392,9 +437,9 @@ class IrDataHelper
     ];
 
     $result =
-      (in_array(static::$irdCode, ['IR56B', 'IR56F']) ? self::getIncomeInfoForIR56B($options) : []) +
-      (static::$irdCode=='IR56M' ? self::getIncomeInfoForIR56M($options) : []) +
-      (static::$irdCode=='IR56E' ? self::getIncomeInfoForIR56E($options) : []);
+      (in_array(static::$irdCode, ['IR56B', 'IR56F']) ? static::getIncomeInfoForIR56B($options) : []) +
+      (static::$irdCode=='IR56M' ? static::getIncomeInfoForIR56M($options) : []) +
+      (static::$irdCode=='IR56E' ? static::getIncomeInfoForIR56E($options) : []);
 
     return $result;
   }
@@ -407,7 +452,7 @@ class IrDataHelper
     $perOfEmp = $options['perOfEmp'];
     $defaults = $options['defaults'];
 
-    $oaSalaries = self::getOASalary();
+    $oaSalaries = static::getOASalary();
 
     $addrOfPlace = '(address of place)';
     $natureOfPlace = '(nature of place)';
@@ -540,8 +585,7 @@ class IrDataHelper
     $perOfEmp = $options['perOfEmp'];
     $defaults = $options['defaults'];
 
-    $oaPayrollSummary = self::getOAPayrollSummary($oaAuth, $team, $oaEmployee, $fiscalYearInfo);
-
+    $oaPayrollSummary = static::getOAPayrollSummary($oaAuth, $team, $oaEmployee, $fiscalYearInfo);
     // Income Particulars
     $tableMapping = [
       'Salary' => 'salary',
@@ -554,7 +598,8 @@ class IrDataHelper
       'SalTaxPaid' => 'sal_tax_paid',
       'EduBen' => 'edu_ben',
       'GainShareOption' => 'gain_share_option',
-      'Pension' => 'pension'
+      'Pension' => 'pension',
+      'SpecialPayments' => 'special_payments'
     ];
 
     $natureOtherRAP1 = '';
@@ -577,7 +622,7 @@ class IrDataHelper
       } else {
         $incomeSummary['PerOf' . $irdField] = $oaPayrollSummary[$token] > 0 ? $perOfEmp : '';
       }
-      $incomeSummary['AmtOf' . $irdField] = toCurrency($oaPayrollSummary[$token]);
+      $incomeSummary['AmtOf' . $irdField] = $oaPayrollSummary[$token];
     }
 
     if (isset($oaPayrollSummary)) {
@@ -711,6 +756,13 @@ class IrDataHelper
       // Total Income
       'TotalIncome' => $oaPayrollSummary['totalIncome'],
 
+      // For IR56F
+      'NatureSpecialPayments' => $oaPayrollSummary['special_payments_nature'],
+      'PerOfSpecialPayments' => $incomeSummary['PerOfSpecialPayments'],
+      'AmtOfSpecialPayments' => $incomeSummary['AmtOfSpecialPayments'],
+
+      // For IR56F ends
+      //
       // Place of Residence
       'PlaceOfResInd' => '0',
 
@@ -756,21 +808,22 @@ class IrDataHelper
       $defaults = static::getTestingDefaults();
     }
 
-    self::$team = $team;
-    $oaAuth = OAHelper::refreshTokenByTeam(self::$team);
-    self::$employeeId = $employeeId;
-    self::$oaAuth = $oaAuth;
-    $oaEmployee = self::getOAAdminEmployee();
+    static::$team = $team;
+    $oaAuth = OAHelper::refreshTokenByTeam(static::$team);
+    static::$employeeId = $employeeId;
+    static::$oaAuth = $oaAuth;
+    $oaEmployee = static::getOAAdminEmployee();
     if (is_null($oaEmployee)) {
       return null;
     }
 
     $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
-    $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
-    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
-    $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);
-    $incomeInfo = self::getIncomeInfo(
+    $formInfo = static::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
+    $employeeInfo = static::getEmployeeInfo($oaEmployee, $defaults);
+
+    $maritalInfo = static::getMaritalInfo($oaEmployee, $defaults);
+    $incomeInfo = static::getIncomeInfo(
       $oaAuth,
       $team,
       $oaEmployee,

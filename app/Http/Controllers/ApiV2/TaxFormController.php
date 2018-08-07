@@ -7,8 +7,10 @@ use App\Models\FormCommencement;
 use App\Models\FormTermination;
 use App\Models\FormDeparture;
 use App\Models\FormSalary;
-use App\Models\IncomeParticular;
-use App\Models\TeamIncomeParticular;
+use App\Models\Ir56bIncome;
+use App\Models\Ir56fIncome;
+use App\Models\TeamIr56bIncome;
+use App\Models\TeamIr56fIncome;
 
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
@@ -97,21 +99,38 @@ class TaxFormController extends BaseAuthController
     $team->setSetting('designation', \Input::get('designation', ''));
     $team->setSetting('signatureName', \Input::get('signatureName', ''));
 
-    $incomeParticulars = \Input::get('incomeParticulars');
-    foreach($incomeParticulars as $particular) {
-      $particularId = $particular['id'];
-      $record = IncomeParticular::find($particularId);
+    // IR56B Income Mapping
+    $ir56bIncomes = \Input::get('ir56bIncomes');
+    foreach($ir56bIncomes as $ir56bIncome) {
+      $particularId = $ir56bIncome['id'];
+      $record = Ir56bIncome::find($particularId);
 
-      $teamIncomeParticular = TeamIncomeParticular::whereTeamId($oaTeamId)->whereIncomeParticularId($particularId)->first();
-      if(is_null($teamIncomeParticular)) {
-        $teamIncomeParticular = teamIncomeParticular::create([
+      $teamIr56bIncome = TeamIr56bIncome::whereTeamId($oaTeamId)->whereIr56bIncomeId($particularId)->first();
+      if(is_null($teamIr56bIncome)) {
+        $teamIr56bIncome = TeamIr56bIncome::create([
           'team_id' => $oaTeamId
         ]);
       }
-
-      $teamIncomeParticular->pay_type_ids = implode(',', $particular['pay_type_ids']);
-      $record->teamIncomeParticulars()->save($teamIncomeParticular);
+      $teamIr56bIncome->pay_type_ids = implode(',', $ir56bIncome['pay_type_ids']);
+      $record->teamIr56bIncomes()->save($teamIr56bIncome);
     }
+
+    // IR56F Income Mapping
+    $ir56fIncomes = \Input::get('ir56fIncomes');
+    foreach($ir56fIncomes as $ir56fIncome) {
+      $particularId = $ir56fIncome['id'];
+      $record = Ir56fIncome::find($particularId);
+
+      $teamIr56fIncome = TeamIr56fIncome::whereTeamId($oaTeamId)->whereIr56fIncomeId($particularId)->first();
+      if(is_null($teamIr56fIncome)) {
+        $teamIr56fIncome = TeamIr56fIncome::create([
+          'team_id' => $oaTeamId
+        ]);
+      }
+      $teamIr56fIncome->pay_type_ids = implode(',', $ir56fIncome['pay_type_ids']);
+      $record->teamIr56fIncomes()->save($teamIr56fIncome);
+    }
+
     return response()->json([
       'status'=>true
     ]);

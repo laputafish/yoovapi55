@@ -165,7 +165,8 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('documents', 'DocumentController');
     Route::resource('tax_forms', 'TaxFormController');
     Route::post('media/upload', 'MediaController@uploadDocument');
-    Route::resource('income_particulars', 'IncomeParticularController', ['only'=>['index','store']]);
+    Route::resource('ir56b_incomes', 'Ir56bIncomeController', ['only'=>['index','store']]);
+    Route::resource('ir56f_incomes', 'Ir56fIncomeController', ['only'=>['index','store']]);
     Route::resource('tax_form_settings', 'TaxFormSettingController', ['only'=>['index','store']]);
 
     Route::resource('employee_commencements', 'EmployeeCommencementController');

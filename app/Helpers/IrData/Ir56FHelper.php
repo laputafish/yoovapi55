@@ -8,6 +8,8 @@ class Ir56FHelper extends IrDataHelper {
   protected static $irdCode = 'IR56F';
 
   protected static function prepareResult($sheetNo, $formInfo, $employeeInfo, $maritalInfo, $incomeInfo) {
+    echo 'prepareResult: '; nf();
+    $otherRapsPeriod = '';
     $otherRapsNatures = [];
     $otherRapsAmounts = [];
 
@@ -30,6 +32,16 @@ class Ir56FHelper extends IrDataHelper {
       $carry += $item;
       return $carry;
     });
+
+    if($incomeInfo['AmtOfBonus']>0) {
+      $otherRapsNature = 'Bonus, ' . $otherRapsNature;
+      $otherRapsAmount += $incomeInfo['AmtOfBonus'];
+    }
+
+    if($incomeInfo['AmtOfEduBen']>0) {
+      $otherRapsNature = 'Education Benefit, '.$otherRapsNature;
+      $otherRapsAmount += $incomeInfo['AmtOfEduBen'];
+    }
 
     return [
       // Employee's Info
@@ -55,9 +67,6 @@ class Ir56FHelper extends IrDataHelper {
       'Capacity' => $employeeInfo['Capacity'],
       'StartDateOfEmp' => phpDateFormat($formInfo['EmpStartDate'], 'd/m/Y'),
       'EndDateOfEmp' => phpDateFormat($formInfo['EmpEndDate'], 'd/m/Y'),
-      'MonthlyFixedIncome' => toCurrency($incomeInfo['MonthlyFixedIncome']),
-      'MonthlyAllowance' => toCurrency($incomeInfo['MonthlyAllowance']),
-      'FluctuatingIncome' => toCurrency($incomeInfo['FluctuatingIncome']),
 
       // Income
       // 1. Salary
@@ -130,14 +139,15 @@ class Ir56FHelper extends IrDataHelper {
     ];
   }
 
-  protected static function getEmployeeInfo($oaEmployee, $defaults) {
-    echo 'getEmployeeInfo'; nf();
-    $oaSalaries = self::getOASalary();
-    $result = parent::getEmployeeInfo($oaEmployee, $defaults);
-    $result['MonthlyFixedIncome'] = OAEmployeeHelper::getCommencementSalary(
-      phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'),
-      $oaSalaries
-    );
-    return
-  }
+//  protected static function getEmployeeInfo($oaEmployee, $defaults) {
+//    echo 'getEmployeeInfo'; nf();
+//    $oaSalaries = static::getOASalary();
+//    $result = parent::getEmployeeInfo($oaEmployee, $defaults);
+//    $result['MonthlyFixedIncome'] = OAEmployeeHelper::getCommencementSalary(
+//      phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'),
+//      $oaSalaries
+//    );
+//    print_r( $result);
+//    return $result;
+//  }
 }
