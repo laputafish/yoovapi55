@@ -71,7 +71,8 @@ class TestFormController extends Controller
 
     $irdFormFile = $irdForm->files()->whereLangId($lang->id)->first();
     $templateFilePath = storage_path('forms/'.$irdFormFile->file);
-    $irdDataTestHelperClassName = '\\App\\Helpers\\IrData\\' . camelize($irdForm->ird_code) . 'TestHelper';
+    $irdDataTestHelperClassName = '\\App\\Helpers\\IrData\\' . camelize(strtolower($irdForm->ird_code)) . 'TestHelper';
+
     $irdMaster = $irdDataTestHelperClassName::getIrdMaster($langCode);
     $irdEmployee = $irdDataTestHelperClassName::get($langCode);
     $pdfData = array_merge($irdMaster, $irdEmployee);

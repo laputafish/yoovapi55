@@ -38,41 +38,42 @@ class Form extends BaseIRDForm {
 
   public function getAttachments() {
     $result = [];
-    $folderPath = storage_path(
-      'app/teams/'.
-      $this->team->oa_team_id.'/'.
-      $this->id).'/';
+    if(isset($this->irdForm)) {
+      $folderPath = storage_path(
+          'app/teams/' .
+          $this->team->oa_team_id . '/' .
+          $this->id) . '/';
 
-    if($this->irdForm->requires_control_list) {
-      $controlListFilePath = $folderPath.'control_list.pdf';
-      if(file_exists($controlListFilePath)) {
-        $result[] = [
-          'labelTag' => 'control_list',
-          'url' => '/media/ird_forms/'.$this->id.'/control_list',
-          'iconType' => 'pdf'
-        ];
+      if ($this->irdForm->requires_control_list) {
+        $controlListFilePath = $folderPath . 'control_list.pdf';
+        if (file_exists($controlListFilePath)) {
+          $result[] = [
+            'labelTag' => 'control_list',
+            'url' => '/media/ird_forms/' . $this->id . '/control_list',
+            'iconType' => 'pdf'
+          ];
+        }
+      }
+      if ($this->irdForm->can_use_softcopy) {
+        $dataFile = $folderPath . strtolower($this->irdForm->ird_code) . '.xml';
+        if (file_exists($dataFile)) {
+          $result[] = [
+            'labelTag' => 'xml_data_file',
+            'url' => '/media/ird_forms/' . $this->id . '/data_file',
+            'iconType' => 'xml'
+          ];
+        }
+        $xsdFile = $folderPath . strtolower($this->irdForm->ird_code) . '.xsd';
+        if (file_exists($dataFile)) {
+          $result[] = [
+            'labelTag' => 'xsd_file',
+            'url' => '/media/ird_forms/' . $this->id . '/schema_file',
+            'iconType' => 'xsd'
+          ];
+        }
+
       }
     }
-    if($this->irdForm->can_use_softcopy) {
-      $dataFile = $folderPath.strtolower($this->irdForm->ird_code).'.xml';
-      if(file_exists($dataFile)) {
-        $result[] = [
-          'labelTag' => 'xml_data_file',
-          'url' => '/media/ird_forms/'.$this->id.'/data_file',
-          'iconType' => 'xml'
-        ];
-      }
-      $xsdFile = $folderPath.strtolower($this->irdForm->ird_code).'.xsd';
-      if(file_exists($dataFile)) {
-        $result[] = [
-          'labelTag' => 'xsd_file',
-          'url' => '/media/ird_forms/'.$this->id.'/schema_file',
-          'iconType' => 'xsd'
-        ];
-      }
-
-    }
-
     return $result;
   }
 }

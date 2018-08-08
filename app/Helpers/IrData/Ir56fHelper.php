@@ -3,10 +3,10 @@
 use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
 
-class Ir56FHelper extends IrDataHelper {
+class Ir56fHelper extends IrDataHelper {
 
   protected static $irdCode = 'IR56F';
-  protected static $testing = true;
+//  protected static $testing = true;
 
   protected static function prepareResult($sheetNo, $formInfo, $employeeInfo, $maritalInfo, $incomeInfo) {
     echo 'prepareResult: '; nf();

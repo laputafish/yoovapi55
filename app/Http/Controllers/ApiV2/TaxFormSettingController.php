@@ -4,6 +4,7 @@ use App\Models\Ir56bIncome;
 use App\Models\Ir56fIncome;
 use App\Models\TeamIr56bIncome;
 use App\Models\Team;
+use App\Models\Lang;
 
 class TaxFormSettingController extends BaseAuthController
 {
@@ -34,10 +35,18 @@ class TaxFormSettingController extends BaseAuthController
       }
     }
 
+    // File No.
+    $fileNo = $team->getSetting('fileNo', '');
+
+    // Languages
+    $langCode = $team->getSetting('lang', 'en-us');
+    $lang = Lang::whereCode($langCode)->first();
+
     $data = [
       'ir56b_incomes' => $ir56bIncomes->toArray(),
       'ir56f_incomes' => $ir56fIncomes->toArray(),
-      'lang' => $team->getSetting('lang', 'en-us'),
+      'fileNo' => $fileNo,
+      'langId' => $lang->id,
       'designation' => $team->getSetting('designation', ''),
       'signatureName' => $team->getSetting('signatureName', '')
     ];

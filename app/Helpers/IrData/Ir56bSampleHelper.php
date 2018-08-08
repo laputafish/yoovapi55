@@ -4,7 +4,7 @@ use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\FormHelper;
 
-class Ir56BSampleHelper extends IrDataHelper
+class Ir56bSampleHelper extends IrDataHelper
 {
 
   public static function get($team, $employeeId, $options = [])

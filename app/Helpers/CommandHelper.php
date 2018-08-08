@@ -26,10 +26,10 @@ class CommandHelper
       $now = now();
       $lastCheckedAt = Carbon::parse($command->last_checked_at);
       $durationPassed = $now->diffInSeconds($lastCheckedAt);
-//      if ($durationPassed < 20 && ($command->mode == 'auto')) {
-//        echo "duration since last checking < 60sec => quit\n";
-//        return;
-//      }
+      if ($durationPassed < 20 && ($command->mode == 'auto')) {
+        echo "duration since last checking < 60sec => quit\n";
+        return;
+      }
     }
 
     while (true) {

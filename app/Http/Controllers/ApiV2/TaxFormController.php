@@ -11,6 +11,7 @@ use App\Models\Ir56bIncome;
 use App\Models\Ir56fIncome;
 use App\Models\TeamIr56bIncome;
 use App\Models\TeamIr56fIncome;
+use App\Models\Lang;
 
 use App\Helpers\TeamHelper;
 use App\Helpers\TeamJobHelper;
@@ -93,9 +94,17 @@ class TaxFormController extends BaseAuthController
 
   public function updateSettings() {
     $oaTeamId = \Input::get('teamId');
+    $langId = \Input::get('langId', 0);
+
     $team = Team::whereOaTeamId($oaTeamId)->first();
 
-    $team->setSetting('lang', \Input::get('lang', 'en-us'));
+    $lang = Lang::find($langId);
+    if(is_null($lang)) {
+      $lang = Lang::whereCode('en-us')->first();
+    }
+
+    $team->setSetting('fileNo', \Input::get('fileNo', ''));
+    $team->setSetting('lang', $lang->code);
     $team->setSetting('designation', \Input::get('designation', ''));
     $team->setSetting('signatureName', \Input::get('signatureName', ''));
 

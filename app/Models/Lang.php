@@ -5,6 +5,7 @@ class Lang extends BaseModel {
     'code',
     'name',
     'token',
+    'label_tag',
     'enabled'
   ];
 }

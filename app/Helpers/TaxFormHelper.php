@@ -603,6 +603,7 @@ class TaxFormHelper
 
       // Generation of Control List
       if($irdForm->requires_control_list) {
+        dd($irdMaster['Employees']);
         self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
 

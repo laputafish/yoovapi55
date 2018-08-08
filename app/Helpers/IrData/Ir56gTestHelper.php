@@ -1,6 +1,6 @@
 <?php namespace App\Helpers\IrData;
 
-class Ir56FTestHelper extends IrBaseTestHelper {
+class Ir56gTestHelper extends IrBaseTestHelper {
   public static function get($langCode) {
     $isEnglish = $langCode == 'en-us';
     $empStartDate = '2017-04-01';
@@ -18,6 +18,9 @@ class Ir56FTestHelper extends IrBaseTestHelper {
       'HKID' => 'C1234567',
       'PpNum' => '(Passport Number and issed at Hong Kong)',
       'Sex' => 'M',
+      'LeftAtYear' => '2018',
+      'LeftAtMonth' => '01',
+      'LeftAtDay' => '20',
 
       // Employee's marital status
       'MaritalStatus' => '1',

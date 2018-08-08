@@ -4,7 +4,7 @@ use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\FormHelper;
 
-class Ir56MHelper extends IrDataHelper
+class Ir56mHelper extends IrDataHelper
 {
   protected static $irdCode = 'IR56M';
 
