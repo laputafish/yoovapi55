@@ -18,6 +18,8 @@ class IrDataHelper
   protected static $oaAuth = null;
   protected static $irdCode = null;
   protected static $forceDefaults = true;
+  protected static $testing = false;
+  protected static $hasDefaults = false;
 
 //  public static function getIr56b($form, $employeeId)
 //  {
@@ -373,7 +375,7 @@ class IrDataHelper
     $posAddr = count($oaEmployee['address']) > 1 ? $oaEmployee['address'][1] : trans('tax.same_as_above');
     $areaCodePosAddr = ''; // array_key_exists('areaCodeResAddr', $defaults) ? $defaults['areaCodeResAddr'];
 
-    return [
+    $result = [
       'HKID' => $oaEmployee['identityNumber'],
       'Surname' => $oaEmployee['lastName'],
       'GivenName' => $oaEmployee['firstName'],
@@ -398,8 +400,31 @@ class IrDataHelper
       'ResAddr' => $resAddr,
       'AreaCodeResAddr' => $areaCodePosAddr,
       'PosAddr' => $posAddr,
-      'AreaCodePosAddr' => $areaCodePosAddr
+      'AreaCodePosAddr' => $areaCodePosAddr,
+
+      'CessationReason' => '(Cessation Reason)'
     ];
+
+    if(static::$hasDefaults) {
+      $result['HKID'] = getDefault($defaults, 'hkid', $result['HKID']);
+      $result['Surname'] = getDefault($defaults, 'surname', $result['Surname']);
+      $result['GivenName'] = getDefault($defaults, 'givenName', $result['GivenName']);
+      $result['NameInEnglish'] = getDefault($defaults, 'nameInEnglish', $result['NameInEnglish']);
+      $result['NameInChinese'] = getDefault($defaults, 'nameInChinese', $result['NameInChinese']);
+      $result['PhoneNum'] = getDefault($defaults, 'phoneNum', $result['PhoneNum']);
+      $result['PpNum'] = getDefault($defaults, 'ppNum', $result['PpNum']);
+      $result['ComRecNameEng'] = getDefault($defaults, 'comRecNameEng', $result['ComRecNameEng']);
+      $result['ComRecNameChi'] = getDefault($defaults, 'comRecNameChi', $result['ComRecNameChi']);
+      $result['Sex'] = getDefault($defaults, 'sex', $result['Sex']);
+      $result['Capacity'] = getDefault($defaults, 'capacity', $result['Capacity']);
+      $result['PtPrinEmp'] = getDefault($defaults, 'ptPrinEmp', $result['PtPrinEmp']);
+      $result['ResAddr'] = getDefault($defaults, 'resAddr', $result['ResAddr']);
+      $result['AreaCodeResAddr'] = getDefault($defaults, 'areaCodeResAddr', $result['AreaCodeResAddr']);
+      $result['PosAddr'] = getDefault($defaults, 'posAddr', $result['PosAddr']);
+      $result['AreaCodePosAddr'] = getDefault($defaults, 'areaCodePosAddr', $result['AreaCodePosAddr']);
+      $result['CessationReason'] = getDefault($defaults, 'cessationReason', $result['CessationReason']);
+    }
+    return $result;
   }
 
   protected static function getMaritalInfo($oaEmployee, $defaults)
@@ -408,20 +433,20 @@ class IrDataHelper
     $maritalStatus = $oaEmployee['marital'] == 'married' ? 2 : 1;
     if ($maritalStatus == 1) {
       $spouseName = '';
-      $spouseHKID = '';
+      $spouseHkid = '';
       $spousePpNum = '';
     } else {
       $spouseName = array_key_exists('spouseName', $oaEmployee) ? $oaEmployee['spouseName'] : '';
-      $spouseHKID = array_key_exists('spouseHKID', $oaEmployee) ? $oaEmployee['spouseHKID'] : '';
+      $spouseHkid = array_key_exists('spouseHKID', $oaEmployee) ? $oaEmployee['spouseHKID'] : '';
       $spousePpNum = $oaEmployee['spouseHKID'] == '' ?
         (array_key_exists('spousePpNum', $oaEmployee) ? $oaEmployee['spousePpNum'] : '') :
         '';
     }
     return [
       'MaritalStatus' => $maritalStatus,
-      'SpouseName' => array_key_exists('SpouseName', $defaults) ? $defaults['SpouseName'] : $spouseName,
-      'SpouseHKID' => array_key_exists('SpouseHKID', $defaults) ? $defaults['SpouseHKID'] : $spouseHKID,
-      'SpousePpNum' => array_key_exists('SpousePpNum', $defaults) ? $defaults['SpousePpNum'] : $spousePpNum
+      'SpouseName' => getDefault($defaults, 'spouseName', $spouseName),
+      'SpouseHKID' => getDefault($defaults, 'spouseHkid', $spouseHkid),
+      'SpousePpNum' => getDefault($defaults, 'spousePpNum', $spousePpNum)
     ];
   }
 
@@ -440,7 +465,6 @@ class IrDataHelper
       (in_array(static::$irdCode, ['IR56B', 'IR56F']) ? static::getIncomeInfoForIR56B($options) : []) +
       (static::$irdCode=='IR56M' ? static::getIncomeInfoForIR56M($options) : []) +
       (static::$irdCode=='IR56E' ? static::getIncomeInfoForIR56E($options) : []);
-
     return $result;
   }
 
@@ -601,6 +625,19 @@ class IrDataHelper
       'Pension' => 'pension',
       'SpecialPayments' => 'special_payments'
     ];
+
+    $oaPayrollSummary['salary'] = getDefault($defaults, 'salary', $oaPayrollSummary['salary']);
+    $oaPayrollSummary['leave_pay'] = getDefault($defaults, 'leave_pay', $oaPayrollSummary['leave_pay']);
+    $oaPayrollSummary['director_fee'] = getDefault($defaults, 'director_fee', $oaPayrollSummary['director_fee']);
+    $oaPayrollSummary['comm_fee'] = getDefault($defaults, 'comm_fee', $oaPayrollSummary['comm_fee']);
+    $oaPayrollSummary['bonus'] = getDefault($defaults, 'bonus', $oaPayrollSummary['bonus']);
+    $oaPayrollSummary['bp_etc'] = getDefault($defaults, 'bp_etc', $oaPayrollSummary['bp_etc']);
+    $oaPayrollSummary['pay_retire'] = getDefault($defaults, 'pay_retire', $oaPayrollSummary['pay_retire']);
+    $oaPayrollSummary['sal_tax_paid'] = getDefault($defaults, 'sal_tax_paid', $oaPayrollSummary['sal_tax_paid']);
+    $oaPayrollSummary['edu_ben'] = getDefault($defaults, 'edu_ben', $oaPayrollSummary['edu_ben']);
+    $oaPayrollSummary['gain_share_option'] = getDefault($defaults, 'gain_share_option', $oaPayrollSummary['gain_share_option']);
+    $oaPayrollSummary['pension'] = getDefault($defaults, 'pension', $oaPayrollSummary['pension']);
+    $oaPayrollSummary['special_payments'] = getDefault($defaults, 'special_payments', $oaPayrollSummary['special_payments']);
 
     $natureOtherRAP1 = '';
     $perOfOtherRAP1 = '';
@@ -804,7 +841,7 @@ class IrDataHelper
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     $form = array_key_exists('form', $options) ? $options['form'] : null;
 
-    if ($isTesting || static::$forceDefaults) {
+    if (static::$testing || $isTesting || static::$forceDefaults) {
       $defaults = static::getTestingDefaults();
     }
 

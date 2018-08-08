@@ -25,7 +25,7 @@ class FormHelper {
     return $result;
   }
 
-  public static function getFiscalYearInfo($form, $options=[]) {
+  public static function getFiscalYearInfo($form=null, $options=[]) {
     $result = [];
 
     $fiscalYearStart = getCurrentFiscalYearStartDate();

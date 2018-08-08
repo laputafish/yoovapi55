@@ -125,6 +125,7 @@ Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
 Route::get('media/ird_forms/{formId}/control_list', 'MediaController@showIrdFormControlList');
 Route::get('media/ird_forms/{formId}/data_file', 'MediaController@showIrdFormDataFile');
 Route::get('media/ird_forms/{formId}/schema_file', 'MediaController@showIrdFormXsdFile');
+Route::get('media/ird_forms/{irdFormId?}/test', 'TestFormController@testIrdForm');
 
 // Route below must be after previous 3 routes.
 Route::get('media/ird_forms/{formId}/{employeeId}', 'MediaController@showIrdForm');
@@ -135,7 +136,6 @@ Route::get('media/download_documents/{ids}', 'MediaController@downloadDocumentsI
 Route::get('ird_forms/{employeeFormId}/icon', 'IrdFormController@showFormIcon');
 Route::get('ird_forms/{employeeFormId}', 'IrdFormController@showFormPdf');
 
-Route::get('media/ird_forms/{irdFormId?}/test', 'TestFormController@testIrdForm');
 //Route::get('xmedia/download/{id}', function($id) {
 //  $media = Media::find($id);
 //  $filename = urlencode($media->filename);

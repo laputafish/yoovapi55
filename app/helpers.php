@@ -259,3 +259,9 @@ function emptyFolder($folderPath) {
       unlink($file); // delete file
   }
 }
+
+function getDefault($defaults, $key, $defaultValue) {
+  return array_key_exists($key, $defaults) ?
+    $defaults[$key] :
+    $defaultValue;
+}

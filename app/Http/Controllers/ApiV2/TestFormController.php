@@ -1,19 +1,25 @@
 <?php namespace App\Http\Controllers\ApiV2;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\TeamEmployee;
 use App\Models\Team;
 use App\Models\IrdFormFile;
 use App\Models\IrdFormFileField;
+use App\Models\IrdForm;
+use App\Models\Lang;
 
+use App\Helpers\IrData\IrDaTaHelper;
 use App\Helpers\TaxFormHelper;
 use App\Helpers\IrdFormHelper;
+use App\Helpers\FormPdf;
 
 class TestFormController extends Controller
 {
-  public function generateForm($employeeId) {
+  public function generateForm($employeeId)
+  {
     $employee = null;
-    if(\Input::has('teamId')) {
+    if (\Input::has('teamId')) {
       $teamId = \Input::get('teamId');
       $team = Team::find($teamId);
       $employees = $team->employees;
@@ -27,10 +33,10 @@ class TestFormController extends Controller
     $langCode = \Input::get('langCode', 'en_us');
 
     $options = [
-      'irdMaster'=>IrDataHelper::getIrdMaster($team)
+      'irdMaster' => IrDataHelper::getIrdMaster($team)
     ];
 
-    if(\Input::has('year')) {
+    if (\Input::has('year')) {
       $options['year'] = \Input::get('year');
     }
 
@@ -52,33 +58,48 @@ class TestFormController extends Controller
 
   }
 
-  public function testIrdForm($irdFormId) {
-    $irdForm = IrdForm::whereId($irdFormId)->first();
+  public function testIrdForm($irdFormIdOrCode)
+  {
+
+    $irdForm = is_numeric($irdFormIdOrCode) ?
+      IrdForm::whereId($irdFormIdOrCode)->first() :
+      IrdForm::whereIrdCode(strtoupper($irdFormIdOrCode))->whereEnabled(1)->first();
+    $irdCode = $irdForm->ird_code;
+
     $langCode = \Input::get('lang', 'en-us');
-    $outputFolder = null;
-    $irdMaster = IrDataHelper::getIrdMaster($this->team,null,['lang'=>$langCode]);
-    $irdInfo = IrDataHelper::getIrdInfo($irdForm->ird_code, $langCode, ['is_testing'=>true]);
-    // [
-    //    'langCode',
-    //    'irdForm',
-    //    'fields',
-    //    'is_sample'
-    // ]
+    $lang = Lang::whereCode($langCode)->first();
 
-
-
+    $irdFormFile = $irdForm->files()->whereLangId($lang->id)->first();
+    $templateFilePath = storage_path('forms/'.$irdFormFile->file);
+    $irdDataTestHelperClassName = '\\App\\Helpers\\IrData\\' . camelize($irdForm->ird_code) . 'TestHelper';
+    $irdMaster = $irdDataTestHelperClassName::getIrdMaster($langCode);
+    $irdEmployee = $irdDataTestHelperClassName::get($langCode);
+    $pdfData = array_merge($irdMaster, $irdEmployee);
+    $pdfOptions = [
+      'title' => $irdForm->ird_code,
+      'topOffset' => $irdFormFile->top_offset,
+      'rightMargin' => $irdFormFile->right_margin,
+      'templateFilePath' => $templateFilePath
+    ];
+    $pdf = new FormPdf($pdfOptions);
+    $fieldList = $irdFormFile->fields->where('for_testing_only', 0);
+    IrdFormHelper::fillData($pdf, $fieldList, $pdfData);
+    $pdf->Output('ird_' . strtolower($irdCode) . '.pdf');
   }
-  public function copyTemplateFields($fromId, $toId) {
+
+  public function copyTemplateFields($fromId, $toId)
+  {
     $fromIrdFormFileId = $fromId;
     $toIrdFormFileId = $toId;
 
     $irdFormFile = IrdFormFile::find($fromId);
     $fields = $irdFormFile->fields;
 
-    echo 'fields count = '.$fields->count(); nl();
+    echo 'fields count = ' . $fields->count();
+    nl();
     $targetIrdFormFile = IrdFormFile::find($toId);
 
-    if(isset($targetIrdFormFile)) {
+    if (isset($targetIrdFormFile)) {
       $targetIrdFormFile->fields()->delete();
       $result = [];
       foreach ($fields as $field) {
@@ -114,9 +135,9 @@ class TestFormController extends Controller
           'for_testing_only' => $field['for_testing_only']
         ]));
       }
-    }
-    else {
-      echo '*** Target IRD Form file not found.'; nl();
+    } else {
+      echo '*** Target IRD Form file not found.';
+      nl();
     }
 
     dd('ok');
