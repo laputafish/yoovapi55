@@ -113,31 +113,80 @@ class FormPdf extends Fpdi\TcpdfFpdi
     if($isEnglish) {
       $pageMessage = 'Page '.$this->getAliasNumPage().' of '.$this->getAliasNbPages();
       $this->SetFont($this->fontName, '', 8);
+      // Page number
+      $this->setX(15);
+      $this->Cell(
+        210,
+        10,
+        $pageMessage,
+        0, // borderStyle
+        false, // $ln
+        'L', // align
+        0, // fill
+        '', // link
+        0, // stretch
+        false, // ignore min height
+        'T', // calign
+        'M' // valign
+      );
     }
     else {
-      $pageNo = $this->getAliasNbPages();
-      $totalPages = $this->getAliasNumPage();
-      $pageMessage = '共 '.$pageNo.' 頁中之第 '.$totalPages.'頁';
+      $pageMessage = '共       頁中之第      頁';
 
       $this->SetFont($this->fontNameChn, '', 8);
+
+      $y = $this->GetY();
+      $this->SetX(15);
+      $this->Cell(
+        100,
+        10,
+        $pageMessage,
+        0, // borderStyle
+        false, // $ln
+        'L', // align
+        0, // fill
+        '', // link
+        0, // stretch
+        false, // ignore min height
+        'T', // calign
+        'M' // valign
+      );
+
+      $this->SetY($y);
+      $this->SetX(20);
+      $pageNo = $this->getAliasNumPage();
+      $this->Cell(
+        100,
+        10,
+        $pageNo,
+        0, // borderStyle
+        false, // $ln
+        'L', // align
+        0, // fill
+        '', // link
+        0, // stretch
+        false, // ignore min height
+        'T', // calign
+        'M' // valign
+      );
+      $this->SetY($y);
+      $this->SetX(36);
+      $pageNo = $this->getAliasNbPages();
+      $this->Cell(
+        100,
+        10,
+        $pageNo,
+        0, // borderStyle
+        false, // $ln
+        'L', // align
+        0, // fill
+        '', // link
+        0, // stretch
+        false, // ignore min height
+        'T', // calign
+        'M' // valign
+      );
     }
-echo 'footer'; nf();
-    // Page number
-    $this->setX(15);
-    $this->Cell(
-      210,
-      10,
-      $pageMessage,
-      0, // borderStyle
-      false, // $ln
-      'L', // align
-      0, // fill
-      '', // link
-      0, // stretch
-      false, // ignore min height
-      'T', // calign
-      'M' // valign
-    );
   }
 
   function outputDataItem($fieldConfig, $text) {

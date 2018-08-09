@@ -23,9 +23,11 @@ class SampleFormEmployee extends BaseIRDFormEmployee {
     'spouse_name',
     'spouse_hkid',
     'spouse_pp_num',
+    'phone_num',
     'res_addr',
     'area_code_res_addr',
     'pos_addr',
+    'area_code_pos_addr',
     'capacity',
     'pt_prin_emp',
 
@@ -102,6 +104,7 @@ class SampleFormEmployee extends BaseIRDFormEmployee {
     'name_of_oversea_co',
     'addr_of_oversea_co',
 
+    'amt_of_sum_withheld',
     'remarks'
   ];
 }

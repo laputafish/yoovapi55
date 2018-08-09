@@ -52,8 +52,8 @@ class IrdFormHelper
           ($isSample ? 'Sample' : '') .
           'Helper';
     $irdEmployee = $irdDataHelperClassName::get($team, $formEmployee->employee_id, $options);
+//    echo 'after get $irdEmployee'; nf();
     return $irdEmployee;
-
   }
 
   public static function fetchDataAndGeneratePdf($outputFilePath, $team, $employeeId, $formCode, $irdInfo, $options = [])

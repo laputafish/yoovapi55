@@ -35,113 +35,95 @@ class Ir56MSampleHelper extends IrDataHelper
     $perOfEmp = $startDateNumber.'-'.$endDateNumber;
 
     $result = [
-      'SubDate' => isset($sampleForm) ? $sampleForm->application_date : '',
       'SheetNo' => $sheetNo,
-      'HKID' => $formEmployee->hkid,
+      'ComRecNameEng' => '',
+      'ComRecNameChi' => '',
+      'ComRecBRN' => '',
 
-      'TypeOfForm' => $formEmployee->type_of_form,
-      'Surname' => $formEmployee->surname,
-      'GivenName' => $formEmployee->given_name,
+      // Employee Info
+      'NameInEnglish' => $formEmployee->surname.', '.$formEmployee->given_name,
       'NameInChinese' => $formEmployee->name_in_chinese,
+      'HKID' => $formEmployee->hkid,
       'Sex' => $formEmployee->sex,
-      'MaritalStatus' => $formEmployee->marital_status,
-      'PpNum' => $formEmployee->pp_num,
+
+//      'TypeOfForm' => $formEmployee->type_of_form,
+//      'Surname' => $formEmployee->surname,
+//      'GivenName' => $formEmployee->given_name,
+//      'PpNum' => $formEmployee->pp_num,
+//      'SubDate' => isset($sampleForm) ? $sampleForm->application_date : '',
 
       // Employee's Spouse
+      'MaritalStatus' => $formEmployee->marital_status,
       'SpouseName' => $formEmployee->spouse_name,
       'SpouseHKID' => $formEmployee->spouse_hkid,
       'SpousePpNum' => $formEmployee->spouse_pp_num,
 
       // Correspondence
-      'ResAddr' => $formEmployee->res_addr,
-      'AreaCodeResAddr' => $formEmployee->area_code_res_addr,
       'PosAddr' => $formEmployee->pos_addr,
+      'AreaCodePosAddr' => $formEmployee->area_code_res_addr,
+      'PhoneNum' => $formEmployee->phone_num,
 
       // Position
       'Capacity' => strtoupper($formEmployee->capacity),
-      'PtPrinEmp' => $formEmployee->pt_prin_emp,
 
-      'StartDateOfEmp' => phpDateFormat($empStartDate, 'd/m/Y'),
-      'EndDateOfEmp' => phpDateFormat($empEndDate, 'd/m/Y'),
+      'StartDateOfService' => phpDateFormat($empStartDate, 'd/m/Y'),
+      'EndDateOfService' => phpDateFormat($empEndDate, 'd/m/Y'),
 
       // Income Particulars
-      // 1. Salary,
-      'PerOfSalary' => $formEmployee->per_of_salary,
-      'AmtOfSalary' => toCurrency($formEmployee->amt_of_salary),
-      // 2. LeavePay,
-      'PerOfLeavePay' => $formEmployee->amt_of_leave_pay > 0 ? $formEmployee->per_of_leave_pay : '',
-      'AmtOfLeavePay' => toCurrency( $formEmployee->amt_of_leave_pay),
-      // 3. DirectorFee,
-      'PerOfDirectorFee' => $formEmployee->amt_of_director_fee > 0 ? $formEmployee->per_of_director_fee : '',
-      'AmtOfDirectorFee' => $formEmployee->amt_of_director_fee,
-      // 4. CommFee,
-      'PerOfCommFee' => $formEmployee->amt_of_comm_fee > 0 ? $formEmployee->per_of_comm_fee : '',
-      'AmtOfCommFee' => $formEmployee->amt_of_comm_fee,
-      // 5. Bonus,
-      'PerOfBonus' => $formEmployee->amt_of_bonus > 0 ? $formEmployee->per_of_bonus : '',
-      'AmtOfBonus' => $formEmployee->amt_of_bonus,
-      // 6. BpEtc,
-      'PerOfBpEtc' => $formEmployee->amt_of_bp_etc > 0 ? $formEmployee->per_of_bp_etc : '',
-      'AmtOfBpEtc' => $formEmployee->amt_of_bp_etc,
-      // 7. PayRetire,
-      'PerOfPayRetire' => $formEmployee->amt_of_pay_retire > 0 ? $formEmployee->per_of_pay_retire : '',
-      'AmtOfPayRetire' => $formEmployee->amt_of_pay_retire,
-      // 8. SalTaxPaid,
-      'PerOfSalTaxPaid' => $formEmployee->amt_of_Sal_tax_paid > 0 ? $formEmployee->per_of_Sal_tax_paid : '',
-      'AmtOfSalTaxPaid' => $formEmployee->amt_of_Sal_tax_paid,
-      // 9. EduBen,
-      'PerOfEduBen' => $formEmployee->amt_of_edu_ben > 0 ? $formEmployee->per_of_edu_ben : '',
-      'AmtOfEduBen' => $formEmployee->amt_of_edu_ben,
-      // 10. GainShareOption,
-      'PerOfGainShareOption' => $formEmployee->amt_of_gain_share_option > 0 ? $formEmployee->per_of_gain_share_option : '',
-      'AmtOfGainShareOption' => $formEmployee->amt_of_gain_share_option,
-      // 11.1
-      'NatureOtherRAP1' => $formEmployee->amt_of_other_rap1 > 0 ? $formEmployee->nature_other_rap1 : '',
-      'PerOfOtherRAP1' => $formEmployee->amt_of_other_rap1 > 0 ? $formEmployee->per_of_other_rap1 : '',
-      'AmtOfOtherRAP1' => $formEmployee->amt_of_other_rap1,
-      // 11.2
-      'NatureOtherRAP2' => $formEmployee->amt_of_other_rap2 > 0 ? $formEmployee->nature_other_rap2 : '',
-      'PerOfOtherRAP2' => $formEmployee->amt_of_other_rap2 > 0 ? $formEmployee->per_of_other_rap2 : '',
-      'AmtOfOtherRAP2' => $formEmployee->amt_of_other_rap2,
-      // 11.3
-      'NatureOtherRAP3' => $formEmployee->amt_of_other_rap3 > 0 ? $formEmployee->nature_other_rap3 : '',
-      'PerOfOtherRAP3' => $formEmployee->amt_of_other_rap3 > 0 ? $formEmployee->per_of_other_rap3 : '',
-      'AmtOfOtherRAP3' => $formEmployee->amt_of_other_rap3,
-      // 12. Pension
-      'PerOfPension' => $formEmployee->amt_of_pension > 0 ? $formEmployee->per_of_pension : '',
-      'AmtOfPension' => $formEmployee->amt_of_pension,
+
+      // Type 1
+      'PerOfType1' => $formEmployee->per_of_salary,
+      'AmtOfType1' => toCurrency($formEmployee->amt_of_salary),
+
+      // Type 2
+      'PerOfType2' => $formEmployee->amt_of_leave_pay > 0 ? $formEmployee->per_of_leave_pay : '',
+      'AmtOfType2' => toCurrency( $formEmployee->amt_of_leave_pay),
+
+      // Type 3
+      'PerOfType3' => $formEmployee->amt_of_director_fee > 0 ? $formEmployee->per_of_director_fee : '',
+      'AmtOfType3' => toCurrency($formEmployee->amt_of_director_fee),
+
+      // Artist Fee
+      'PerOfArtistFee' => $formEmployee->amt_of_comm_fee > 0 ? $formEmployee->per_of_comm_fee : '',
+      'AmtOfArtistFee' => toCurrency($formEmployee->amt_of_comm_fee),
+
+      // Copyright
+      'PerOfCopyright' => $formEmployee->amt_of_bonus > 0 ? $formEmployee->per_of_bonus : '',
+      'AmtOfCopyright' => toCurrency($formEmployee->amt_of_bonus),
+
+      // Consult Fee
+      'PerOfConsultFee' => $formEmployee->amt_of_bp_etc > 0 ? $formEmployee->per_of_bp_etc : '',
+      'AmtOfConsultFee' => toCurrency($formEmployee->amt_of_bp_etc),
+
+      // Other Inc1
+      'PerOfOtherInc1' => $formEmployee->amt_of_pay_retire > 0 ? $formEmployee->per_of_pay_retire : '',
+      'AmtOfOtherInc1' => toCurrency($formEmployee->amt_of_pay_retire),
+      'NatureOtherInc1' => 'Service Fees',
+
+      // Other Inc2
+      'PerOfOtherInc2' => $formEmployee->amt_of_Sal_tax_paid > 0 ? $formEmployee->per_of_Sal_tax_paid : '',
+      'AmtOfOtherInc2' => toCurrency($formEmployee->amt_of_Sal_tax_paid),
+      'NatureOtherInc2' => 'Maintenance Fee',
 
       // total
-      'TotalIncome' => toCurrency( $formEmployee->total_income ),
+      'TotalIncome' => toCurrency(
+        $formEmployee->amt_of_salary +
+        $formEmployee->amt_of_leave_pay +
+        $formEmployee->amt_of_director_fee +
+        $formEmployee->amt_of_comm_fee +
+        $formEmployee->amt_of_bonus +
 
-      // Place of Residence
-      'PlaceOfResInd' => $formEmployee->place_of_res_ind,
+        $formEmployee->amt_of_bp_etc +
+        $formEmployee->amt_of_pay_retire +
+        $formEmployee->amt_of_Sal_tax_paid
+      ),
 
-      // Place #1
-      'AddrOfPlace1' => $formEmployee->addr_of_place1,
-      'NatureOfPlace1' => $formEmployee->nature_of_place1,
-      'PerOfPlace1' => $formEmployee->per_of_place1,
-      'RentPaidEr1' => $formEmployee->rent_paid_er1,
-      'RentPaidEe1' => $formEmployee->rent_paid_ee1,
-      'RentRefund1' => $formEmployee->rent_refund1,
-      'RentPaidErByEe1' => $formEmployee->rent_paid_er_by_ee1,
 
-      // Place #2
-      'AddrOfPlace2' => $formEmployee->addr_of_place2,
-      'NatureOfPlace2' => $formEmployee->nature_of_place2,
-      'PerOfPlace2' => $formEmployee->per_of_place2,
-      'RentPaidEr2' => $formEmployee->rent_paid_er2,
-      'RentPaidEe2' => $formEmployee->rent_paid_ee2,
-      'RentRefund2' => $formEmployee->rent_refund2,
-      'RentPaidErByEe2' => $formEmployee->rent_paid_er_by_ee2,
-
-      // Non-Hong Kong Income
-      'OverseaIncInd' => $formEmployee->oversea_inc_ind,
-      'AmtPaidOverseaCo' => $formEmployee->amt_paid_oversea_co,
-      'NameOfOverseaCo' => $formEmployee->name_of_oversea_co,
-      'AddrOfOverseaCo' => $formEmployee->addr_of_oversea_co,
+      'IndOfSumWithheld' => $formEmployee->amt_of_sum_withheld > 0 ? '1' : '0',
+      'AmtOfSumWithheld' => toCurrency($formEmployee->amt_of_sum_withheld),
 
       // Remark
+      'IndOfRemark' => empty($formEmployee->remarks) ? '0' : '1',
       'Remarks' => $formEmployee->remarks
     ];
     return $result;

@@ -33,69 +33,55 @@ class Ir56mTestHelper extends IrBaseTestHelper {
 
       // Position
       'Capacity' => 'ACCOUNTANT',
+
+      // Employment Period
       'StartDateOfService' => phpDateFormat($empStartDate, 'd/m/Y'),
       'EndDateOfService' => phpDateFormat($empEndDate, 'd/m/Y'),
 
       // Income
-      // 1. Salary
+      // 1. Type 1
       'PerOfType1' => $perOfEmp,
       'AmtOfType1' => toCurrency(1000),
       //
-      // 2. LeavePay
-      'PerOfLeavePay' => $perOfEmp,
-      'AmtOfLeavePay' => toCurrency(2000),
+      // 2. Type 2
+      'PerOfType2' => $perOfEmp,
+      'AmtOfType2' => toCurrency(2000),
       //
-      // 4. CommFee
-      'PerOfCommFee' => $perOfEmp,
-      'AmtOfCommFee' => toCurrency(3000),
+      // 4. Type 3
+      'PerOfType3' => $perOfEmp,
+      'AmtOfType3' => toCurrency(3000),
       //
-      // 6. BpEtc
-      'PerOfBpEtc' => $perOfEmp,
-      'AmtOfBpEtc' => toCurrency(4000),
+      // 6. Artist Fee
+      'PerOfArtistFee' => $perOfEmp,
+      'AmtOfArtistFee' => toCurrency(4000),
       //
-      // 7. PayRetire
-      'PerOfPayRetire' => $perOfEmp,
-      'AmtOfPayRetire' => toCurrency(5000),
+      // 7. Copyright
+      'PerOfCopyright' => $perOfEmp,
+      'AmtOfCopyright' => toCurrency(5000),
       //
-      // 8. SalTaxPaid
-      'PerOfSalTaxPaid' => $perOfEmp,
-      'AmtOfSalTaxPaid' => toCurrency(6000),
+      // 8. Consultant Fee
+      'PerOfConsultFee' => $perOfEmp,
+      'AmtOfConsultFee' => toCurrency(6000),
       //
-      // 10. GainShareOption
-      'PerOfGainShareOption' => $perOfEmp,
-      'AmtOfGainShareOption' => toCurrency(7000),
+      // 9.
+      'PerOfOtherInc1' => $perOfEmp,
+      'AmtOfOtherInc1' => toCurrency(7000),
+      'NatureOtherInc1' => 'Service Fees',
       //
-      // 5. Other RAP (Bonus, Rewards, Allowance, etc.)
-      'PerOfOtherRAPs' => $perOfEmp,
-      'AmtOfOtherRAPs' => toCurrency(8000),
       //
-      // 11.1
-      'NatureSpecialPayments' => '(Nature)',
-      'PerOfSpecialPayments' => $perOfEmp,
-      'AmtOfSpecialPayments' => toCurrency(9000),
+      'PerOfOtherInc2' => $perOfEmp,
+      'AmtOfOtherInc2' => toCurrency(8000),
+      'NatureOtherInc2' => 'Special Bonus',
 
       // total
-      'TotalIncome' => toCurrency(45000),
+      'TotalIncome' => toCurrency(36000),
 
-      // Employment Status
-      'CessationReason' => 'Self-leave',
+      'IndOfSumWithheld' => '1',
+      'AmtOfSumWithheld' => toCurrency( 10000 ),
 
-      // Place of residence
-      'PlaceProvided' => '1',
-
-      'AddrOfPlace' => '1/F., 1st First Street, Kwun Tong',
-      'NatureOfPlace' => 'Flat',
-      'PerOfPlace' => $perOfEmp,
-      'RentPaidEr' => '0',
-      'RentPaidEe' => 120000,
-      'RentRefund' => 120000,
-      'RentPaidErByEe' => '0',
-
-      // Non-Hong Kong Income
-      'OverseaIncInd' => '1',
-      'AmtPaidOverseaCo' => toCurrency(10000),
-      'NameOfOverseaCo' => 'Oversea Company Ltd.',
-      'AddrOfOverseaCo' => '1/F., First Bldg., Oversea Street, Oversea.'
+      // Remark
+      'IndOfRemark' => '1',
+      'Remarks' => '{Remarks}'
     ];
   }
 

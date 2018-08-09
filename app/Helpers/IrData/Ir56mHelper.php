@@ -99,36 +99,39 @@ class Ir56mHelper extends IrDataHelper
       'StartDateOfService' => phpDateFormat($formInfo['EmpStartDate'], 'd/m/Y'),
       'EndDateOfService' => phpDateFormat($formInfo['EmpEndDate'], 'd/m/Y'),
 
-      'AmtOfType1' => toCurrency($incomeInfo['AmtOfType1']),
       'PerOfType1' => $incomeInfo['PerOfType1'],
+      'AmtOfType1' => toCurrency($incomeInfo['AmtOfType1']),
 
-      'AmtOfType2' => toCurrency($incomeInfo['AmtOfType2']),
       'PerOfType2' => $incomeInfo['PerOfType2'],
+      'AmtOfType2' => toCurrency($incomeInfo['AmtOfType2']),
 
-      'AmtOfType3' => toCurrency($incomeInfo['AmtOfType3']),
       'PerOfType3' => $incomeInfo['PerOfType3'],
+      'AmtOfType3' => toCurrency($incomeInfo['AmtOfType3']),
 
-      'AmtOfArtistFee' => toCurrency($incomeInfo['AmtOfArtistFee']),
       'PerOfArtistFee' => $incomeInfo['PerOfArtistFee'],
+      'AmtOfArtistFee' => toCurrency($incomeInfo['AmtOfArtistFee']),
 
-      'AmtOfCopyright' => toCurrency($incomeInfo['AmtOfCopyright']),
       'PerOfCopyright' => $incomeInfo['PerOfCopyright'],
+      'AmtOfCopyright' => toCurrency($incomeInfo['AmtOfCopyright']),
 
-      'AmtOfConsultFee' => toCurrency($incomeInfo['AmtOfConsultFee']),
       'PerOfConsultFee' => $incomeInfo['PerOfConsultFee'],
+      'AmtOfConsultFee' => toCurrency($incomeInfo['AmtOfConsultFee']),
 
-      'NatureOtherInc1' => $incomeInfo['NatureOtherInc1'],
-      'AmtOfOtherInc1' => toCurrency($incomeInfo['AmtOfOtherInc1']),
       'PerOfOtherInc1' => $incomeInfo['PerOfOtherInc1'],
+      'AmtOfOtherInc1' => toCurrency($incomeInfo['AmtOfOtherInc1']),
+      'NatureOtherInc1' => $incomeInfo['NatureOtherInc1'], // Service Fees
 
-      'NatureOtherInc2' => $incomeInfo['NatureOtherInc2'],
-      'AmtOfOtherInc2' => toCurrency($incomeInfo['AmtOfOtherInc2']),
       'PerOfOtherInc2' => $incomeInfo['PerOfOtherInc2'],
+      'AmtOfOtherInc2' => toCurrency($incomeInfo['AmtOfOtherInc2']),
+      'NatureOtherInc2' => $incomeInfo['NatureOtherInc2'],
 
+      // Total
       'TotalIncome' => toCurrency($incomeInfo['TotalIncome']),
 
       'IndOfSumWithheld' => $incomeInfo['IndOfSumWithheld'],
       'AmtOfSumWithheld' => toCurrency($incomeInfo['AmtOfSumWithheld']),
+
+      // Remark
       'IndOfRemark' => $formInfo['IndOfRemark'],
       'Remarks' => $formInfo['Remarks']
     ];

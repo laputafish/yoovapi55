@@ -16,11 +16,12 @@ class IrdRequestFormItemStatusUpdatedEvent implements ShouldBroadcast
 
   public $statusInfo;
   /*
-    'team' => $form->team,
-    'formId' => $form->id,
-    'employeeId' => $employee->employee_id,
-    'status' => 'ready_for_processing'
-   */
+    'team' => isset($team) ? $team->toArray() : null,
+    'formId' => $options['sampleForm']->id,
+    'processed_printed_forms' => $options['sampleForm']->processed_printed_forms,
+    'processed_softcopies'=> $options['sampleForm']->processed_softcopies,
+    'status' => $options['sampleForm']->status
+*/
   /**
    * Create a new event instance.
    *

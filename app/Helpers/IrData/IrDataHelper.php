@@ -270,10 +270,10 @@ class IrDataHelper
     $oaAuth = OAHelper::refreshTokenByTeam($team);
     $oaTeam = OATeamHelper::get($oaAuth, $team->oa_team_id);
     // Registration Number
-    $registrationNumber = $oaTeam['setting']['registrationNumber'];
+    $registrationNumber = $team->getSetting('fileNo', '');
     $registrationNumberSegs = explode('-', $registrationNumber);
     $section = $registrationNumberSegs[0];
-    $ern = $registrationNumberSegs[1];
+    $ern = count($registrationNumberSegs)>1 ? $registrationNumberSegs[1] : '';
     $headerPeriod = $isEnglish ?
       'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']) :
       '在 ' . $fiscalYearInfo['startYear'] . ' 年 4 月 1 日至 ' . $fiscalYearInfo['endYear'] . ' 年 3 月 31 日 年內';

@@ -178,6 +178,7 @@ class SampleFormController extends BaseAuthController
         'status' => 'pending',
         'hkid' => SampleHelper::getHkid(),
         'type_of_form'=>'O',
+        'phone_num'=>rand(20000000,99999999),
         'surname' => $nameInfo['surname'],
         'given_name' => $nameInfo['givenName'],
         'name_in_chinese'=> $nameInfo['nameInChinese'],
@@ -189,6 +190,7 @@ class SampleFormController extends BaseAuthController
         'res_addr'=>'Flat A, 1/F., First Bldg., 1st Street, Central.',
         'area_code_res_addr'=>['H','K','N','F'][rand(0,3)],
         'pos_addr'=>$isEnglish ? 'Same as Above' : '同上',
+        'area_code_pos_addr'=>['H','K','N','F'][rand(0,3)],
         'capacity'=>SampleHelper::getCapacity(),
         'pt_prin_emp'=>getRandomForProbability('Main Company', 0,.1),
         'start_date_of_emp'=>phpDateFormat($employmentPeriod['startDate'], 'Ymd'),
@@ -263,6 +265,8 @@ class SampleFormController extends BaseAuthController
         'amt_paid_oversea_co'=>0,
         'name_of_oversea_co'=>'',
         'addr_of_oversea_co'=>'',
+
+        'amt_of_sum_withheld' => rand(0,100)*100,
         'remarks'=>''
       ];
 

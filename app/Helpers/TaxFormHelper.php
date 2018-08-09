@@ -100,11 +100,9 @@ class TaxFormHelper
     if (array_key_exists('code', $oaEmployee)) {
       dd($oaEmployee['message']);
     }
-
     TeamHelper::updateEmployee($team, $oaEmployee);
     $targetFilePath = $outputFolder.'/sheet_'.$sheetNo.'.pdf'; // storage_path('app/'.$filePath);
     checkCreateFolder( $targetFilePath);
-
     $irdEmployee = IrdFormHelper::fetchDataAndGeneratePdf(
       $targetFilePath,
       $team,
@@ -446,7 +444,6 @@ class TaxFormHelper
           echo 'XML file generated with some errors'; nf();
           print_r( $messages ); nf(); nf();
         }
-        dd('ok');
       }
 
       $applyPrintedFormsStr = trim($sampleForm->apply_printed_forms);
@@ -471,12 +468,10 @@ class TaxFormHelper
         $sampleForm->update(['status' => 'ready']);
       }
       EventHelper::send('requestForm', ['sampleForm' => $sampleForm]);
-      print_r( $irdMaster);
     }
   }
 
   public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount) {
-    echo 'generateSampleForm:: employee_id='.$formEmployee->employee_id.' Sheet #'.$sheetNo; nf();
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
 
@@ -579,7 +574,7 @@ class TaxFormHelper
         //    'outputFilePath'=>'....'
         // ]
         //
-
+echo 'processJob_irdForm #580'; nf();
         // Status => "Ready"
         $form->employees()->whereEmployeeId($employeeId)->update([
           'status' => 'ready',
@@ -596,14 +591,16 @@ class TaxFormHelper
         if(array_key_exists('TotalIncome', $irdEmployee)) {
           $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
         }
+echo 'processJob_irdForm #597'; nf();
       }
 
       // create control list
+      echo 'Create control list.'; nf();
       $irdForm = $form->irdForm;
 
       // Generation of Control List
       if($irdForm->requires_control_list) {
-        dd($irdMaster['Employees']);
+        // dd($irdMaster['Employees']);
         self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
 
@@ -674,7 +671,7 @@ class TaxFormHelper
     $footerData = [
       'FooterSignatureLabel'=>($isEnglish ? 'Signature' : '簽署'),
       'FooterNameLabel'=>($isEnglish ? 'Name' : '姓名'),
-      'FooterDesignationLabel'=>($isEnglish ? 'Designation' : '職'),
+      'FooterDesignationLabel'=>($isEnglish ? 'Designation' : '職位'),
       'FooterDateLabel'=>($isEnglish ? 'Date': '日期'),
 
       'FooterSignature'=>' ',
@@ -724,11 +721,15 @@ class TaxFormHelper
       $contentFields->each(function ($item) use ($y) {
         $item->y = $y;
       });
+      $name = strtoupper($irdEmployee['NameInEnglish']);
+      if(!$isEnglish) {
+        if(!empty(trim($irdEmployee['NameInChinese']))) {
+          $name = $irdEmployee['NameInChinese'];
+        }
+      }
       IrdFormHelper::fillData($pdf, $contentFields, [
         'ContentSheetNo' => str_pad($irdEmployee['SheetNo'], 6, '0', STR_PAD_LEFT),
-        'ContentName' => $isEnglish ?
-          str_replace(',', '', strtoupper($irdEmployee['NameInEnglish']) ):
-          $irdEmployee['NameInChinese'],
+        'ContentName' => $name,
         'ContentHKICNo' => strtoupper($irdEmployee['HKID']),
         'ContentTotalIncome' => $irdEmployee['TotalIncome']
       ]);
