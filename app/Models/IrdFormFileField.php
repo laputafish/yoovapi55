@@ -22,6 +22,7 @@ class IrdFormFileField extends BaseModel {
     'lang',
     'append_asterisk',
     'to_currency',
+    'show_if_key',
     'remark',
     'is_symbol',
     'for_testing_only'

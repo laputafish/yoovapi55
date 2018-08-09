@@ -9,13 +9,13 @@ class OAEmployeeHelper
 
   public static function getAdminInfo($oaAuth, $employeeId, $oaTeamId)
   {
-    $url = \Config::get('oa')['apiUrl'] . '/admin/employees/' . $employeeId . '?teamId=' . $oaTeamId;
+    $url = \Config::get('oa')['apiUrl'] . '/admin/employees/' . $employeeId . '?include=nationality&teamId=' . $oaTeamId;
     return OAHelper::get($url, $oaAuth);
   }
 
   public static function get($oaAuth, $employeeId, $oaTeamId)
   {
-    $url = \Config::get('oa')['apiUrl'] . '/user/employees/' . $employeeId . '?teamId=' . $oaTeamId;
+    $url = \Config::get('oa')['apiUrl'] . '/user/employees/' . $employeeId . '?include=nationality&teamId=' . $oaTeamId;
     return OAHelper::get($url, $oaAuth);
   }
 

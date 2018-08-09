@@ -17,7 +17,7 @@ class IrDataHelper
   protected static $form = null;
   protected static $oaAuth = null;
   protected static $irdCode = null;
-  protected static $forceDefaults = true;
+  protected static $forceDefaults = false;
   protected static $testing = false;
   protected static $hasDefaults = false;
 
@@ -375,6 +375,18 @@ class IrDataHelper
     $posAddr = count($oaEmployee['address']) > 1 ? $oaEmployee['address'][1] : trans('tax.same_as_above');
     $areaCodePosAddr = ''; // array_key_exists('areaCodeResAddr', $defaults) ? $defaults['areaCodeResAddr'];
 
+    $ppNum = '';
+    if(empty($oaEmployee['identifyNumber'])) {
+      $segs = [];
+      if(!empty($oaEmployee['passport'])) {
+        $segs[] = $oaEmployee['passport'];
+      }
+      if(isset($oaEmployee['country'])) {
+        $segs[] = '(' + $oaEmployee['country']['name'] + ')';
+      }
+      $ppNum = implode(' ', $segs);
+    }
+
     $result = [
       'HKID' => $oaEmployee['identityNumber'],
       'Surname' => $oaEmployee['lastName'],
@@ -382,7 +394,7 @@ class IrDataHelper
       'NameInEnglish' => concatNames([$oaEmployee['firstName'] . ',', $oaEmployee['lastName']]),
       'NameInChinese' => getOAEmployeeChineseName($oaEmployee),
       'PhoneNum' => empty($oaEmployee['officePhone']) ? $oaEmployee['mobilePhone'] : $oaEmployee['officePhone'],
-      'PpNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : '',
+      'PpNum' => $ppNum,
 
       'ComRecNameEng' => array_key_exists('ComRecNameEng', $defaults) ? $defaults['ComRecNameEng'] :
         (array_key_exists('ComRecNameEng', $oaEmployee) ? $oaEmployee['ComRecNameEng'] : ''),
@@ -402,7 +414,13 @@ class IrDataHelper
       'PosAddr' => $posAddr,
       'AreaCodePosAddr' => $areaCodePosAddr,
 
-      'CessationReason' => '(Cessation Reason)'
+      // IR56F
+      'CessationReason' => '',
+
+      // IR56G
+      'LeftAtYear' => '',
+      'LeftAtMonth' => '',
+      'LeftAtDay' => ''
     ];
 
     if(static::$hasDefaults) {
@@ -442,11 +460,14 @@ class IrDataHelper
         (array_key_exists('spousePpNum', $oaEmployee) ? $oaEmployee['spousePpNum'] : '') :
         '';
     }
+    $spouseHkidPpNum = trim($spouseHkid).trim($spousePpNum);
+
     return [
       'MaritalStatus' => $maritalStatus,
       'SpouseName' => getDefault($defaults, 'spouseName', $spouseName),
       'SpouseHKID' => getDefault($defaults, 'spouseHkid', $spouseHkid),
-      'SpousePpNum' => getDefault($defaults, 'spousePpNum', $spousePpNum)
+      'SpousePpNum' => getDefault($defaults, 'spousePpNum', $spousePpNum),
+      'SpouseHKIDPpNum' => $spouseHkidPpNum
     ];
   }
 

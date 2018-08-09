@@ -52,7 +52,7 @@ class Ir56eHelper extends IrDataHelper {
       // 1=Single/Widowed/Divorced/Living Apart, 2=Married
       'MaritalStatus' => $maritalInfo['MaritalStatus'],
       'SpouseName' => $maritalInfo['SpouseName'],
-      'SpouseHkid' => $maritalInfo['SpouseHKID'],
+      'SpouseHKID' => $maritalInfo['SpouseHKID'],
       'SpousePpNum' => $maritalInfo['SpousePpNum'],
   
       // Correspondence

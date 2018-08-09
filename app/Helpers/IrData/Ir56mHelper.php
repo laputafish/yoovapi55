@@ -76,9 +76,9 @@ class Ir56mHelper extends IrDataHelper
       'ComRecBRN' => $employeeInfo['ComRecBRN'],
 
       // Employee Info
-      'HKID' => $employeeInfo['HKID'],
       'NameInEnglish' => $employeeInfo['NameInEnglish'],
       'NameInChinese' => $employeeInfo['NameInChinese'],
+      'HKID' => $employeeInfo['HKID'],
       'Sex' => $employeeInfo['Sex'],
 
       // Employee's Spouse

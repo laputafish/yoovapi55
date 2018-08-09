@@ -58,18 +58,23 @@ class Ir56gHelper extends IrDataHelper {
       'HKID' => $employeeInfo['HKID'],
       'PpNum' => $employeeInfo['PpNum'],
       'Sex' => $employeeInfo['Sex'],
+      'LeftAtYear' => $employeeInfo['LeftAtYear'],
+      'LeftAtMonth' => $employeeInfo['LeftAtMonth'],
+      'LeftAtDay' => $employeeInfo['LeftAtDay'],
 
       // Employee's marital status
       'MaritalStatus' => $maritalInfo['MaritalStatus'],
       'SpouseName' => $maritalInfo['SpouseName'],
-      'SpouseHKIDPpNum' => $spouseHkidPpNum,
+      'SpouseHKIDPpNum' => $maritalInfo['SpouseHKIDPpNum'],
 
       // Correspondence
       'ResAddr' => $employeeInfo['ResAddr'],
       'PosAddr' => $employeeInfo['PosAddr'],
+      'PhoneNum' => $employeeInfo['PhoneNum'],
 
       // Position
       'Capacity' => $employeeInfo['Capacity'],
+      'PtPrinEmp' => $employeeInfo['PtPrinEmp'],
       'StartDateOfEmp' => phpDateFormat($formInfo['EmpStartDate'], 'd/m/Y'),
       'EndDateOfEmp' => phpDateFormat($formInfo['EmpEndDate'], 'd/m/Y'),
 
@@ -110,16 +115,11 @@ class Ir56gHelper extends IrDataHelper {
       'NatureSpecialPayments' => $incomeInfo['NatureSpecialPayments'],
       'PerOfSpecialPayments' => $incomeInfo['PerOfSpecialPayments'],
       'AmtOfSpecialPayments' => toCurrency($incomeInfo['AmtOfSpecialPayments']),
-
       // total
-      'TotalIncome' => $incomeInfo['TotalIncome'],
-
-      // Employment Status
-      'CessationReason' => $employeeInfo['CessationReason'],
+      'TotalIncome' => toCurrency($incomeInfo['TotalIncome']),
 
       // Place of residence
       'PlaceProvided' => empty($incomeInfo['addrOfPlace']) ? '0': '1',
-
       'AddrOfPlace' => $incomeInfo['AddrOfPlace1'],
       'NatureOfPlace' => $incomeInfo['NatureOfPlace1'],
       'PerOfPlace' => $incomeInfo['PerOfPlace1'],
@@ -132,7 +132,39 @@ class Ir56gHelper extends IrDataHelper {
       'OverseaIncInd' => empty($incomeInfo['AddrOfOverseaCo']) ? '0' : '1',
       'AmtPaidOverseaCo' => toCurrency($incomeInfo['AmtPaidOverseaCo']),
       'NameOfOverseaCo' => $incomeInfo['NameOfOverseaCo'],
-      'AddrOfOverseaCo' => $incomeInfo['AddrOfOverseaCo']
+      'AddrOfOverseaCo' => $incomeInfo['AddrOfOverseaCo'],
+
+      // 14
+      'IndSalTaxPaidByErYes' => 0,
+      'IndSalTaxPaidByErNo' => 1,
+
+      // 15
+      'MoneyPayableYes' => 0,
+      'MoneyPayableAmt' => 0,
+      'MoneyPayableNo' => 1,
+      'MoneyPayableNoReason' => '',
+
+      // 16
+      'DepReaExpatriate' => 0,
+      'DepReaSecondment' => 0,
+      'DepReaEmigration' => 0,
+      'DepReaOther' => 0,
+      'DepReaOtherDes' => '',
+
+      // 17
+      'PosAddrAfterEmp' => '',
+
+      // 18
+      'WillBeBackYes' => 0,
+      'BackDate' => '',
+      'WillBeBackNo' => 1,
+
+      // 19
+      'ShareOptsYes' => 0,
+      'ShareOpts' => 0,
+      'ShareOptsGrantDate' => '',
+      'ShareOptsNo' => 1
+
     ];
   }
 

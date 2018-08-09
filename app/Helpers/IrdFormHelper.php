@@ -11,38 +11,38 @@ use App\Helpers\OA\OATeamHelper;
 class IrdFormHelper
 {
   protected static $defaults = [];
-  protected static $defaultsx = [
-    'areaCodeResAddr' => 'H',
-    'maritalStatus' => '2',
-    'spouseName' => '(spouse name)',
-    'spouseHkid' => 'C123456(7)',
-    'spousePpNum' => 'PP12345678',
-    'ptPrinEmp' => '(ptPrinEmp)',
-
-    'placeOfResInd' => '1',
-
-    'addrOfPlace1' => 'Rm 406, Peace Bldg., Peace St., HK',
-    'natureOfPlace1' => 'Flat',
-    'perOfPlace1' => '20160401-20170331',
-    'rentPaidEr1' => 100000,
-    'rentPaidEe1' => 20000,
-    'rentRefund1' => 30000,
-    'rentPaidErByEe1' => 10000,
-
-    'addrOfPlace2' => 'Rm 306, Justice Bldg., 1 Justice Rd., HK',
-    'natureOfPlace2' => 'Flat',
-    'perOfPlace2' => '20160901-20170331',
-    'rentPaidEr2' => 10000,
-    'rentPaidEe2' => 154000,
-    'rentRefund2' => 140000,
-    'rentPaidErByEe2' => 20000,
-
-    'overseaIncInd' => '1',
-    'amtPaidOverseaCo' => 'US$40,000 (HK$312,000)',
-    'nameOfOverseaCo' => 'Good Harvest (International) Co Ltd',
-    'addrOfOverseaCo' => 'No. 8, 400th Street, New York, USA',
-    'remarks' => 'Remarks'
-  ];
+//  protected static $defaultsx = [
+//    'areaCodeResAddr' => 'H',
+//    'maritalStatus' => '2',
+//    'spouseName' => '(spouse name)',
+//    'spouseHkid' => 'C123456(7)',
+//    'spousePpNum' => 'PP12345678',
+//    'ptPrinEmp' => '(ptPrinEmp)',
+//
+//    'placeOfResInd' => '1',
+//
+//    'addrOfPlace1' => 'Rm 406, Peace Bldg., Peace St., HK',
+//    'natureOfPlace1' => 'Flat',
+//    'perOfPlace1' => '20160401-20170331',
+//    'rentPaidEr1' => 100000,
+//    'rentPaidEe1' => 20000,
+//    'rentRefund1' => 30000,
+//    'rentPaidErByEe1' => 10000,
+//
+//    'addrOfPlace2' => 'Rm 306, Justice Bldg., 1 Justice Rd., HK',
+//    'natureOfPlace2' => 'Flat',
+//    'perOfPlace2' => '20160901-20170331',
+//    'rentPaidEr2' => 10000,
+//    'rentPaidEe2' => 154000,
+//    'rentRefund2' => 140000,
+//    'rentPaidErByEe2' => 20000,
+//
+//    'overseaIncInd' => '1',
+//    'amtPaidOverseaCo' => 'US$40,000 (HK$312,000)',
+//    'nameOfOverseaCo' => 'Good Harvest (International) Co Ltd',
+//    'addrOfOverseaCo' => 'No. 8, 400th Street, New York, USA',
+//    'remarks' => 'Remarks'
+//  ];
 
   public static function getIrdFormData($team, $irdForm, $formEmployee, $options = [])
   {
@@ -80,6 +80,7 @@ class IrdFormHelper
     $irDataClassPrefix = substr(strtolower($formCode), -2) == 'pc' ?
       substr($formCode, 0, strlen($formCode) - 2) :
       $formCode;
+
     $irDataHelperClassName = '\\App\\Helpers\\IrData\\' . camelize(strtolower($irDataClassPrefix . 'Helper'));
     $irdEmployee = $irDataHelperClassName::get($team, $employeeId, $options);
 
@@ -158,13 +159,71 @@ class IrdFormHelper
       if ($item->hidden) {
         continue;
       }
+      if (!empty($item->show_if_key)) {
+        if(
+          (is_numeric($data[$item->show_if_key]) && $data[$item->show_if_key]==0) ||
+          ($data[$item->show_if_key]=='0') ||
+          ($data[$item->show_if_key]=='')
+        ) {
+          continue;
+        }
+      }
       $align = isset($item->align) ? $item->align : 'L';
       $lang = isset($item->lang) ? $item->lang : 'eng';
       $fontStyle = isset($item->font_style) ? $item->font_style : '';
+      $text = $data[$item->key];
       switch ($item->type) {
-        case 'string':
-          $text = $data[$item->key];
+        case 'markx':
+          $lang = 'eng';
+          if($text == '0' || (is_numeric($text) && ($text == 0))) {
+            $text = '';
+          } else {
+            $text = 'X';
+          }
+          $x = $item->x;
+          $y = $item->y;
+          $width = $item->width;
+          $fontSize = $item->font_size;
 
+          // Output
+          $pdf->outputText(
+            $x,
+            $y,
+            $fontSize,
+            $width,
+            $text,
+            $align,
+            $lang,
+            null,
+            $fontStyle
+          );
+          break;
+        case 'tick':
+          $lang = 'symbol';
+          if($text == '0' || (is_numeric($text) && ($text == 0))) {
+            $text = '';
+          } else {
+            $text = '3';
+          }
+          $x = $item->x;
+          $y = $item->y;
+          $width = $item->width;
+          $fontSize = $item->font_size;
+
+          // Output
+          $pdf->outputText(
+            $x,
+            $y,
+            $fontSize,
+            $width,
+            $text,
+            $align,
+            $lang,
+            null,
+            $fontStyle
+          );
+          break;
+        case 'string':
           if ($text == '0') {
             if ($item->blank_if_zero) {
               break;
