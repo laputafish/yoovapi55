@@ -35,19 +35,20 @@ class Ir56bSampleHelper extends IrDataHelper
     $perOfEmp = $startDateNumber.'-'.$endDateNumber;
 
     $result = [
-      'SubDate' => isset($sampleForm) ? $sampleForm->application_date : '',
       'SheetNo' => $sheetNo,
-      'HKID' => $formEmployee->hkid,
-
       'TypeOfForm' => $formEmployee->type_of_form,
+
       'Surname' => $formEmployee->surname,
       'GivenName' => $formEmployee->given_name,
       'NameInChinese' => $formEmployee->name_in_chinese,
+      'NameInEnglish' => $formEmployee->surname.', '.$formEmployee->given_name,
+      'HKID' => $formEmployee->hkid,
       'Sex' => $formEmployee->sex,
-      'MaritalStatus' => $formEmployee->marital_status,
       'PpNum' => $formEmployee->pp_num,
+      'SubDate' => isset($sampleForm) ? $sampleForm->application_date : '',
 
       // Employee's Spouse
+      'MaritalStatus' => $formEmployee->marital_status,
       'SpouseName' => $formEmployee->spouse_name,
       'SpouseHKID' => $formEmployee->spouse_hkid,
       'SpousePpNum' => $formEmployee->spouse_pp_num,
