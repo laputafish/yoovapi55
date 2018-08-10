@@ -398,6 +398,7 @@ class TaxFormHelper
       //
 
       IrdApplicationLetterHelper::build($outputFolder, $team, $sampleForm);
+      $sampleForm->processed_printed_forms = 'letter';
       EventHelper::send('requestForm', ['sampleForm' => $sampleForm]);
 
       $applySoftcopiesStr = trim($sampleForm->apply_softcopies);
@@ -406,6 +407,7 @@ class TaxFormHelper
       if (!empty($applySoftcopiesStr)) {
         $applySoftcopies = explode(',', $applySoftcopiesStr);
         foreach ($applySoftcopies as $i => $irdFormCode) {
+          echo 'processing ... '.$irdFormCode; nf();
           self::processSampleIrdForm($team, $sampleForm, $irdFormCode, [
             'outputFolder' => $outputFolder,
             'requires_control_file' => true,
@@ -414,6 +416,7 @@ class TaxFormHelper
           $processedSoftcopies[] = $irdFormCode;
           $sampleForm->processed_softcopies = implode(',', $processedSoftcopies);
           $sampleForm->save();
+          EventHelper::send('requestFormItem', ['sampleForm' => $sampleForm]);
 
           if ($sampleForm->status != 'processing') {break;}
         }
@@ -421,10 +424,11 @@ class TaxFormHelper
 
       $applyPrintedFormsStr = trim($sampleForm->apply_printed_forms);
       $applyPrintedForms = [];
-      $processedPrintedForms = [];
+      $processedPrintedForms = ['letter'];
       if (!empty($applyPrintedFormsStr)) {
         $applyPrintedForms = explode(',', $sampleForm->apply_printed_forms);
         foreach ($applyPrintedForms as $i => $irdFormCode) {
+          echo 'processing ... '.$irdFormCode; nf();
           if (!in_array($irdFormCode, $applySoftcopies)) {
             self::processSampleIrdForm($team, $sampleForm, $irdFormCode, [
               'outputFolder' => $outputFolder
@@ -433,7 +437,11 @@ class TaxFormHelper
           $processedPrintedForms[] = $irdFormCode;
           $sampleForm->processed_printed_forms = implode(',', $processedPrintedForms);
           $sampleForm->save();
+//          print_r( $sampleForm->toArray() ); nf();
+//          echo '**********************************'; nf();
+//          echo 'ready to push event'; nf();
 
+          EventHelper::send('requestFormItem', ['sampleForm' => $sampleForm]);
           if ($sampleForm->status != 'processing') {break;}
         }
       }
@@ -462,13 +470,39 @@ class TaxFormHelper
       'is_sample' => true
     ]);
     $employees = $sampleForm->employees;
-    $sheetNo = 1;
     $sampleCount = 3;
+
+    // Prepare pdf form
+    $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
+    $irdFormFile = $irdForm->getFile($sampleForm->lang->code);
+    $templateFilePath = storage_path('forms/' . $irdFormFile->file);
+    $pdfOptions = [
+      'title' => strtoupper($irdFormCode) . '_sample',
+      'topOffset' => $irdFormFile->top_offset,
+      'rightMargin' => $irdFormFile->right_margin,
+      'templateFilePath' => $templateFilePath
+    ];
+    $pdf = new FormPdf($pdfOptions);
+
+    $sheetNo = 1;
     foreach ($employees as $formEmployee) {
+      if($sheetNo>1 && $sheetNo <= $sampleCount) {
+        $pdf->addNewPage();
+      }
       if ($sampleForm->status != 'processing') {
         break;
       }
-      $generationResult = self::generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount);
+      $generationResult = self::generateSampleForm(
+        $outputFolder,
+        $formEmployee,
+        $sampleForm,
+        $sheetNo,
+        $irdMaster,
+        $irdFormCode,
+        $sampleCount,
+        $pdf
+      );
+
       $irdEmployee = $generationResult['irdEmployee'];
       $irdMaster['Employees'][] = $irdEmployee;
       $irdMaster['TotIncomeBatch'] += (double)str_replace(',', '',
@@ -476,6 +510,19 @@ class TaxFormHelper
       );
       $sheetNo++;
     }
+    // Output
+    $outputFilePath = $sheetNo != 0 ? $outputFolder . '/' . $irdFormCode . '_sample.pdf' : null;
+    if (isset($outputFilePath)) {
+      if (file_exists($outputFilePath)) {
+        unlink($outputFilePath);
+      }
+      $pdf->lastPage();
+      $pdf->Output($outputFilePath, 'F');
+    } else {
+      // $pdf->Output('ird_'.$irdFormCode.'.pdf');
+    }
+    unset($pdf);
+
     if ($sampleForm->status != 'processing') {
       return;
     }
@@ -493,6 +540,9 @@ class TaxFormHelper
     // Output XML file
     if ($requiresXmlFile) {
       if (IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
+        $xsdFileName = $irdInfo['irdForm']->ird_code.'.xsd';
+        $xsdFilePath = storage_path('forms/'. $xsdFileName);
+        copy($xsdFilePath, $xsdFileName);
         echo 'XML file generated successfully.';
         nf();
       } else {
@@ -505,7 +555,7 @@ class TaxFormHelper
     }
   }
 
-  public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount)
+  public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount, $pdf)
   {
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
@@ -517,7 +567,6 @@ class TaxFormHelper
     $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
 
     $irdFormFile = $irdForm->getFile($sampleForm->lang->code);
-    $templateFilePath = storage_path('forms/' . $irdFormFile->file);
 
     // Fetch Employee Data
     $options = [
@@ -534,27 +583,9 @@ class TaxFormHelper
       $pdfData = array_merge($irdMaster, $irdEmployee);
 
       // Generate PDF
-      $pdfOptions = [
-        'title' => strtoupper($irdFormCode) . '_sample_sheet_' . $sheetNo,
-        'topOffset' => $irdFormFile->top_offset,
-        'rightMargin' => $irdFormFile->right_margin,
-        'templateFilePath' => $templateFilePath
-      ];
-      $pdf = new FormPdf($pdfOptions);
       $fieldList = $irdFormFile->fields;
       IrdFormHelper::fillData($pdf, $fieldList, $pdfData);
-      $pdf->lastPage();
 
-      // Output
-      if (isset($outputFilePath)) {
-        if (file_exists($outputFilePath)) {
-          unlink($outputFilePath);
-        }
-        $pdf->Output($outputFilePath, 'F');
-      } else {
-        // $pdf->Output('ird_'.$irdFormCode.'.pdf');
-      }
-      unset($pdf);
     }
 
     return ['irdEmployee' => $irdEmployee];

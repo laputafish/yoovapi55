@@ -26,7 +26,7 @@ class IrdBaseXml extends \DomDocument {
   }
 
   public function addChild($name, $value=null, $domElement=null) {
-    echo 'name = '.$name.' :: value='.$value; nf();
+//    echo 'name = '.$name.' :: value='.$value; nf();
     if(isset($domElement)) {
       $child = $domElement->appendChild($this->createElement($name));
     } else {

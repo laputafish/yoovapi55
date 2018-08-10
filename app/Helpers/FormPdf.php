@@ -14,6 +14,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   protected $headerData = [];
   protected $footerData = [];
   protected $langCode = 'en-us';
+  protected $templateFilePath = '';
 
   protected $BORDER_STYLES = [
     'T' => array(
@@ -86,10 +87,18 @@ class FormPdf extends Fpdi\TcpdfFpdi
       $this->footerData = $options['footerData'];
     }
 
-    $this->AddPage();
-
     if(array_key_exists('templateFilePath',  $options)) {
-      $this->setSourceFile( $options['templateFilePath'] );
+      $this->templateFilePath = $options['templateFilePath'];
+    }
+
+    $this->addNewPage();
+  }
+
+  function addNewPage() {
+    echo 'addNewPage'; nf();
+    $this->AddPage();
+    if(!empty($this->templateFilePath)) {
+      $this->setSourceFile( $this->templateFilePath );
       $tplId = $this->importPage(1);
       $this->useTemplate($tplId);
     }

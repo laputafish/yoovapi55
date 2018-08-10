@@ -6,6 +6,7 @@ use App\Helpers\OA\OAHelper;
 use App\Helpers\FormHelper;
 use App\Helpers\SampleNameHelper;
 use App\Helpers\SampleHelper;
+use App\Helpers\ZipHelper;
 
 use App\Models\FormEmployee;
 use App\Models\IrdForm;
@@ -334,28 +335,99 @@ class SampleFormController extends BaseAuthController
     }
   }
 
-  public function outputLetter($sampleFormId) {
+  public function showFile($sampleFormId, $fileName, $contentDisposition='inline') {
     $sampleForm = SampleForm::find($sampleFormId);
-    $path = $sampleForm->folder.'/letter.pdf';
+    $path = $sampleForm->folder.'/'.$fileName;
     $fileContent = file_get_contents($path);
-    $contentType = \Config::get('content_types')['pdf']['type'];
+    $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $contentType = \Config::get('content_types')[$ext]['type'];
     return response()->make($fileContent, 200, [
       'Content-Type' => $contentType,
-      'Content-Disposition' => 'inline; filename="letter.pdf"'
+      'Content-Disposition' => $contentDisposition.'; filename="'.$fileName.'"'
     ]);
 
   }
 
-  public function outputControlList($sampleFormId, $irdFormId) {
+  public function outputLetter($sampleFormId) {
+    $pdfFileName = 'letter.pdf';
+    return $this->showFile($sampleFormId, $pdfFileName);
+  }
 
+  public function outputControlList($sampleFormId, $irdFormId) {
+    $pdfFileName = strtolower($irdFormId).'_control_list.pdf';
+    return $this->showFile($sampleFormId, $pdfFileName);
   }
 
   public function outputSample($sampleFormId, $irdFormId) {
-
+    $pdfFileName = strtolower($irdFormId).'_sample.pdf';
+    return $this->showFile($sampleFormId, $pdfFileName);
   }
 
   public function downloadDataFile($sampleFormId, $irdFormId) {
-
+    $filename = strtolower($irdFormId).'.xml';
+    return $this->showFile($sampleFormId, $filename, 'attachment');
   }
 
+  public function downloadSchemeFile($sampleFormId, $irdFormId) {
+    $filename = strtolower($irdFormId).'.xsd';
+    return $this->showFile($sampleFormId, $filename, 'attachment');
+  }
+
+  public function downloadAll($sampleFormId) {
+    $sampleForm = SampleForm::find($sampleFormId);
+    $folder = $sampleForm->folder;
+    $allFiles = [];
+
+    $processedSoftcopiesStr = trim($sampleForm->processed_softcopies);
+    $irdCodes = [];
+    if(!empty($processedSoftcopiesStr)) {
+      $irdCodes = explode(',', $processedSoftcopiesStr);
+      foreach($irdCodes as $irdCode) {
+        $allFiles[] = [
+          'source' => $folder . '/' . $irdCode . '.xml',
+          'custom' => 'to_store/' . $irdCode . '.xml'
+        ];
+        $allFiles[] = [
+          'source' => $folder . '/' . $irdCode . '.xsd',
+          'custom' => 'to_store/' . $irdCode . '.xsd'
+        ];
+        $sampleFileName = $irdCode . '_sample.pdf';
+        $allFiles[] = [
+          'source' => $folder . '/' . $sampleFileName,
+          'custom' => 'to_print/' . $sampleFileName
+        ];
+        $controlListFileName = $irdCode.'_control_list.pdf';
+        $allFiles[] = [
+          'source' => $folder . '/' .$controlListFileName,
+          'custom' => 'to_print/'.$controlListFileName
+        ];
+      }
+    }
+
+    $processedPrintedFormsStr = trim($sampleForm->processed_printed_forms);
+    if(!empty($processedPrintedFormsStr)) {
+      $segs = explode(',', $processedPrintedFormsStr);
+      foreach($segs as $seg) {
+        switch($seg) {
+          case 'letter':
+            $allFiles[] = [
+              'source' => $folder . '/letter.pdf',
+              'custom' => 'to_print/letter.pdf'
+            ];
+            break;
+          default:
+            $irdCode = $seg;
+            if(!in_array($irdCode, $irdCodes)) {
+              $sampleFileName = $irdCode . '_sample.pdf';
+              $allFiles[] = [
+                'source' => $folder . '/' . $sampleFileName,
+                'custom' => 'to_print/' . $sampleFileName
+              ];
+            }
+        }
+      }
+    }
+
+    ZipHelper::downloadFiles($allFiles);
+  }
 }

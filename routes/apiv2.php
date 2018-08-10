@@ -131,10 +131,12 @@ Route::get('media/ird_forms/{formId}/control_list', 'MediaController@showIrdForm
 Route::get('media/ird_forms/{formId}/data_file', 'MediaController@showIrdFormDataFile');
 Route::get('media/ird_forms/{formId}/schema_file', 'MediaController@showIrdFormXsdFile');
 // show sample pdf files
+Route::get('media/ird_forms/{sampleFormId}/download_all', 'SampleFormController@downloadAll');
 Route::get('media/ird_forms/{sampleFormId}/letter', 'SampleFormController@outputLetter');
 Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/control_list', 'SampleFormController@outputControlList');
-Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/samples', 'SampleFormController@outputSample');
-Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/data_file', 'SampleFormControler@downloadDataFile');
+Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/sample', 'SampleFormController@outputSample');
+Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/data_file', 'SampleFormController@downloadDataFile');
+Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/scheme_file', 'SampleFormController@downloadSchemeFile');
 // for testing of field position
 Route::get('media/ird_forms/{irdFormId?}/test', 'TestFormController@testIrdForm');
 
@@ -203,6 +205,32 @@ Route::post('registered', function() {
 });
 Route::get('registered', function() {
   dd('get: registered');
+});
+Route::get('test_archive', function() {
+  $zipFileName = storage_path('app/teams/31e44b9c-a823-4eb3-aaa8-24fb2bc7d9dc/application_letters/6/zipped.zip');
+
+  $a = storage_path('app/teams/31e44b9c-a823-4eb3-aaa8-24fb2bc7d9dc/application_letters/6/letter.pdf');
+  $b = storage_path('app/teams/31e44b9c-a823-4eb3-aaa8-24fb2bc7d9dc/application_letters/6/ir56b.xml');
+  $c = storage_path('app/teams/31e44b9c-a823-4eb3-aaa8-24fb2bc7d9dc/application_letters/6/ir56b.xsd');
+
+  $zip = new \ZipArchive;
+  if(file_exists($zipFileName)) {
+    unlink($zipFileName);
+  }
+  if( $zip->open($zipFileName, \ZipArchive::CREATE) !== TRUE) {
+    exit("cannot open <$zip>\n");
+  }
+
+  $zip->addFile($a, 'letter/'.pathinfo($a, PATHINFO_BASENAME));
+  $zip->addFile($b, 'data/'.pathinfo($b, PATHINFO_BASENAME));
+  $zip->addFile($c, 'data/'.pathinfo($c, PATHINFO_BASENAME));
+  $zip->close();
+  header("Content-type: application/zip");
+  header("Content-Disposition: attachment; filename = '".pathinfo($zipFileName, PATHINFO_BASENAME)."'");
+  header("Pragma: no-cache");
+  header("Expires: 0");
+  readfile("$zipFileName");
+  exit;
 });
 // Route::post('/auth', 'LoginController@authenticate');
 //Route::middleware('auth:api')->group(function () {
