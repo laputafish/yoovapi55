@@ -32,4 +32,9 @@ class SampleForm extends BaseIRDForm {
     return $this->belongsTo( 'App\Models\IrdForm');
   }
 
+  public function getFolderAttribute() {
+    $team = $this->team;
+    return storage_path('app/teams/'.$team->oa_team_id.'/application_letters/'.$this->attributes['id']);
+  }
+
 }

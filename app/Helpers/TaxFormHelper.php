@@ -42,11 +42,11 @@ class TaxFormHelper
 
     // IRD Forms
     $forms = Form::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillIrdForms($jobs, $forms );
+    self::fillIrdForms($jobs, $forms);
 
     // IRD Reqest Forms
     $sampleForms = SampleForm::whereIn('status', ['processing', 'ready_for_processing'])->select(['id', 'updated_at'])->get();
-    self::fillIrdSampleForm( $jobs, $sampleForms );
+    self::fillIrdSampleForm($jobs, $sampleForms);
 
     usort($jobs, function ($a, $b) {
       return ($a['updated_at'] > $b['updated_at']) ? 1 : -1;
@@ -101,8 +101,8 @@ class TaxFormHelper
       dd($oaEmployee['message']);
     }
     TeamHelper::updateEmployee($team, $oaEmployee);
-    $targetFilePath = $outputFolder.'/sheet_'.$sheetNo.'.pdf'; // storage_path('app/'.$filePath);
-    checkCreateFolder( $targetFilePath);
+    $targetFilePath = $outputFolder . '/sheet_' . $sheetNo . '.pdf'; // storage_path('app/'.$filePath);
+    checkCreateFolder($targetFilePath);
     $irdEmployee = IrdFormHelper::fetchDataAndGeneratePdf(
       $targetFilePath,
       $team,
@@ -110,15 +110,15 @@ class TaxFormHelper
       $form->irdForm->form_code,
       $irdInfo,
       [
-        'form'=>$form,
-        'sheetNo'=>$sheetNo,
-        'irdMaster'=>$irdMaster
+        'form' => $form,
+        'sheetNo' => $sheetNo,
+        'irdMaster' => $irdMaster
       ]
     );
 
     return [
-      'outputFilePath'=>$targetFilePath,
-      'irdEmployee'=>$irdEmployee
+      'outputFilePath' => $targetFilePath,
+      'irdEmployee' => $irdEmployee
     ];
 
 //    $formClass = get_class($form);
@@ -138,12 +138,13 @@ class TaxFormHelper
 //    }
   }
 
-  public static function generateFormCommencement($team, $employeeId, $form=null, $filePath=null, $options=[]) {
+  public static function generateFormCommencement($team, $employeeId, $form = null, $filePath = null, $options = [])
+  {
     // if filePath is null, output PDf on screen
-    if(isset($form)) {
+    if (isset($form)) {
       $irdForm = $form->irdForm;
     } else {
-      if(array_key_exists('formCode', $options)) {
+      if (array_key_exists('formCode', $options)) {
         $formCode = $options['formCode'];
       } else {
         $formCode = 'IR56E';
@@ -160,7 +161,7 @@ class TaxFormHelper
       'en-us';
     // get ird form file
     $data->title = $irdForm->form_code;
-    $irdFormFile = $irdForm->getFile( $langCode );
+    $irdFormFile = $irdForm->getFile($langCode);
     // FormTemplateHelper::getTemplateFilePath($irdForm);
 
     CommencementFormPdfHelper::generate(
@@ -168,13 +169,14 @@ class TaxFormHelper
       $filePath,
       $irdFormFile);
 
-    if(isset($filePath)) {
+    if (isset($filePath)) {
       $filename = pathinfo($filePath, PATHINFO_BASENAME);
       $form->employees()->whereEmployeeId($employeeId)->update(['file' => $filename]);
     }
   }
 
-  public static function xxxgetFormCommencementData($form, $employeeId) {
+  public static function xxxgetFormCommencementData($form, $employeeId)
+  {
 
     $ir56eData = Ir56EHelper::get($form, $employeeId);
     return $ir56eData;
@@ -258,15 +260,18 @@ class TaxFormHelper
 //
 //  }
 
-  public static function generateFormTermination($form, $employeeId, $filePath) {
+  public static function generateFormTermination($form, $employeeId, $filePath)
+  {
 
   }
 
-  public static function generateFormDeparture($form, $employeeId, $filePath) {
+  public static function generateFormDeparture($form, $employeeId, $filePath)
+  {
 
   }
 
-  public static function generateFormSalary($form, $employeeId, $filePath) {
+  public static function generateFormSalary($form, $employeeId, $filePath)
+  {
 
   }
 
@@ -296,7 +301,7 @@ class TaxFormHelper
       'teams',
       $team->oa_team_id,
       $form->id,
-      'sheet_'.$formEmployee->sheet_no.'.pdf'
+      'sheet_' . $formEmployee->sheet_no . '.pdf'
     ];
     return implode('/', $pathSegs);
   }
@@ -304,7 +309,7 @@ class TaxFormHelper
   public static function getFormPath($form)
   {
     $irdFormType = $form->irdFormType;
-    return (string) $irdFormType->id;
+    return (string)$irdFormType->id;
 //    $formType = self::getFormType($form);
 //    return empty($formType) ? 'unknown' : FormType::whereName($formType)->value('path');
   }
@@ -312,7 +317,7 @@ class TaxFormHelper
   public static function getFormType($form)
   {
     $irdFormType = $form->irdFormType;
-    return (string) $irdFormType->id;
+    return (string)$irdFormType->id;
 //    $formClass = get_class($form);
 //    $formType = '';
 //    switch ($formClass) {
@@ -334,7 +339,7 @@ class TaxFormHelper
 
   public static function processJob($job)
   {
-    logConsole('Processing job form_id = ' . $job['form_id'] . ' (type='.$job['form_type'].') ...');
+    logConsole('Processing job form_id = ' . $job['form_id'] . ' (type=' . $job['form_type'] . ') ...');
     nf();
     switch ($job['form_type']) {
       case 'ird_form':
@@ -346,21 +351,22 @@ class TaxFormHelper
     }
   }
 
-  public static function processJob_irdSampleForm($job) {
+  public static function processJob_irdSampleForm($job)
+  {
     $sampleForm = SampleForm::find($job['form_id']);
-    if(is_null($sampleForm->team)) {
+    if (is_null($sampleForm->team)) {
       $sampleForm->message = __('messages.team_not_defined');
       $sampleForm->status = 'terminated';
       $sampleForm->save();
-      EventHelper::send( 'requestForm', ['sampleForm'=>$sampleForm]);
+      EventHelper::send('requestForm', ['sampleForm' => $sampleForm]);
     } else {
       $team = $sampleForm->team;
-      $outputFolder = storage_path('app/teams/'.$team->oa_team_id.'/application_letters/'.$sampleForm->id);
+      $outputFolder = storage_path('app/teams/' . $team->oa_team_id . '/application_letters/' . $sampleForm->id);
 
       // Status => 'processing'
       if ($sampleForm->status != 'processing') {
-        $sampleForm->update(['status' =>'processing']);
-        EventHelper::send('requestForm', ['sampleForm'=>$sampleForm]);
+        $sampleForm->update(['status' => 'processing']);
+        EventHelper::send('requestForm', ['sampleForm' => $sampleForm]);
       }
 
       // Build application letter
@@ -392,110 +398,139 @@ class TaxFormHelper
       //
 
       IrdApplicationLetterHelper::build($outputFolder, $team, $sampleForm);
-      EventHelper::send( 'requestForm', ['sampleForm'=>$sampleForm]);
+      EventHelper::send('requestForm', ['sampleForm' => $sampleForm]);
 
       $applySoftcopiesStr = trim($sampleForm->apply_softcopies);
-      $applySoftcopies = explode(',', $applySoftcopiesStr);
-      foreach( $applySoftcopies as $i=>$irdFormCode ) {
-        echo 'i='.$i.': irdFormCode: '.$irdFormCode; nf();
-        $irdMaster = IrDataHelper::getIrdMaster($team,$sampleForm,[
-          'fieldMappings'=>[
-            'form_date'=>'application_date'
-          ]
-        ]);
-        $irdInfo = IrDataHelper::getIrdInfo($irdFormCode, $sampleForm->lang->code, [
-          'is_sample' => true
-        ]);
+      $applySoftcopies = [];
+      $processedSoftcopies = [];
+      if (!empty($applySoftcopiesStr)) {
+        $applySoftcopies = explode(',', $applySoftcopiesStr);
+        foreach ($applySoftcopies as $i => $irdFormCode) {
+          self::processSampleIrdForm($team, $sampleForm, $irdFormCode, [
+            'outputFolder' => $outputFolder,
+            'requires_control_file' => true,
+            'requires_xml_file' => true
+          ]);
+          $processedSoftcopies[] = $irdFormCode;
+          $sampleForm->processed_softcopies = implode(',', $processedSoftcopies);
+          $sampleForm->save();
 
-        // [
-        //    'langCode' => ...,
-        //    'irdForm' => ...,
-        //    'fields' => ...,
-        //    'is_sample' => false
-        // ]
-
-        $employees = $sampleForm->employees;
-        $sheetNo = 1;
-        $sampleCount = 3;
-        foreach($employees as $formEmployee) {
-          if($sampleForm->status != 'processing') {
-            break;
-          }
-          $generationResult = self::generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount);
-          $irdEmployee = $generationResult['irdEmployee'];
-          $irdMaster['Employees'][] = $irdEmployee;
-          $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
-          $sheetNo++;
-        }
-        if($sampleForm->status != 'processing') {
-          break;
-        }
-
-        // Output Control List
-        $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
-        if($irdForm->requires_control_list) {
-          self::createControlList($outputFolder.'/'.$irdFormCode.'_control_list.pdf', $sampleForm, $irdMaster, $irdInfo);
-        }
-
-        // Output XML file
-        if(IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
-          echo 'XML file generated successfully.'; nf();
-        } else {
-          echo 'XML file generated with some errors'; nf();
-          print_r( $messages ); nf(); nf();
+          if ($sampleForm->status != 'processing') {break;}
         }
       }
 
       $applyPrintedFormsStr = trim($sampleForm->apply_printed_forms);
-      $applyPrintedForms = explode(',', $sampleForm->apply_printed_forms);
-      foreach( $applyPrintedForms as $applyPrintedForm ) {
-        foreach($employees as $formEmployee) {
-          if($sampleForm->status != 'processing') {
-            break;
+      $applyPrintedForms = [];
+      $processedPrintedForms = [];
+      if (!empty($applyPrintedFormsStr)) {
+        $applyPrintedForms = explode(',', $sampleForm->apply_printed_forms);
+        foreach ($applyPrintedForms as $i => $irdFormCode) {
+          if (!in_array($irdFormCode, $applySoftcopies)) {
+            self::processSampleIrdForm($team, $sampleForm, $irdFormCode, [
+              'outputFolder' => $outputFolder
+            ]);
           }
+          $processedPrintedForms[] = $irdFormCode;
+          $sampleForm->processed_printed_forms = implode(',', $processedPrintedForms);
+          $sampleForm->save();
 
-        }
-        if($sampleForm->status != 'processing') {
-          break;
+          if ($sampleForm->status != 'processing') {break;}
         }
       }
 
-      if($sampleForm->status != 'processing') {
-        return;
-      }
-
-      if($sampleForm->status == 'processing') {
+      if ($sampleForm->status != 'processing') {return;}
+      if ($sampleForm->status == 'processing') {
         $sampleForm->update(['status' => 'ready']);
       }
       EventHelper::send('requestForm', ['sampleForm' => $sampleForm]);
     }
   }
 
-  public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount) {
+  public static function processSampleIrdForm($team, $sampleForm, $irdFormCode, $options)
+  {
+    echo 'processSampleIrdForm'; nf();
+    $outputFolder = $options['outputFolder'];
+    $requiresControlFile = array_key_exists('requires_control_file', $options) ? $options['requires_control_file'] : false;
+    $requiresXmlFile =  array_key_exists('requires_xml_file', $options) ? $options['requires_xml_file'] : false;
+
+    $irdMaster = IrDataHelper::getIrdMaster($team, $sampleForm, [
+      'fieldMappings' => [
+        'form_date' => 'application_date'
+      ]
+    ]);
+    $irdInfo = IrDataHelper::getIrdInfo($irdFormCode, $sampleForm->lang->code, [
+      'is_sample' => true
+    ]);
+    $employees = $sampleForm->employees;
+    $sheetNo = 1;
+    $sampleCount = 3;
+    foreach ($employees as $formEmployee) {
+      if ($sampleForm->status != 'processing') {
+        break;
+      }
+      $generationResult = self::generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount);
+      $irdEmployee = $generationResult['irdEmployee'];
+      $irdMaster['Employees'][] = $irdEmployee;
+      $irdMaster['TotIncomeBatch'] += (double)str_replace(',', '',
+        (array_key_exists('TotalIncome', $irdEmployee) ? $irdEmployee['TotalIncome'] : 0)
+      );
+      $sheetNo++;
+    }
+    if ($sampleForm->status != 'processing') {
+      return;
+    }
+
+    // Output Control List
+    if ($requiresControlFile) {
+      $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
+      if ($irdForm->requires_control_list) {
+        self::createControlList(
+          $outputFolder.'/'.$irdFormCode.'_control_list.pdf',
+          $sampleForm,$irdMaster,$irdInfo);
+      }
+    }
+
+    // Output XML file
+    if ($requiresXmlFile) {
+      if (IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
+        echo 'XML file generated successfully.';
+        nf();
+      } else {
+        echo 'XML file generated with some errors';
+        nf();
+        print_r($messages);
+        　nf();
+        　nf();
+      }
+    }
+  }
+
+  public static function generateSampleForm($outputFolder, $formEmployee, $sampleForm, $sheetNo, $irdMaster, $irdFormCode, $sampleCount)
+  {
     $team = $sampleForm->team;
     $employeeId = $formEmployee->employee_id;
 
     // Output path
-    $outputFilePath = $sheetNo != 0 ? $outputFolder.'/'.$irdFormCode.'_sample_sheet_'.$sheetNo.'.pdf' : null;
+    $outputFilePath = $sheetNo != 0 ? $outputFolder . '/' . $irdFormCode . '_sample_sheet_' . $sheetNo . '.pdf' : null;
 
     // IRD Form File
     $irdForm = IrdForm::whereIrdCode($irdFormCode)->whereEnabled(1)->first();
 
     $irdFormFile = $irdForm->getFile($sampleForm->lang->code);
-    $templateFilePath = storage_path('forms/'.$irdFormFile->file);
+    $templateFilePath = storage_path('forms/' . $irdFormFile->file);
 
     // Fetch Employee Data
     $options = [
-      'mode'=>'sample',
-      'form'=>$sampleForm,
-      'sheetNo'=>$sheetNo
+      'mode' => 'sample',
+      'form' => $sampleForm,
+      'sheetNo' => $sheetNo
     ];
     $irdEmployee = IrdFormHelper::getIrdFormData($team, $irdForm, $formEmployee, $options);
-    $irdEmployee['HeaderForTestingOnlyLabel'] = $sampleForm->lang->code=='en-us' ?
+    $irdEmployee['HeaderForTestingOnlyLabel'] = $sampleForm->lang->code == 'en-us' ?
       '<For Testing Only>' :
       '<只供測試用>';
 
-    if ($sheetNo<=$sampleCount) {
+    if ($sheetNo <= $sampleCount) {
       $pdfData = array_merge($irdMaster, $irdEmployee);
 
       // Generate PDF
@@ -522,46 +557,48 @@ class TaxFormHelper
       unset($pdf);
     }
 
-    return ['irdEmployee'=>$irdEmployee];
+    return ['irdEmployee' => $irdEmployee];
   }
 
-  public static function processJob_irdForm($job) {
+  public static function processJob_irdForm($job)
+  {
     $form = Form::find($job['form_id']);
-    if(is_null($form->team)) {
-      logConsole( __('messages.team_not_defined'), 1 );
+    if (is_null($form->team)) {
+      logConsole(__('messages.team_not_defined'), 1);
       $form->message = __('messages.team_not_defined');
       $form->status = 'terminated';
       $form->save();
-      EventHelper::send( 'form', ['form'=>$form]);
+      EventHelper::send('form', ['form' => $form]);
     } else {
       $team = $form->team;
 //      OAHelper::updateTeamToken($team);
 
-      logConsole('team #'.$team->id.'  ('.$team->oa_team_id.')',1);
+      logConsole('team #' . $team->id . '  (' . $team->oa_team_id . ')', 1);
       if ($form->status != 'processing') {
         $form->update(['status' => 'processing']);
         EventHelper::send('form', ['form' => $form]);
       }
       $employees = $form->employees()->get();
-      $outputFolder = storage_path('app/teams/'.$team->oa_team_id.'/'.$form->id);
+      $outputFolder = storage_path('app/teams/' . $team->oa_team_id . '/' . $form->id);
 
-      $irdMaster = IrDataHelper::getIrdMaster($team,$form);
+      $irdMaster = IrDataHelper::getIrdMaster($team, $form);
       $irdInfo = IrDataHelper::getIrdInfo($form->irdForm->ird_code, $form->lang->code, [
         'is_sample' => false
       ]);
       $sheetNo = 1;
       foreach ($employees as $formEmployee) {
         $form = Form::find($form->id);
-        if($form->status != 'processing') {
+        if ($form->status != 'processing') {
           break;
         }
         $employeeId = $formEmployee->employee_id;
 
-        echo 'processing employee #'.$employeeId.' ...'; nf();
+        echo 'processing employee #' . $employeeId . ' ...';
+        nf();
         $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
 
         // Status => "Processing"
-        if($formEmployee->status != 'processing') {
+        if ($formEmployee->status != 'processing') {
           $form->employees()->whereEmployeeId($employeeId)->update(['status' => 'processing']);
           $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
           EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
@@ -574,12 +611,13 @@ class TaxFormHelper
         //    'outputFilePath'=>'....'
         // ]
         //
-echo 'processJob_irdForm #580'; nf();
+        echo 'processJob_irdForm #580';
+        nf();
         // Status => "Ready"
         $form->employees()->whereEmployeeId($employeeId)->update([
           'status' => 'ready',
           'sheet_no' => $sheetNo,
-          'file' => pathinfo( $generationResult['outputFilePath'], PATHINFO_BASENAME)
+          'file' => pathinfo($generationResult['outputFilePath'], PATHINFO_BASENAME)
         ]);
         $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
         EventHelper::send('formEmployee', ['form' => $form, 'formEmployee' => $formEmployee]);
@@ -588,24 +626,26 @@ echo 'processJob_irdForm #580'; nf();
         // Calculation Summary
         $irdEmployee = $generationResult['irdEmployee'];
         $irdMaster['Employees'][] = $irdEmployee;
-        if(array_key_exists('TotalIncome', $irdEmployee)) {
-          $irdMaster['TotIncomeBatch'] += (double) str_replace(',', '', $irdEmployee['TotalIncome']);
+        if (array_key_exists('TotalIncome', $irdEmployee)) {
+          $irdMaster['TotIncomeBatch'] += (double)str_replace(',', '', $irdEmployee['TotalIncome']);
         }
-echo 'processJob_irdForm #597'; nf();
+        echo 'processJob_irdForm #597';
+        nf();
       }
 
       // create control list
-      echo 'Create control list.'; nf();
+      echo 'Create control list.';
+      nf();
       $irdForm = $form->irdForm;
 
       // Generation of Control List
-      if($irdForm->requires_control_list) {
+      if ($irdForm->requires_control_list) {
         // dd($irdMaster['Employees']);
-        self::createControlList($outputFolder.'/control_list.pdf', $form, $irdMaster, $irdInfo);
+        self::createControlList($outputFolder . '/control_list.pdf', $form, $irdMaster, $irdInfo);
       }
 
       // Generation of soft copy
-      if($irdForm->can_use_softcopy) {
+      if ($irdForm->can_use_softcopy) {
         if (IrdXmlHelper::outputDataFile($outputFolder, $irdMaster, $irdInfo, $messages)) {
           echo 'XML file generated successfully.';
           nf();
@@ -618,21 +658,22 @@ echo 'processJob_irdForm #597'; nf();
         }
       }
 
-      if($form->status == 'processing') {
+      if ($form->status == 'processing') {
         $form->update(['status' => 'ready']);
       }
       EventHelper::send('form', ['form' => $form]);
     }
   }
 
-  public static function createControlList( $outputFilePath, $form, $irdMaster, $irdInfo ) {
+  public static function createControlList($outputFilePath, $form, $irdMaster, $irdInfo)
+  {
     // $irdInfo = [$irdForm, $fields]
     //
     $langCode = $irdInfo['langCode'];
     $isEnglish = $langCode === 'en-us';
 
     $irdForm = $irdInfo['irdForm'];
-    $controlListIrdForm = IrdForm::whereFormCode($irdForm->ird_code.'_CL')->first();
+    $controlListIrdForm = IrdForm::whereFormCode($irdForm->ird_code . '_CL')->first();
     $controlListIrdFile = $controlListIrdForm->getFile($irdInfo['langCode']);
     $fields = $controlListIrdFile->fields;
 
@@ -643,24 +684,24 @@ echo 'processJob_irdForm #597'; nf();
     // NoRecordBatch
     //
     $headerData = [
-      'HeaderFileNo'=>($isEnglish ? 'File No.' : '檔案號碼').'               '.$irdMaster['FileNo'],
-      'HeaderCompanyName'=>$irdMaster['ErName'],
-      'HeaderPageSubject'=>($isEnglish ?
+      'HeaderFileNo' => ($isEnglish ? 'File No.' : '檔案號碼') . '               ' . $irdMaster['FileNo'],
+      'HeaderCompanyName' => $irdMaster['ErName'],
+      'HeaderPageSubject' => ($isEnglish ?
         'List of Employees with IR56Bs Prepared via Self-developed Software' :
         '以電腦格式遞交 IR56B 的僱員名單'),
-      'HeaderFiscalYears'=>lcfirst(ucwords(strtolower($irdMaster['HeaderPeriod']))),
-      'HeaderSheetNo'=>($isEnglish ? 'Sheet No.' : '表格編號'),
-      'HeaderName'=>($isEnglish ? 'Name' : '僱員姓名'),
-      'HeaderHKICNo'=>($isEnglish ? 'HKIC No.' : '香港身分證號碼'),
-      'HeaderTotalIncome'=>($isEnglish ? 'Total Income' : 'IR56B第11項內的入息總額'),
-      'HeaderHKD'=>'(港元)'
+      'HeaderFiscalYears' => lcfirst(ucwords(strtolower($irdMaster['HeaderPeriod']))),
+      'HeaderSheetNo' => ($isEnglish ? 'Sheet No.' : '表格編號'),
+      'HeaderName' => ($isEnglish ? 'Name' : '僱員姓名'),
+      'HeaderHKICNo' => ($isEnglish ? 'HKIC No.' : '香港身分證號碼'),
+      'HeaderTotalIncome' => ($isEnglish ? 'Total Income' : 'IR56B第11項內的入息總額'),
+      'HeaderHKD' => '(港元)'
     ];
 
-    if($isEnglish) {
+    if ($isEnglish) {
       $headerData['HeaderPerItem11'] = 'per Item 11 of IR56B';
     }
 
-    if($irdInfo['is_sample']) {
+    if ($irdInfo['is_sample']) {
       $headerData['HeaderForTestingOnlyLabel'] =
         $isEnglish ?
           '<For Testing Only>' :
@@ -669,34 +710,34 @@ echo 'processJob_irdForm #597'; nf();
     }//
 
     $footerData = [
-      'FooterSignatureLabel'=>($isEnglish ? 'Signature' : '簽署'),
-      'FooterNameLabel'=>($isEnglish ? 'Name' : '姓名'),
-      'FooterDesignationLabel'=>($isEnglish ? 'Designation' : '職位'),
-      'FooterDateLabel'=>($isEnglish ? 'Date': '日期'),
+      'FooterSignatureLabel' => ($isEnglish ? 'Signature' : '簽署'),
+      'FooterNameLabel' => ($isEnglish ? 'Name' : '姓名'),
+      'FooterDesignationLabel' => ($isEnglish ? 'Designation' : '職位'),
+      'FooterDateLabel' => ($isEnglish ? 'Date' : '日期'),
 
-      'FooterSignature'=>' ',
-      'FooterName'=>$irdMaster['SignatureName'],
-      'FooterDesignation'=>$irdMaster['Designation'],
-      'FooterDate'=>phpDateFormat('d m yyyy', $irdMaster['SubDate'])
+      'FooterSignature' => ' ',
+      'FooterName' => $irdMaster['SignatureName'],
+      'FooterDesignation' => $irdMaster['Designation'],
+      'FooterDate' => phpDateFormat('d m yyyy', $irdMaster['SubDate'])
     ];
 
     $options = [
-      'langCode'=>$langCode,
-      'fields'=>$fields,
-      'headerData'=>$headerData,
-      'footerData'=>$footerData,
-      'printHeader'=>true,
-      'printFooter'=>true,
-      'headerMargin'=>10,
-      'footerMargin'=>40,
-      'autoPageBreak'=>true
+      'langCode' => $langCode,
+      'fields' => $fields,
+      'headerData' => $headerData,
+      'footerData' => $footerData,
+      'printHeader' => true,
+      'printFooter' => true,
+      'headerMargin' => 10,
+      'footerMargin' => 40,
+      'autoPageBreak' => true
     ];
     $pdf = new FormPdf($options);
 
     $y0 = $isEnglish ? 52 : 48;
 
     // Content
-    $contentFields = $fields->filter(function($item) {
+    $contentFields = $fields->filter(function ($item) {
       return in_array($item->key, [
         'ContentSheetNo',
         'ContentName',
@@ -705,7 +746,8 @@ echo 'processJob_irdForm #597'; nf();
       ]);
     });
 
-    echo 'control list ***************************'; nf();
+    echo 'control list ***************************';
+    nf();
     $count = 0;
     $employeeCount = count($irdMaster['Employees']);
 
@@ -722,8 +764,8 @@ echo 'processJob_irdForm #597'; nf();
         $item->y = $y;
       });
       $name = strtoupper($irdEmployee['NameInEnglish']);
-      if(!$isEnglish) {
-        if(!empty(trim($irdEmployee['NameInChinese']))) {
+      if (!$isEnglish) {
+        if (!empty(trim($irdEmployee['NameInChinese']))) {
           $name = $irdEmployee['NameInChinese'];
         }
       }
@@ -735,14 +777,14 @@ echo 'processJob_irdForm #597'; nf();
       ]);
       $y += 5;
       $count++;
-      if($count % 40 == 0) {
+      if ($count % 40 == 0) {
         $y = $y0;
         $pageNo++;
       }
     }
 
     $itemCountOnLastPage = $count % $perPage;
-    if($itemCountOnLastPage + $rowsOccupiedBySummary > $perPage || ($itemCountOnLastPage==0 && $count>0)) {
+    if ($itemCountOnLastPage + $rowsOccupiedBySummary > $perPage || ($itemCountOnLastPage == 0 && $count > 0)) {
       $pdf->addPage();
     } else {
     }
@@ -754,11 +796,11 @@ echo 'processJob_irdForm #597'; nf();
         'Grand Total of Income Per List' :
         '名單內的總入息'),
       'SummaryTotalEmployeeCount' => $employeeCount,
-      'SummaryTotalIncome' => '$'.toCurrency($irdMaster['TotIncomeBatch'])
+      'SummaryTotalIncome' => '$' . toCurrency($irdMaster['TotIncomeBatch'])
     ];
     $pdf->outputDataItems($summaryFields);
 
-    if(file_exists($outputFilePath)) {
+    if (file_exists($outputFilePath)) {
       unlink($outputFilePath);
     }
     $pdf->Output($outputFilePath, 'F');
@@ -766,16 +808,17 @@ echo 'processJob_irdForm #597'; nf();
 
   public static function processCommencementJob($job)
   {
-    logConsole('Processing commencement job form_id = '.$job['form_id'].' ...'); nf();
+    logConsole('Processing commencement job form_id = ' . $job['form_id'] . ' ...');
+    nf();
     $form = FormCommencement::find($job['form_id']);
-    if(is_null($form->team)) {
-      logConsole( __('messages.team_not_defined'), 1 );
+    if (is_null($form->team)) {
+      logConsole(__('messages.team_not_defined'), 1);
       $form->message = __('messages.team_not_defined');
       $form->status = 'terminated';
       $form->save();
-      EventHelper::send( 'commencementForm', ['form'=>$form]);
+      EventHelper::send('commencementForm', ['form' => $form]);
     } else {
-      logConsole('team #'.$form->team->id.'  ('.$form->team->oa_team_id.')',1);
+      logConsole('team #' . $form->team->id . '  (' . $form->team->oa_team_id . ')', 1);
       if ($form->status != 'processing') {
         $form->update(['status' => 'processing']);
         EventHelper::send('commencementForm', ['form' => $form]);

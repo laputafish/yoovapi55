@@ -26,6 +26,8 @@ class SampleFormController extends BaseAuthController
         'application_date' => date('yyyy-mm-dd'),
         'apply_printed_forms' => '',
         'apply_softcopies' => '',
+        'processed_printed_forms' => '',
+        'processed_softcopies' => '',
         'company_file_no' => '',
         'company_name' => '',
         'tel_no' => '',
@@ -35,7 +37,41 @@ class SampleFormController extends BaseAuthController
         'is_update' => 0,
         'remark' => ''
       ]));
+    } else {
+      // Check printed forms
+      $items = explode(',', $sampleForm->processed_printed_forms);
+      $actualItems = [];
+      foreach($items as $item) {
+        switch($item) {
+          case 'letter':
+            if(file_exists($sampleForm->folder.'/letter.pdf')) {
+              $actualItems[] = $item;
+            }
+            break;
+          default:
+            if(file_exists($sampleForm->folder.'/'.$item.'_sample.pdf')) {
+              $actualItems[] = $item;
+            }
+        }
+      }
+      $sampleForm->processed_printed_forms = implode(',', $actualItems);
+      $sampleForm->save();
+
+      // Check softcopies
+      $items = explode(',', $sampleForm->processed_softcopies);
+      $actualItems = [];
+      foreach($items as $item) {
+        if(
+          file_exists($sampleForm->folder.'/'.$item.'.xml') &&
+          file_exists($sampleForm->folder.'/'.$item.'_sample.pdf') &&
+          file_exists( $sampleForm->folder.'/'.$item.'_control_list.pdf')) {
+          $actualItems[] = $item;
+        }
+      }
+      $sampleForm->processed_softcopies = implode(',', $actualItems);
+      $sampleForm->save();
     }
+
     return response()->json([
       'status'=>true,
       'result'=>$sampleForm
@@ -66,8 +102,8 @@ class SampleFormController extends BaseAuthController
     $data = [
       'lang_id' => \Input::get('lang_id'),
       'application_date' => \Input::get('application_date'),
-      'apply_printed_forms' => \Input::get('apply_printed_forms'),
-      'apply_softcopies' => \Input::get('apply_softcopies'),
+      'apply_printed_forms' => \Input::get('apply_printed_forms', ''),
+      'apply_softcopies' => \Input::get('apply_softcopies', ''),
       'company_file_no' => \Input::get('company_file_no'),
       'company_name' => \Input::get('company_name'),
       'tel_no' => \Input::get('tel_no'),
@@ -107,8 +143,13 @@ class SampleFormController extends BaseAuthController
     $sampleForm->processed_softcopies = '';
     $sampleForm->save();
 
+    // Clear folder
+    emptyFolder($sampleForm->folder);
+
+    // Push event
     EventHelper::send('requestForm', ['sampleForm'=>$sampleForm]);
 
+    // Create sample employees
     $this->createSampleFormEmployees($sampleForm);
     return response()->json([
       'status'=>true
@@ -145,7 +186,16 @@ class SampleFormController extends BaseAuthController
         'otherRap1'=>$otherRaps[0]['amt'],
         'otherRap2'=>$otherRaps[1]['amt'],
         'otherRap3'=>$otherRaps[2]['amt'],
+
+        // IR56E
+        'monthlyFixedIncome'=>rand(10,50)*1000,
+        'monthlyAllowance'=>rand(10,30)*1000,
+        'fluctuatingIncome'=>rand(10,50)*1000,
+        'shareBeforeEmp'=>rand(0,1)
       ];
+
+      // IR56F
+      $cessationReason = ['Resignation', 'Retirement', 'Dismissal', 'Death'][rand(0,3)];
 
       $resPlaceInfo = SampleHelper::getResPlaceInfo();
       // {
@@ -267,10 +317,45 @@ class SampleFormController extends BaseAuthController
         'addr_of_oversea_co'=>'',
 
         'amt_of_sum_withheld' => rand(0,100)*100,
+
+        // IR56E
+        'monthly_fixed_income' => $incomes['monthlyFixedIncome'],
+        'monthly_allowance' => $incomes['monthlyAllowance'],
+        'fluctuating_income' => $incomes['fluctuatingIncome'],
+        'share_before_emp' => $incomes['shareBeforeEmp'],
+
+        // IR56F
+        'cessation_reason' => $cessationReason,
+
         'remarks'=>''
       ];
 
       $sampleForm->employees()->save(new SampleFormEmployee($employeeInfo));
     }
   }
+
+  public function outputLetter($sampleFormId) {
+    $sampleForm = SampleForm::find($sampleFormId);
+    $path = $sampleForm->folder.'/letter.pdf';
+    $fileContent = file_get_contents($path);
+    $contentType = \Config::get('content_types')['pdf']['type'];
+    return response()->make($fileContent, 200, [
+      'Content-Type' => $contentType,
+      'Content-Disposition' => 'inline; filename="letter.pdf"'
+    ]);
+
+  }
+
+  public function outputControlList($sampleFormId, $irdFormId) {
+
+  }
+
+  public function outputSample($sampleFormId, $irdFormId) {
+
+  }
+
+  public function downloadDataFile($sampleFormId, $irdFormId) {
+
+  }
+
 }

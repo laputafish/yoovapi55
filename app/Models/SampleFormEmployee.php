@@ -105,6 +105,16 @@ class SampleFormEmployee extends BaseIRDFormEmployee {
     'addr_of_oversea_co',
 
     'amt_of_sum_withheld',
+
+    // IR56E
+    'monthly_fixed_income',
+    'monthly_allowance',
+    'fluctuating_income',
+    'share_before_emp',
+
+    // IR56G
+    'cessation_reason',
+
     'remarks'
   ];
 }

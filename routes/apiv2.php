@@ -2,6 +2,8 @@
 use Illuminate\Http\Request;
 use App\Models\Media;
 use App\Models\Folder;
+use App\Models\SampleForm;
+
 use App\Helpers\MpfHelper;
 
 // this apiv2.php doesn't require auth.
@@ -122,9 +124,18 @@ Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
 //Route::get('media/forms/terminations/{formId}/{employeeId}', 'MediaController@showTerminationForm');
 //Route::get('media/forms/departures/{formId}/{employeeId}', 'MediaController@showDepartureForm');
 
+
+
+// show relevant pdf files
 Route::get('media/ird_forms/{formId}/control_list', 'MediaController@showIrdFormControlList');
 Route::get('media/ird_forms/{formId}/data_file', 'MediaController@showIrdFormDataFile');
 Route::get('media/ird_forms/{formId}/schema_file', 'MediaController@showIrdFormXsdFile');
+// show sample pdf files
+Route::get('media/ird_forms/{sampleFormId}/letter', 'SampleFormController@outputLetter');
+Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/control_list', 'SampleFormController@outputControlList');
+Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/samples', 'SampleFormController@outputSample');
+Route::get('media/ird_forms/{sampleFormId}/{irdFormId}/data_file', 'SampleFormControler@downloadDataFile');
+// for testing of field position
 Route::get('media/ird_forms/{irdFormId?}/test', 'TestFormController@testIrdForm');
 
 // Route below must be after previous 3 routes.
@@ -203,3 +214,10 @@ Route::get('registered', function() {
 //    Route::get('users/init', 'UserController@init');
 //});
 //
+
+// Testing only
+//Route::get('check/{sampleFormId}', function($sampleFormId) {
+//  $sampleForm = SampleForm::find($sampleFormId);
+//  $folder = $sampleForm->folder;
+//  dd($folder);
+//});

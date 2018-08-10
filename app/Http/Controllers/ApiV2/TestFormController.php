@@ -75,6 +75,10 @@ class TestFormController extends Controller
 
     $irdMaster = $irdDataTestHelperClassName::getIrdMaster($langCode);
     $irdEmployee = $irdDataTestHelperClassName::get($langCode);
+    $irdEmployee['HeaderForTestingOnlyLabel'] = $langCode == 'en-us' ?
+      '<For Testing Only>' :
+      '<只供測試用>';
+
     $pdfData = array_merge($irdMaster, $irdEmployee);
     $pdfOptions = [
       'title' => $irdForm->ird_code,
@@ -83,7 +87,7 @@ class TestFormController extends Controller
       'templateFilePath' => $templateFilePath
     ];
     $pdf = new FormPdf($pdfOptions);
-    $fieldList = $irdFormFile->fields->where('for_testing_only', 0);
+    $fieldList = $irdFormFile->fields; //->where('for_testing_only', 0);
     IrdFormHelper::fillData($pdf, $fieldList, $pdfData);
     $pdf->Output('ird_' . strtolower($irdCode) . '.pdf');
   }

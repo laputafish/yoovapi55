@@ -87,34 +87,35 @@ class Ir56gHelper extends IrDataHelper {
       'PerOfLeavePay' => $incomeInfo['PerOfLeavePay'],
       'AmtOfLeavePay' => toCurrency($incomeInfo['AmtOfLeavePay']),
       //
-      // 4. CommFee
+      // 3. CommFee
       'PerOfCommFee' => $incomeInfo['PerOfCommFee'],
       'AmtOfCommFee' => toCurrency($incomeInfo['AmtOfCommFee']),
       //
-      // 6. BpEtc
+      // 4. BpEtc
       'PerOfBpEtc' => $incomeInfo['PerOfBpEtc'],
       'AmtOfBpEtc' => toCurrency($incomeInfo['AmtOfBpEtc']),
       //
-      // 7. PayRetire
+      // 5. PayRetire
       'PerOfPayRetire' => $incomeInfo['PerOfPayRetire'],
       'AmtOfPayRetire' => toCurrency($incomeInfo['AmtOfPayRetire']),
       //
-      // 8. SalTaxPaid
+      // 6. SalTaxPaid
       'PerOfSalTaxPaid' => $incomeInfo['PerOfSalTaxPaid'],
       'AmtOfSalTaxPaid' => toCurrency($incomeInfo['AmtOfSalTaxPaid']),
       //
-      // 10. GainShareOption
+      // 7. GainShareOption
       'PerOfGainShareOption' => $incomeInfo['PerOfGainShareOption'],
       'AmtOfGainShareOption' => toCurrency($incomeInfo['AmtOfGainShareOption']),
       //
-      // 5. Other RAP (Bonus, Rewards, Allowance, etc.)
+      // 8. Other RAP (Bonus, Rewards, Allowance, etc.)
       'PerOfOtherRAPs' => $otherRapsPeriod,
       'AmtOfOtherRAPs' => toCurrency($otherRapsAmounts),
       //
-      // 11.1
-      'NatureSpecialPayments' => $incomeInfo['NatureSpecialPayments'],
+      // 9
       'PerOfSpecialPayments' => $incomeInfo['PerOfSpecialPayments'],
       'AmtOfSpecialPayments' => toCurrency($incomeInfo['AmtOfSpecialPayments']),
+      'NatureSpecialPayments' => $incomeInfo['NatureSpecialPayments'],
+
       // total
       'TotalIncome' => toCurrency($incomeInfo['TotalIncome']),
 

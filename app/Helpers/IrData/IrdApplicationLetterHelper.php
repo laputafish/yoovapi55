@@ -5,7 +5,7 @@ use App\Helpers\IrdFormHelper;
 
 class IrdApplicationLetterHelper {
   public static function build($outputFolder, $team, $sampleForm) {
-    $applySoftcopiesStr = $sampleForm->apply_softcopies;
+    $applySoftcopiesStr = trim($sampleForm->apply_softcopies);
     $applySoftcopies = explode(',',trim($applySoftcopiesStr));
 
     $applyPrintedFormsStr = $sampleForm->apply_printed_forms;
@@ -15,7 +15,7 @@ class IrdApplicationLetterHelper {
       'ApplySoftcopy' => tickIfExists($applySoftcopiesStr),
       'ApplySoftcopyIR56B' => tickIfExists('ir56b', $applySoftcopies),
       'ApplySoftcopyIR56M' => tickIfExists( 'ir56m', $applySoftcopies),
-      'UpdatePreviouslyApproval' => tickIfTrue($sampleForm->is_update),
+      'UpdatePreviouslyApproval' => tickIfTrue(!empty($applySoftcopiesStr) && $sampleForm->is_update),
 
       'ApplyPrintedForms' => tickIfExists($applyPrintedFormsStr),
       'ApplyPrintedFormsIR56E' => tickIfExists('ir56e', $applyPrintedForms),
