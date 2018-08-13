@@ -199,6 +199,7 @@ class FormPdf extends Fpdi\TcpdfFpdi
   }
 
   function outputDataItem($fieldConfig, $text) {
+    echo 'text = '.$text; nf();
     if($fieldConfig->hidden) {
       return;
     }

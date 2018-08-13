@@ -717,28 +717,70 @@ class TaxFormHelper
     $headerData = [
       'HeaderFileNo' => ($isEnglish ? 'File No.' : '檔案號碼') . '               ' . $irdMaster['FileNo'],
       'HeaderCompanyName' => $irdMaster['ErName'],
-      'HeaderPageSubject' => ($isEnglish ?
-        'List of Employees with IR56Bs Prepared via Self-developed Software' :
-        '以電腦格式遞交 IR56B 的僱員名單'),
       'HeaderFiscalYears' => lcfirst(ucwords(strtolower($irdMaster['HeaderPeriod']))),
-      'HeaderSheetNo' => ($isEnglish ? 'Sheet No.' : '表格編號'),
-      'HeaderName' => ($isEnglish ? 'Name' : '僱員姓名'),
-      'HeaderHKICNo' => ($isEnglish ? 'HKIC No.' : '香港身分證號碼'),
-      'HeaderTotalIncome' => ($isEnglish ? 'Total Income' : 'IR56B第11項內的入息總額'),
-      'HeaderHKD' => '(港元)'
     ];
+    $headerRows = 3;
+    if($irdForm->ird_code == 'IR56B') {
+      if($isEnglish) {
+        $headerData['HeaderPageSubject'] =
+          'List of Employees with IR56Bs Prepared via Self-developed Software';
 
-    if ($isEnglish) {
-      $headerData['HeaderPerItem11'] = 'per Item 11 of IR56B';
+        $headerData['HeaderCol0Row0'] = 'Sheet No.';
+        $headerData['HeaderCol1Row0'] = 'Name';
+        $headerData['HeaderCol2Row0'] = 'HKIC No.';
+
+        $headerData['HeaderCol3Row0'] = 'Total Income';
+        $headerData['HeaderCol3Row1'] = 'per Item 11 of IR56B';
+        $headerData['HeaderCol3Row2'] = '(HK$)';
+        if ($irdInfo['is_sample']) {
+          $headerData['HeaderForTestingOnlyLabel'] = '<For Testing Only>';
+        }
+      } else {
+        $headerData['HeaderPageSubject'] = '以電腦格式遞交 IR56B 的僱員名單';
+
+        $headerData['HeaderCol0Row0'] = '表格編號';
+        $headerData['HeaderCol1Row0'] = '僱員姓名';
+        $headerData['HeaderCol2Row0'] = '香港身分證號碼';
+
+        $headerData['HeaderCol3Row0'] = 'IR56B第11項內的入息總額';
+        $headerData['HeaderCol3Row1'] = '(港元)';
+        if ($irdInfo['is_sample']) {
+          $headerData['HeaderForTestingOnlyLabel'] = '<只供測試用>';
+        }
+        $headerRows = 2;
+      }
+
+//      'HeaderSheetNo' => ($isEnglish ? 'Sheet No.' : '表格編號'),
+//      'HeaderName' => ($isEnglish ? 'Name' : '僱員姓名'),
+//      'HeaderHKICNo' => ($isEnglish ? 'HKIC No.' : '香港身分證號碼'),
+//      'HeaderTotalIncome' => ($isEnglish ? 'Total Income' : $irdForm->ird_code . '第11項內的入息總額'),
+//      'HeaderHKD' => '(港元)'
+    } else if($irdForm->ird_code == 'IR56M') {
+      if($isEnglish) {
+        $headerData['HeaderPageSubject'] =
+          'List of Recipients with IR56Ms Filed Via Computerized Format';
+
+        $headerData['HeaderCol0Row1'] = 'Sheet No.';
+        $headerData['HeaderCol1Row1'] = 'Name of Recipient';
+        $headerData['HeaderCol2Row0'] = 'HKIC No./Business';
+        $headerData['HeaderCol2Row1'] = 'Registration Number';
+
+        $headerData['HeaderCol3Row0'] = 'Total Income per';
+        $headerData['HeaderCol3Row1'] = 'IR56M, Item 6';
+        $headerData['HeaderCol3Row2'] = '(HK$)';
+      } else {
+        $headerData['HeaderPageSubject'] = '以電腦格式遞交 IR56B 的收款人名單';
+
+        $headerData['HeaderCol0Row1'] = '表格編號';
+        $headerData['HeaderCol1Row1'] = '收款人姓名';
+        $headerData['HeaderCol2Row0'] = '香港身分證號碼/';
+        $headerData['HeaderCol2Row1'] = '商業登記號碼';
+
+        $headerData['HeaderCol3Row0'] = 'IR56M第6項內的人';
+        $headerData['HeaderCol3Row1'] = '息總額';
+        $headerData['HeaderCol3Row2'] = '(港元$)';
+      }
     }
-
-    if ($irdInfo['is_sample']) {
-      $headerData['HeaderForTestingOnlyLabel'] =
-        $isEnglish ?
-          '<For Testing Only>' :
-          '<只供測試用>';
-
-    }//
 
     $footerData = [
       'FooterSignatureLabel' => ($isEnglish ? 'Signature' : '簽署'),
@@ -765,7 +807,8 @@ class TaxFormHelper
     ];
     $pdf = new FormPdf($options);
 
-    $y0 = $isEnglish ? 52 : 48;
+    // starting y
+    $y0 = $headerRows==3 ? 52 : 48;
 
     // Content
     $contentFields = $fields->filter(function ($item) {

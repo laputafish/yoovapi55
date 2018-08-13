@@ -382,7 +382,7 @@ class IrDataHelper
         $segs[] = $oaEmployee['passport'];
       }
       if(isset($oaEmployee['country'])) {
-        $segs[] = '(' + $oaEmployee['country']['name'] + ')';
+        $segs[] = '('.$oaEmployee['country']['name'].')';
       }
       $ppNum = implode(' ', $segs);
     }

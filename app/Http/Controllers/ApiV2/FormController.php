@@ -4,9 +4,11 @@ use App\Helpers\TaxFormHelper;
 use App\Helpers\EventHelper;
 use App\Helpers\OA\OAHelper;
 use App\Helpers\FormHelper;
+use App\Helpers\ZipHelper;
 
 use App\Models\FormEmployee;
 use App\Models\Lang;
+use App\Models\TempFile;
 
 class FormController extends BaseAuthController {
   protected $modelName = 'Form';
@@ -253,4 +255,33 @@ class FormController extends BaseAuthController {
     return $data;
   }
 
+  public function prepareDownload($formId) {
+    $form = $this->model->find($formId);
+    $allFiles = [];
+    if(isset($form)) {
+      $formEmployees = $form->employees;
+      foreach ($formEmployees as $employee) {
+        $path = storage_path('app/teams/'.$form->team->oa_team_id.'/'.$formId.'/'.$employee->file);
+        $allFiles[] = [
+          'source' => $path,
+          'custom' => pathinfo($path, PATHINFO_BASENAME)
+        ];
+      }
+    }
+
+    $tempKey = md5(microtime().rand());
+    $filename = $tempKey.'.zip';
+    $tempFilePath = storage_path('app/temp/'.$filename);
+    TempFile::create([
+      'key'=>$tempKey,
+      'label'=>'zipped',
+      'filename' => $tempKey.'.zip',
+      'user_id' => $this->user->id
+    ]);
+    ZipHelper::createFile($allFiles, $tempFilePath);
+    return response()->json([
+      'status'=>true,
+      'key'=>$tempKey
+    ]);
+  }
 }

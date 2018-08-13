@@ -427,7 +427,8 @@ class SampleFormController extends BaseAuthController
         }
       }
     }
-
-    ZipHelper::downloadFiles($allFiles);
+    $outputFileName = storage_path('app/teams/'.$sampleForm->team->oa_team_id.'/application_letters/'.$sampleForm->id.'/zipped.zip');
+    ZipHelper::downloadFiles($allFiles, $outputFileName);
+    unlink($outputFileName);
   }
 }
