@@ -128,8 +128,8 @@ Route::get('media/tax_forms/{id}', 'MediaController@showTaxForm');
 
 // show relevant pdf files
 
-Route::post('forms/{formId}/prepare_download', 'FormController@prepareDownload');
 Route::get('temp/{temp_id}/download', 'TempController@download');
+Route::get('temp/{temp_id}/show', 'TempController@show');
 
 Route::get('media/ird_forms/{formId}/control_list', 'MediaController@showIrdFormControlList');
 Route::get('media/ird_forms/{formId}/data_file', 'MediaController@showIrdFormDataFile');
@@ -200,6 +200,9 @@ Route::group(['middleware'=>'auth:api'], function() {
 
     Route::resource('langs', 'LangController');
 //    Route::get('users/init', 'UserController@init');
+
+    Route::post('forms/{formId}/prepare', 'FormController@prepareDownload');
+    Route::post('forms/{formId}/{attachment}/prepare', 'FormController@prepareAttachment');
 });
 
 

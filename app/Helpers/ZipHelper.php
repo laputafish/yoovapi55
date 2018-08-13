@@ -19,12 +19,13 @@ class ZipHelper {
     self::downloadFile($zipFileName);
   }
 
-  public static function createFile($allFiles, $zipFilename) {
+  public static function createTempFile($allFiles, $zipFilename) {
+    $zipFilePath = storage_path('app/temp/'.$zipFilename);
     $zip = new \ZipArchive;
-    if(file_exists($zipFilename)) {
-      unlink($zipFilename);
+    if(file_exists($zipFilePath)) {
+      unlink($zipFilePath);
     }
-    if( $zip->open($zipFilename, \ZipArchive::CREATE) !== TRUE) {
+    if( $zip->open($zipFilePath, \ZipArchive::CREATE) !== TRUE) {
       exit("cannot open <$zip>\n");
     }
 

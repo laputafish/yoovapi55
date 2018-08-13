@@ -14,4 +14,14 @@ class TempController extends BaseController {
     unlink($path);
     TempFile::where('key', $key)->delete();
   }
+
+  public function show($key)
+  {
+    $tempFile = TempFile::where('key', $key)->first();
+    $path = storage_path('app/temp/'.$tempFile->filename);
+    $filename = $tempFile->label.'.'.pathinfo($path, PATHINFO_EXTENSION);
+    DownloadHelper::show($path, $filename);
+    unlink($path);
+    TempFile::where('key', $key)->delete();
+  }
 }

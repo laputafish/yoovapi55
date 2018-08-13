@@ -36,6 +36,45 @@ class Form extends BaseIRDForm {
     emptyFolder($folder);
   }
 
+  public function getFolderAttribute() {
+    return storage_path('app/teams/'.$this->team->oa_team_id.'/'.$this->id );
+  }
+
+  public function getAllFilesAttribute() {
+    $result = [];
+    $formEmployees = $this->employees;
+    $folderPath = storage_path('app/teams/'.$this->team->oa_team_id.'/'.$this->id.'/');
+    foreach ($formEmployees as $employee) {
+      $path = $folderPath.$employee->file;
+      $result[] = [
+        'source' => $path,
+        'custom' => pathinfo($path, PATHINFO_BASENAME)
+      ];
+    }
+    if(isset($this->irdForm)) {
+      $irdForm = $this->irdForm;
+      if($irdForm->requires_control_list) {
+        $this->appendAttachment($result, $folderPath, 'control_list.pdf');
+      }
+      if($irdForm->can_use_softcopy) {
+        $this->appendAttachment($result, $folderPath,strtolower($this->irdForm->ird_code).'.xml');
+        $this->appendAttachment($result, $folderPath,strtolower($this->irdForm->ird_code).'.xsd');
+      }
+
+    }
+    return $result;
+  }
+
+  private function appendAttachment(&$result, $folderPath, $filename) {
+    $filePath = $folderPath.$filename;
+    if(file_exists($filePath)) {
+      $result[] = [
+        'source' => $filePath,
+        'custom' => $filename
+      ];
+    }
+  }
+
   public function getAttachments() {
     $result = [];
     if(isset($this->irdForm)) {
@@ -49,7 +88,8 @@ class Form extends BaseIRDForm {
         if (file_exists($controlListFilePath)) {
           $result[] = [
             'labelTag' => 'control_list',
-            'url' => '/media/ird_forms/' . $this->id . '/control_list',
+//            'url' => '/media/ird_forms/' . $this->id . '/control_list',
+            'url' => '/forms/' . $this->id . '/control_list/prepare',
             'iconType' => 'pdf'
           ];
         }
@@ -59,7 +99,8 @@ class Form extends BaseIRDForm {
         if (file_exists($dataFile)) {
           $result[] = [
             'labelTag' => 'xml_data_file',
-            'url' => '/media/ird_forms/' . $this->id . '/data_file',
+  //          'url' => '/media/ird_forms/' . $this->id . '/data_file',
+            'url' => '/forms/' . $this->id . '/data_file/prepare',
             'iconType' => 'xml'
           ];
         }
@@ -67,7 +108,8 @@ class Form extends BaseIRDForm {
         if (file_exists($dataFile)) {
           $result[] = [
             'labelTag' => 'xsd_file',
-            'url' => '/media/ird_forms/' . $this->id . '/schema_file',
+//            'url' => '/media/ird_forms/' . $this->id . '/schema_file',
+            'url' => '/forms/' . $this->id . '/scheme_file/prepare',
             'iconType' => 'xsd'
           ];
         }

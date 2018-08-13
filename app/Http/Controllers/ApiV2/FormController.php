@@ -5,6 +5,7 @@ use App\Helpers\EventHelper;
 use App\Helpers\OA\OAHelper;
 use App\Helpers\FormHelper;
 use App\Helpers\ZipHelper;
+use App\Helpers\TempFileHelper;
 
 use App\Models\FormEmployee;
 use App\Models\Lang;
@@ -255,33 +256,36 @@ class FormController extends BaseAuthController {
     return $data;
   }
 
-  public function prepareDownload($formId) {
+  public function prepareAttachment($formId, $attachmentType) {
     $form = $this->model->find($formId);
-    $allFiles = [];
-    if(isset($form)) {
-      $formEmployees = $form->employees;
-      foreach ($formEmployees as $employee) {
-        $path = storage_path('app/teams/'.$form->team->oa_team_id.'/'.$formId.'/'.$employee->file);
-        $allFiles[] = [
-          'source' => $path,
-          'custom' => pathinfo($path, PATHINFO_BASENAME)
-        ];
-      }
+    $irdForm = $form->irdForm;
+    switch($attachmentType) {
+      case 'control_list':
+        $filename = 'control_list.pdf';
+        break;
+      case 'data_file':
+        $filename = strtolower($irdForm->ird_code).'.xml';
+        break;
+      case 'scheme_file':
+        $filename = strtolower($irdForm->ird_code).'.xsd';
+        break;
     }
-
-    $tempKey = md5(microtime().rand());
-    $filename = $tempKey.'.zip';
-    $tempFilePath = storage_path('app/temp/'.$filename);
-    TempFile::create([
-      'key'=>$tempKey,
-      'label'=>'zipped',
-      'filename' => $tempKey.'.zip',
-      'user_id' => $this->user->id
-    ]);
-    ZipHelper::createFile($allFiles, $tempFilePath);
+    $tempFile = TempFileHelper::new($filename, $this->user->id);
+    copy($form->folder.'/'.$filename, storage_path('app/temp/'.$tempFile->filename));
     return response()->json([
       'status'=>true,
-      'key'=>$tempKey
+      'key'=>$tempFile->key
+    ]);
+  }
+
+  public function prepareDownload($formId) {
+    $form = $this->model->find($formId);
+    $filename = $form->form_no.'.zip';
+    $tempFile = TempFileHelper::new($filename, $this->user->id);
+    ZipHelper::createTempFile($form->allFiles, $tempFile->filename);
+    return response()->json([
+      'status'=>true,
+      'key'=>$tempFile->key
     ]);
   }
 }

@@ -13,6 +13,7 @@ class Ir56eHelper extends IrDataHelper {
     $isTesting = array_key_exists('mode', $options) ? $options['mode'] == 'testing' : false;
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
     $form = array_key_exists('form', $options) ? $options['form'] : null;
+    $isEnglish = isset($form) ? $form->lang->code=='en-us' : true;
 
     if($isTesting) {
       $defaults = self::getTestingDefaults();
@@ -30,7 +31,7 @@ class Ir56eHelper extends IrDataHelper {
     $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
     $formInfo = self::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
-    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults);
+    $employeeInfo = self::getEmployeeInfo($oaEmployee, $defaults, $isEnglish); // isEnglish is for address parsing
     $maritalInfo = self::getMaritalInfo($oaEmployee, $defaults);
     $incomeInfo = self::getIncomeInfo(
       $oaAuth,

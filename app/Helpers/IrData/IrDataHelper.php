@@ -6,6 +6,7 @@ use App\Helpers\OA\OAEmployeeHelper;
 use App\Helpers\OA\OATeamHelper;
 use App\Helpers\OA\OASalaryHelper;
 use App\Helpers\OA\OAPayslipHelper;
+use App\Helpers\OA\OAAddressHelper;
 use App\Helpers\FormHelper;
 
 use App\Models\IrdForm;
@@ -98,8 +99,8 @@ class IrDataHelper
       'gain_share_option' => 0, // 10
       'other_raps' => [], // 11
       'pension' => 0, // 12
-      'special_payments'=>0,
-      'special_payments_nature'=>''
+      'special_payments' => 0,
+      'special_payments_nature' => ''
     ];
     // dd($period);
 
@@ -121,7 +122,7 @@ class IrDataHelper
     $otherRaps = [];
     $specialPayments = [];
 
-    if(static::$irdCode == 'IR56B') {
+    if (static::$irdCode == 'IR56B') {
       $incomeMappings = $team->teamIr56bIncomes()->with('ir56bIncome')->get();
       foreach ($incomeMappings as $item) {
         $token = $item->ir56bIncome->token;
@@ -224,16 +225,16 @@ class IrDataHelper
         'amt' => $amount
       ];
     }
-    if(count($summary['other_raps'])>3) {
-      for($i=3; $i<count($summary['other_raps']); $i++) {
-        $summary['other_raps'][2]['nature'] += ','.$summary['other_raps'][$i]['nature'];
+    if (count($summary['other_raps']) > 3) {
+      for ($i = 3; $i < count($summary['other_raps']); $i++) {
+        $summary['other_raps'][2]['nature'] += ',' . $summary['other_raps'][$i]['nature'];
         $summary['other_raps'][2]['amt'] += $summary['other_raps'][$i]['amt'];
       }
       $summary['other_raps'] = array_slice($summary['other_raps'], 0, 3);
     }
 
     $specialNatures = [];
-    foreach( $specialPayments as $nature => $amount) {
+    foreach ($specialPayments as $nature => $amount) {
       $summary['special_payments'] += $amount;
       $specialNatures[] = $nature;
     }
@@ -273,7 +274,7 @@ class IrDataHelper
     $registrationNumber = $team->getSetting('fileNo', '');
     $registrationNumberSegs = explode('-', $registrationNumber);
     $section = $registrationNumberSegs[0];
-    $ern = count($registrationNumberSegs)>1 ? $registrationNumberSegs[1] : '';
+    $ern = count($registrationNumberSegs) > 1 ? $registrationNumberSegs[1] : '';
     $headerPeriod = $isEnglish ?
       'for the year from 1 April ' . ($fiscalYearInfo['startYear']) . ' to 31 March ' . ($fiscalYearInfo['endYear']) :
       '在 ' . $fiscalYearInfo['startYear'] . ' 年 4 月 1 日至 ' . $fiscalYearInfo['endYear'] . ' 年 3 月 31 日 年內';
@@ -362,27 +363,46 @@ class IrDataHelper
     ];
   }
 
-  protected static function getEmployeeInfo($oaEmployee, $defaults)
+  protected static function getEmployeeInfo($oaEmployee, $defaults, $isEnglish)
   {
     $capacity = strtoupper($oaEmployee['jobTitle']);
     $ptPrinEmp = array_key_exists('ptPrinEmp', $defaults) ?
       $defaults['ptPrinEmp'] :
       '';
 
-    $resAddr = count($oaEmployee['address']) > 0 ? $oaEmployee['address'][0]['text'] : '';
+    $resAddr = '';
+    $posAddr = '';
     $areaCodeResAddr = '';
+    $areaCodePosAddr = '';
 
-    $posAddr = count($oaEmployee['address']) > 1 ? $oaEmployee['address'][1] : trans('tax.same_as_above');
-    $areaCodePosAddr = ''; // array_key_exists('areaCodeResAddr', $defaults) ? $defaults['areaCodeResAddr'];
+    if (count($oaEmployee['address']) > 0) {
+      $resAddr = OAAddressHelper::parse(
+        $oaEmployee['address'][0]['text'],
+        $resAddr,
+        $areaCodeResAddr,
+        $isEnglish);
+    }
+
+    if (count($oaEmployee['address']) > 1) {
+      $posAddr = OAAddressHelper::parse($oaEmployee['address'][1]['text'], $posAddr, $areaCodePosAddr);
+    } else {
+      $posAddr = trans('tax.same_as_above');
+    }
+
+//    $resAddr = count($oaEmployee['address']) > 0 ? $oaEmployee['address'][0]['text'] : '';
+//    $areaCodeResAddr = '';
+//
+//    $posAddr = count($oaEmployee['address']) > 1 ? $oaEmployee['address'][1] : trans('tax.same_as_above');
+//    $areaCodePosAddr = ''; // array_key_exists('areaCodeResAddr', $defaults) ? $defaults['areaCodeResAddr'];
 
     $ppNum = '';
-    if(empty($oaEmployee['identifyNumber'])) {
+    if (empty($oaEmployee['identifyNumber'])) {
       $segs = [];
-      if(!empty($oaEmployee['passport'])) {
+      if (!empty($oaEmployee['passport'])) {
         $segs[] = $oaEmployee['passport'];
       }
-      if(isset($oaEmployee['country'])) {
-        $segs[] = '('.$oaEmployee['country']['name'].')';
+      if (isset($oaEmployee['country'])) {
+        $segs[] = '(' . $oaEmployee['country']['name'] . ')';
       }
       $ppNum = implode(' ', $segs);
     }
@@ -423,7 +443,7 @@ class IrDataHelper
       'LeftAtDay' => ''
     ];
 
-    if(static::$hasDefaults) {
+    if (static::$hasDefaults) {
       $result['HKID'] = getDefault($defaults, 'hkid', $result['HKID']);
       $result['Surname'] = getDefault($defaults, 'surname', $result['Surname']);
       $result['GivenName'] = getDefault($defaults, 'givenName', $result['GivenName']);
@@ -460,7 +480,7 @@ class IrDataHelper
         (array_key_exists('spousePpNum', $oaEmployee) ? $oaEmployee['spousePpNum'] : '') :
         '';
     }
-    $spouseHkidPpNum = trim($spouseHkid).trim($spousePpNum);
+    $spouseHkidPpNum = trim($spouseHkid) . trim($spousePpNum);
 
     return [
       'MaritalStatus' => $maritalStatus,
@@ -474,22 +494,23 @@ class IrDataHelper
   protected static function getIncomeInfo($oaAuth, $team, $oaEmployee, $fiscalYearInfo, $perOfEmp, $defaults)
   {
     $options = [
-      'oaAuth'=>$oaAuth,
-      'team'=>$team,
-      'oaEmployee'=>$oaEmployee,
-      'fiscalYearInfo'=>$fiscalYearInfo,
+      'oaAuth' => $oaAuth,
+      'team' => $team,
+      'oaEmployee' => $oaEmployee,
+      'fiscalYearInfo' => $fiscalYearInfo,
       'perOfEmp' => $perOfEmp,
       'defaults' => $defaults
     ];
 
     $result =
       (in_array(static::$irdCode, ['IR56B', 'IR56F']) ? static::getIncomeInfoForIR56B($options) : []) +
-      (static::$irdCode=='IR56M' ? static::getIncomeInfoForIR56M($options) : []) +
-      (static::$irdCode=='IR56E' ? static::getIncomeInfoForIR56E($options) : []);
+      (static::$irdCode == 'IR56M' ? static::getIncomeInfoForIR56M($options) : []) +
+      (static::$irdCode == 'IR56E' ? static::getIncomeInfoForIR56E($options) : []);
     return $result;
   }
 
-  private static function getIncomeInfoForIR56E($options) {
+  private static function getIncomeInfoForIR56E($options)
+  {
     $oaAuth = $options['oaAuth'];
     $team = $options['team'];
     $oaEmployee = $options['oaEmployee'];
@@ -510,7 +531,7 @@ class IrDataHelper
         phpDateFormat($oaEmployee['joinedDate'], 'Y-m-d'), $oaSalaries)),
       // share option
       'ShareBeforeEmp' => 0, // 0' => no, 1' => yes
-      'MonthlyAllowance' => toCurrency(110 ),
+      'MonthlyAllowance' => toCurrency(110),
       'FluctuatingIncome' => toCurrency(120),
 
       // Place of residence
@@ -530,7 +551,8 @@ class IrDataHelper
     ];
   }
 
-  private static function getIncomeInfoForIR56M($options) {
+  private static function getIncomeInfoForIR56M($options)
+  {
     $oaAuth = $options['oaAuth'];
     $team = $options['team'];
     $oaEmployee = $options['oaEmployee'];
@@ -622,7 +644,8 @@ class IrDataHelper
     ];
   }
 
-  private static function getIncomeInfoForIR56B($options) {
+  private static function getIncomeInfoForIR56B($options)
+  {
     $oaAuth = $options['oaAuth'];
     $team = $options['team'];
     $oaEmployee = $options['oaEmployee'];
@@ -851,12 +874,19 @@ class IrDataHelper
     ];
   }
 
-  protected static function getTestingDefaults() {
+  protected static function getTestingDefaults()
+  {
     return [];
   }
 
-  public static function get($team, $employeeId, $options=[])
+  public static function get($team, $employeeId, $options = [])
   {
+    $isEnglish = true;
+    if (array_key_exists('form', $options)) {
+      $lang = $options['form']->lang;
+      $isEnglish = $lang->code == 'en-us';
+    }
+
     $isSample = array_key_exists('mode', $options) ? $options['mode'] == 'sample' : false;
     $isTesting = array_key_exists('mode', $options) ? $options['mode'] == 'testing' : false;
     $defaults = array_key_exists('defaults', $options) ? $options['defaults'] : [];
@@ -878,7 +908,7 @@ class IrDataHelper
     $sheetNo = array_key_exists('sheetNo', $options) ? $options['sheetNo'] : 1;
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
     $formInfo = static::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
-    $employeeInfo = static::getEmployeeInfo($oaEmployee, $defaults);
+    $employeeInfo = static::getEmployeeInfo($oaEmployee, $defaults, $isEnglish); // isEnglish is for address parsing
 
     $maritalInfo = static::getMaritalInfo($oaEmployee, $defaults);
     $incomeInfo = static::getIncomeInfo(
