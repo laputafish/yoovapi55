@@ -20,16 +20,16 @@ class ZipHelper {
   }
 
   public static function createTempFile($allFiles, $zipFilename) {
-    $zipFilePath = storage_path('app/temp/'.$zipFilename);
+    $zipFilePath = storage_path('app/temp/' . $zipFilename);
     $zip = new \ZipArchive;
-    if(file_exists($zipFilePath)) {
+    if (file_exists($zipFilePath)) {
       unlink($zipFilePath);
     }
-    if( $zip->open($zipFilePath, \ZipArchive::CREATE) !== TRUE) {
+    if ($zip->open($zipFilePath, \ZipArchive::CREATE) !== TRUE) {
       exit("cannot open <$zip>\n");
     }
 
-    foreach($allFiles as $fileItem) {
+    foreach ($allFiles as $fileItem) {
       $zip->addFile($fileItem['source'], $fileItem['custom']);
     }
     $zip->close();

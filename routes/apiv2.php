@@ -201,6 +201,10 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('langs', 'LangController');
 //    Route::get('users/init', 'UserController@init');
 
+    // Team Setting
+    Route::resource('teams', 'TeamController');
+
+    // Form documents download
     Route::post('forms/{formId}/prepare', 'FormController@prepareDownload');
     Route::post('forms/{formId}/{attachment}/prepare', 'FormController@prepareAttachment');
 });

@@ -22,6 +22,7 @@ class FormController extends BaseAuthController {
     'lang_id'=>'integer',
     'status'=>'string',
     'subject'=>'string',
+    'published'=>'in:0,1',
 
     'ird_form_type_id'=>'integer',
     'ird_form_id'=>'integer',
@@ -88,7 +89,6 @@ class FormController extends BaseAuthController {
   public function index() {
     $input = \Input::all();
     $query = $this->model->whereTeamId($this->team->id)->with('employees');
-    $total = $query->count();
 
     // filter
     if (\Input::has('filter')) {
@@ -117,6 +117,7 @@ class FormController extends BaseAuthController {
     }
     $data = $query->get();
     $data = $this->onDataReady($data);
+    $total = $data->count();
 
     return response()->json([
       'status'=>true,
@@ -281,11 +282,23 @@ class FormController extends BaseAuthController {
   public function prepareDownload($formId) {
     $form = $this->model->find($formId);
     $filename = $form->form_no.'.zip';
-    $tempFile = TempFileHelper::new($filename, $this->user->id);
-    ZipHelper::createTempFile($form->allFiles, $tempFile->filename);
+    $allFiles = $form->allFiles;
+
+    // Check if all files exists
+    $result = true;
+    foreach( $allFiles as $fileItem) {
+      if(!file_exists($fileItem['source'])) {
+        $result = false;
+        break;
+      }
+    }
+    if($result) {
+      $tempFile = TempFileHelper::new($filename, $this->user->id);
+      ZipHelper::createTempFile($form->allFiles, $tempFile->filename);
+    }
     return response()->json([
-      'status'=>true,
-      'key'=>$tempFile->key
+      'status'=>$result,
+      'key'=>$result ? $tempFile->key : 0
     ]);
   }
 }
