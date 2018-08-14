@@ -15,7 +15,7 @@ class ZipHelper {
   }
 
   public static function downloadFiles($allFiles, $zipFileName) {
-    self::createFile($allFiles, $zipFileName);
+    self::createTempFile($allFiles, $zipFileName);
     self::downloadFile($zipFileName);
   }
 

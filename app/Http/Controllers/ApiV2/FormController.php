@@ -301,4 +301,25 @@ class FormController extends BaseAuthController {
       'key'=>$result ? $tempFile->key : 0
     ]);
   }
+
+  public function prepareEmployeeDocument($formId, $employeeId) {
+    $form = $this->model->find($formId);
+    $formEmployee = $form->employees()->whereEmployeeId($employeeId)->first();
+    if(isset($formEmployee)) {
+      $filename = $formEmployee->file;
+      $tempFile = TempFileHelper::new($filename, $this->user->id);
+      copy($form->folder . '/' . $filename, storage_path('app/temp/' . $tempFile->filename));
+      return response()->json([
+        'status' => true,
+        'key' => $tempFile->key
+      ]);
+    } else {
+      return response()->json([
+        'status'=>false,
+        'key'=>0
+      ]);
+    }
+  }
+
+
 }

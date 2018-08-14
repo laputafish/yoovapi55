@@ -182,8 +182,8 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('documents', 'DocumentController');
     Route::resource('tax_forms', 'TaxFormController');
     Route::post('media/upload', 'MediaController@uploadDocument');
-    Route::resource('ir56b_incomes', 'Ir56bIncomeController', ['only'=>['index','store']]);
-    Route::resource('ir56f_incomes', 'Ir56fIncomeController', ['only'=>['index','store']]);
+//    Route::resource('ir56b_incomes', 'Ir56bIncomeController', ['only'=>['index','store']]);
+//    Route::resource('ir56f_incomes', 'Ir56fIncomeController', ['only'=>['index','store']]);
     Route::resource('tax_form_settings', 'TaxFormSettingController', ['only'=>['index','store']]);
 
     Route::resource('employee_commencements', 'EmployeeCommencementController');
@@ -204,8 +204,12 @@ Route::group(['middleware'=>'auth:api'], function() {
     // Team Setting
     Route::resource('teams', 'TeamController');
 
+    // Sample Form documents download
+    Route::post('sample_forms/{formId}/prepare', 'SampleFormController@prepareDownload');
+
     // Form documents download
     Route::post('forms/{formId}/prepare', 'FormController@prepareDownload');
+    Route::post('forms/{formId}/employee/{employeeId}/prepare', 'FormController@prepareEmployeeDocument');
     Route::post('forms/{formId}/{attachment}/prepare', 'FormController@prepareAttachment');
 });
 

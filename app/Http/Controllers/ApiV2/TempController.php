@@ -18,10 +18,14 @@ class TempController extends BaseController {
   public function show($key)
   {
     $tempFile = TempFile::where('key', $key)->first();
-    $path = storage_path('app/temp/'.$tempFile->filename);
-    $filename = $tempFile->label.'.'.pathinfo($path, PATHINFO_EXTENSION);
-    DownloadHelper::show($path, $filename);
-    unlink($path);
-    TempFile::where('key', $key)->delete();
+    if(isset($tempFile)) {
+      $path = storage_path('app/temp/' . $tempFile->filename);
+      $filename = $tempFile->label . '.' . pathinfo($path, PATHINFO_EXTENSION);
+      DownloadHelper::show($path, $filename);
+      unlink($path);
+      TempFile::where('key', $key)->delete();
+    } else {
+      return response()->view('blank');
+    }
   }
 }

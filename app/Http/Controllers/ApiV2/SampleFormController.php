@@ -7,6 +7,7 @@ use App\Helpers\FormHelper;
 use App\Helpers\SampleNameHelper;
 use App\Helpers\SampleHelper;
 use App\Helpers\ZipHelper;
+use App\Helpers\TempFileHelper;
 
 use App\Models\FormEmployee;
 use App\Models\IrdForm;
@@ -373,7 +374,7 @@ class SampleFormController extends BaseAuthController
     return $this->showFile($sampleFormId, $filename, 'attachment');
   }
 
-  public function downloadAll($sampleFormId) {
+  public function downloadAllxxx($sampleFormId) {
     $sampleForm = SampleForm::find($sampleFormId);
     $folder = $sampleForm->folder;
     $allFiles = [];
@@ -430,5 +431,38 @@ class SampleFormController extends BaseAuthController
     $outputFileName = storage_path('app/teams/'.$sampleForm->team->oa_team_id.'/application_letters/'.$sampleForm->id.'/zipped.zip');
     ZipHelper::downloadFiles($allFiles, $outputFileName);
     unlink($outputFileName);
+  }
+
+  public function downloadAll($sampleFormId) {
+    $sampleForm = SampleForm::find($sampleFormId);
+    $folder = $sampleForm->folder;
+    $allFiles = $sampleForm->allFiles;
+
+    $outputFileName = storage_path('app/teams/'.$sampleForm->team->oa_team_id.'/application_letters/'.$sampleForm->id.'/zipped.zip');
+    ZipHelper::downloadFiles($allFiles, $outputFileName);
+    unlink($outputFileName);
+  }
+
+  public function prepareDownload($formId) {
+    $sampleForm = SampleForm::find($formId);
+    $filename = 'application_letter.zip';
+    $allFiles = $sampleForm->allFiles;
+
+    // Check if all files exists
+    $result = true;
+    foreach( $allFiles as $fileItem) {
+      if(!file_exists($fileItem['source'])) {
+        $result = false;
+        break;
+      }
+    }
+    if($result) {
+      $tempFile = TempFileHelper::new($filename, $this->user->id);
+      ZipHelper::createTempFile($allFiles, $tempFile->filename);
+    }
+    return response()->json([
+      'status'=>$result,
+      'key'=>$result ? $tempFile->key : 0
+    ]);
   }
 }
