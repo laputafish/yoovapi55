@@ -10,7 +10,8 @@ class UserController extends BaseAuthController
   protected $modelName = 'User';
   protected $rules = [
     'employee_id' => 'integer',
-    'oa_last_team_id'=> 'string'
+    'oa_last_team_id'=> 'string',
+    'lang_id' => 'Number'
   ];
 
   public function init2()
@@ -162,7 +163,8 @@ class UserController extends BaseAuthController
     $input = $this->getInput(\Input::all(), $this->rules);
     $user->update($input);
     return response()->json([
-      'status'=>true
+      'status'=>true,
+      'result'=>$input
     ]);
   }
 }

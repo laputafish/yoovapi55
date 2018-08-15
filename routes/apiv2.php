@@ -166,6 +166,7 @@ Route::get('employees/{employeeId}/forms', 'TestFormController@generateForm');
 
 // Copy form template variables
 Route::get('file_fields/copy/{fromId}/{toId}', 'TestFormController@copyTemplateFields');
+Route::resource('langs', 'LangController');
 
 Route::get('users/init', 'UserController@init');
 Route::group(['middleware'=>'auth:api'], function() {
@@ -198,7 +199,6 @@ Route::group(['middleware'=>'auth:api'], function() {
     Route::resource('sample_forms', 'SampleFormController');
     Route::resource('oa_token', 'OATokenController', ['only'=>['store']]);
 
-    Route::resource('langs', 'LangController');
 //    Route::get('users/init', 'UserController@init');
 
     // Team Setting

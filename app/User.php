@@ -143,9 +143,9 @@ class User extends Authenticatable
     return null !== $this->roles()->where('name', $role)->first();
   }
 
-  public function oaAuth() {
-    return $this->hasOne('App\Models\OAAuth');
-  }
+//  public function oaAuth() {
+//    return $this->hasOne('App\Models\OAAuth');
+//  }
   
   public function fillOAAuth($oaAuth) {
     $this->oa_access_token = $oaAuth['accessToken'];

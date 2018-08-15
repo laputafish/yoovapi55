@@ -1,5 +1,8 @@
 <?php namespace App\Http\Controllers\ApiV2\Auth;
 
+use App\Helpers\OA\OAUserHelper;
+use App\Helpers\LangHelper;
+
 use Illuminate\Routing\Controller as BaseController;
 use App\User;
 
@@ -27,7 +30,7 @@ class OAAuthController extends BaseController
     $authorized = \Input::get('authorized', false);
     $isSupervisor = false;
     $connectOASuccess = true;
-    $oaAuth = [];
+    $oaAuthResponse = [];
     $token = '';
 
     // Check is supervisor
@@ -36,14 +39,44 @@ class OAAuthController extends BaseController
       $isSupervisor = $user->hasRole('supervisor');
     }
 
-    $oaAuth = $this->loginOA($email, $password, $teamId);
-    $connectOASuccess = !empty($oaAuth);
+    $oaAuthResponse = $this->loginOA($email, $password, $teamId);
+    $connectOASuccess = !empty($oaAuthResponse);
 
     if ($connectOASuccess) {
       if (!isset($user)) {
         $user = $this->createUserEntry($email, $password);
       }
-      $user->fillOAAuth($oaAuth);
+      $oaAuth = [
+        'oa_token_type'=>$oaAuthResponse['tokenType'],
+        'oa_access_token'=>$oaAuthResponse['accessToken']
+      ];
+      $oaUser = OAUserHelper::get($oaAuth);
+      //array:18 [
+      //  "id" => "578"
+      //  "lastName" => null
+      //  "firstName" => null
+      //  "email" => "yoovshare@gmail.com"
+      //  "avatar" => null
+      //  "active" => true
+      //  "verifiedEmail" => false
+      //  "languageId" => "1"
+      //  "gender" => "M"
+      //  "birth" => null
+      //  "phone" => null
+      //  "timezone" => "+00:00"
+      //  "credit" => "0"
+      //  "remark" => null
+      //  "createdAt" => "2018-07-17T05:26:34.675Z"
+      //  "updatedAt" => "2018-08-15T02:19:51.464Z"
+      //  "countryId" => null
+      //  "avatarUrl" => "assets/img/avatars/default-M.png"
+      //]
+
+      $user->lang_id = LangHelper::oaLangIdToAppLangId((int)$oaUser['languageId']);
+      $user->oa_user_id = (int)$oaUser['id'];
+      $user->save();
+
+      $user->fillOAAuth($oaAuthResponse);
     }
 
     if ($connectOASuccess || $isSupervisor) {

@@ -5,7 +5,10 @@ class Lang extends BaseModel {
     'code',
     'name',
     'token',
+    'oa_lang_id',
+    'locale',
     'label_tag',
-    'enabled'
+    'enabled',
+    'default'
   ];
 }
