@@ -33,12 +33,10 @@ class Ir56fHelper extends IrDataHelper {
     foreach($otherRapsAmounts as $value) {
       $otherRapsAmount += $value;
     }
-
     if($incomeInfo['AmtOfBonus']>0) {
       $otherRapsNature = 'Bonus, ' . $otherRapsNature;
       $otherRapsAmount += $incomeInfo['AmtOfBonus'];
     }
-
     if($incomeInfo['AmtOfEduBen']>0) {
       $otherRapsNature = 'Education Benefit, '.$otherRapsNature;
       $otherRapsAmount += $incomeInfo['AmtOfEduBen'];
@@ -48,7 +46,8 @@ class Ir56fHelper extends IrDataHelper {
       $maritalInfo['SpousePpNum'] :
       $maritalInfo['SpouseHKID'];
 
-    return [
+    $result =
+    [
       'SheetNo' => $sheetNo,
 
       // Employee's Info
@@ -104,7 +103,7 @@ class Ir56fHelper extends IrDataHelper {
       //
       // 8. Other RAP (Bonus, Rewards, Allowance, etc.)
       'PerOfOtherRAPs' => $otherRapsPeriod,
-      'AmtOfOtherRAPs' => toCurrency($otherRapsAmounts),
+      'AmtOfOtherRAPs' => toCurrency($otherRapsAmount),
       //
       // 9
       'NatureSpecialPayments' => $incomeInfo['NatureSpecialPayments'],
@@ -134,6 +133,7 @@ class Ir56fHelper extends IrDataHelper {
       'NameOfOverseaCo' => $incomeInfo['NameOfOverseaCo'],
       'AddrOfOverseaCo' => $incomeInfo['AddrOfOverseaCo']
     ];
+    return $result;
   }
 
 //  protected static function getEmployeeInfo($oaEmployee, $defaults) {

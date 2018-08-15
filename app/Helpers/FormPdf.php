@@ -90,12 +90,10 @@ class FormPdf extends Fpdi\TcpdfFpdi
     if(array_key_exists('templateFilePath',  $options)) {
       $this->templateFilePath = $options['templateFilePath'];
     }
-
     $this->addNewPage();
   }
 
   function addNewPage() {
-    echo 'addNewPage'; nf();
     $this->AddPage();
     if(!empty($this->templateFilePath)) {
       $this->setSourceFile( $this->templateFilePath );

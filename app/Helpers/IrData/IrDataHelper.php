@@ -3,6 +3,7 @@
 use App\Helpers\IrData\xxxxxIr56B;
 use App\Helpers\OA\OAHelper;
 use App\Helpers\OA\OAEmployeeHelper;
+use App\Helpers\OA\OAResignationHelper;
 use App\Helpers\OA\OATeamHelper;
 use App\Helpers\OA\OASalaryHelper;
 use App\Helpers\OA\OAPayslipHelper;
@@ -53,6 +54,11 @@ class IrDataHelper
   public static function getOAEmployee()
   {
     return OAEmployeeHelper::get(static::$oaAuth, static::$employeeId, static::$team->oa_team_id);
+  }
+
+  public static function getResignation()
+  {
+    return OAResignationHelper::get(static::$oaAuth, static::$employeeId, static::$team->oa_team_id);
   }
 
   public static function getOAAdminEmployee()
@@ -218,7 +224,6 @@ class IrDataHelper
         $summary['totalIncome'] += $detail['amount'];
       }
     }
-
     foreach ($otherRaps as $nature => $amount) {
       $summary['other_raps'][] = [
         'nature' => $nature,
@@ -325,10 +330,12 @@ class IrDataHelper
   protected static function getFormInfo($oaEmployee, $defaults, $fiscalYearInfo)
   {
     $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
-    $jobEndedDate = substr($oaEmployee['jobEndedDate'], 0, 10);
+    $jobEndedDate = isset($oaEmployee['cessationDate']) ?
+      $oaEmployee['cessationDate'] :
+      substr($oaEmployee['cessationDate'], 0, 10);
 
     $empStartDate = $fiscalYearInfo['startDate'] > $joinedDate ? $fiscalYearInfo['startDate'] : $joinedDate;
-    $empEndDate = isset($oaEmployee['jobEndedDate']) ?
+    $empEndDate = isset($jobEndedDate) ?
       ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearInfo['endDate'] : $jobEndedDate) :
       $fiscalYearInfo['endDate'];
 
@@ -336,8 +343,8 @@ class IrDataHelper
       str_replace('-', '', $empEndDate);
 
     // Employee
-    if (isset($oaEmployee['jobEndedDate'])) {
-      $jobEndedDate = phpDateFormat($oaEmployee['jobEndedDate'], 'd/m/Y');
+    if (isset($jobEndedDate)) {
+      $jobEndedDate = phpDateFormat($jobEndedDate, 'd/m/Y');
       $fiscalYearStartBeforeCease = getFiscalYearStartOfDate($jobEndedDate);
     } else {
       $jobEndedDate = '';
@@ -435,7 +442,7 @@ class IrDataHelper
       'AreaCodePosAddr' => $areaCodePosAddr,
 
       // IR56F
-      'CessationReason' => '',
+      'CessationReason' => isset($oaEmployee['cessationReason']) ? $oaEmployee['cessationReason'] : '',
 
       // IR56G
       'LeftAtYear' => '',
@@ -506,6 +513,7 @@ class IrDataHelper
       (in_array(static::$irdCode, ['IR56B', 'IR56F']) ? static::getIncomeInfoForIR56B($options) : []) +
       (static::$irdCode == 'IR56M' ? static::getIncomeInfoForIR56M($options) : []) +
       (static::$irdCode == 'IR56E' ? static::getIncomeInfoForIR56E($options) : []);
+
     return $result;
   }
 
@@ -654,6 +662,7 @@ class IrDataHelper
     $defaults = $options['defaults'];
 
     $oaPayrollSummary = static::getOAPayrollSummary($oaAuth, $team, $oaEmployee, $fiscalYearInfo);
+
     // Income Particulars
     $tableMapping = [
       'Salary' => 'salary',
@@ -901,6 +910,18 @@ class IrDataHelper
     static::$employeeId = $employeeId;
     static::$oaAuth = $oaAuth;
     $oaEmployee = static::getOAAdminEmployee();
+    $oaEmployee['cessationDate'] = null;
+    $oaEmployee['cessationReason'] = null;
+    if(static::$irdCode === 'IR56F') {
+      $resignation = static::getResignation();
+      $resignationCount = count($resignation);
+      if($resignationCount>0) {
+        $lastResignation = $resignation[$resignationCount-1];
+        $oaEmployee['cessationDate'] = $lastResignation['endedDate'];
+        $oaEmployee['cessationReason'] = static::translateResignationReason($isEnglish, $lastResignation['reason']);
+      }
+    }
+
     if (is_null($oaEmployee)) {
       return null;
     }
@@ -909,6 +930,10 @@ class IrDataHelper
     $fiscalYearInfo = FormHelper::getFiscalYearInfo($form);
     $formInfo = static::getFormInfo($oaEmployee, $defaults, $fiscalYearInfo);
     $employeeInfo = static::getEmployeeInfo($oaEmployee, $defaults, $isEnglish); // isEnglish is for address parsing
+//    if(static::$irdCode === 'IR56F') {
+//      $resignation = static::getResignation();
+//      $employeeInfo['cessationReason'] = isset($resignation) ? $resignation['reason'] : '(no reason)';
+//    }
 
     $maritalInfo = static::getMaritalInfo($oaEmployee, $defaults);
     $incomeInfo = static::getIncomeInfo(
@@ -962,4 +987,23 @@ class IrDataHelper
     );
   }
 
+
+  private static function translateResignationReason($isEnglish, $resignationReason) {
+    $reasonMapping = [
+      'resignation' => '辭職',
+      'retirement'=>'退休',
+      'dismissal'=>'解僱',
+      'death'=>'身故'
+    ];
+    if($isEnglish) {
+      $result = ucfirst($resignationReason);
+    } else {
+      if(array_key_exists($resignationReason, $reasonMapping)) {
+        $result = $reasonMapping[$resignationReason];
+      } else {
+        $result = ucfirst($resignationReason);
+      }
+    }
+    return $result;
+  }
 }
