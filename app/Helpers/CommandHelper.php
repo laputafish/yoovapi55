@@ -6,10 +6,22 @@ use App;
 
 class CommandHelper
 {
+  protected static $COOL_PERIOD = 10;
+
   public static function start($commandName, $handler)
   {
     \Carbon\Carbon::setLocale(config('app.locale'));
     App::setLocale('hk');
+
+    echo "Instance count: ";
+    $instanceCount = system('ps -A | grep php$ | wc -l');
+    echo 'Ready.'; nf();
+    if($instanceCount > 1) {
+      echo 'Another instance already running.'; nf();
+      echo 'Quit now.'; nf();
+      return;
+    }
+
     $command = Command::whereName($commandName)->first();
     if (is_null($command)) {
       $command = Command::create([
@@ -26,8 +38,8 @@ class CommandHelper
       $now = now();
       $lastCheckedAt = Carbon::parse($command->last_checked_at);
       $durationPassed = $now->diffInSeconds($lastCheckedAt);
-      if ($durationPassed < 10 && ($command->mode == 'auto')) {
-        echo "duration since last checking < 60sec => quit\n";
+      if ($durationPassed < static::$COOL_PERIOD && ($command->mode == 'auto')) {
+        echo "duration since last checking < ".static::$COOL_PERIOD."sec => quit\n";
         return;
       }
     }

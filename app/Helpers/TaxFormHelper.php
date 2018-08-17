@@ -642,8 +642,8 @@ class TaxFormHelper
         //    'outputFilePath'=>'....'
         // ]
         //
-        echo 'processJob_irdForm #580';
-        nf();
+//        echo 'processJob_irdForm #580'; nf();
+
         // Status => "Ready"
         $form->employees()->whereEmployeeId($employeeId)->update([
           'status' => 'ready',
@@ -660,8 +660,7 @@ class TaxFormHelper
         if (array_key_exists('TotalIncome', $irdEmployee)) {
           $irdMaster['TotIncomeBatch'] += (double)str_replace(',', '', $irdEmployee['TotalIncome']);
         }
-        echo 'processJob_irdForm #597';
-        nf();
+//        echo 'processJob_irdForm #597'; nf();
       }
 
       // create control list

@@ -80,9 +80,11 @@ class XmlValidatorHelper
         self::$errorDetails = self::libxmlDisplayErrors();
         self::$feedErrors = 1;
       } else {
+        self::$handler->close();
         return true;
       }
     };
+    self::$handler->close();
   }
 
   /**

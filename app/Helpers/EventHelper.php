@@ -39,7 +39,7 @@ class EventHelper {
           'formId' => $options['form']->id,
           'employeeId' => $options['formEmployee']->employee_id,
           'status' => $options['formEmployee']->status,
-          'sheetNo' => $options['formEmployee']->sheetNo
+          'sheetNo' => $options['formEmployee']->sheet_no
         ]));
         break;
       case 'requestForm':

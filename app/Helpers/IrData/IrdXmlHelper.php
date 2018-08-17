@@ -27,10 +27,12 @@ class IrdXmlHelper {
     $targetSchemaFile = $outputFolder.'/'.strtolower($irdCode).'.xsd';
     copy($schemaFile, $targetSchemaFile);
 
+//    $result = true;
     $result = XmlValidatorHelper::validateFeeds($outputFilePath, $targetSchemaFile);
-    if(!$result) {
-      $messages = $xml->validate();
-    }
+//    if(!$result) {
+//      echo 'IrdXmlHelper :: xml file has some error.'; nf();
+//      $messages = $xml->validate();
+//    }
     return $result;
   }
 }

@@ -140,12 +140,19 @@ class UserController extends BaseAuthController
   public function getUser()
   {
     $user = request()->user();
+    return response()->jsON($user);
+  }
+
+  public function getUser2()
+  {
+    $user = request()->user();
 
 //    if(is_null($user->oa_last_team_id)) {
 //      $user = null;
 //    }
 //    else {
       $oaTokenValid = OAHelper::checkOAToken($user);
+
       $user = $oaTokenValid ?
         $this->model->find($user->id) :
         null;
