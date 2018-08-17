@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class TeamIr56bIncome extends BaseModel
+class TeamIr56mIncome extends BaseModel
 {
 
   /**
@@ -13,13 +13,13 @@ class TeamIr56bIncome extends BaseModel
   protected $fillable = [
     'id',
     'team_id',
-    'ir56b_income_id',
+    'ir56m_income_id',
     'pay_type_ids'
   ];
 
   public $timestamps = false;
 
-  public function ir56bIncome() {
-    return $this->belongsTo('App\Models\Ir56bIncome');
+  public function ir56mIncome() {
+    return $this->belongsTo('App\Models\Ir56mIncome');
   }
 }

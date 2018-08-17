@@ -2,7 +2,7 @@
 
 use App\Models\Ir56bIncome;
 use App\Models\Ir56fIncome;
-use App\Models\TeamIr56bIncome;
+use App\Models\Ir56mIncome;
 use App\Models\Team;
 use App\Models\Lang;
 
@@ -24,13 +24,24 @@ class TaxFormSettingController extends BaseAuthController
       }
     }
 
-    // Incomes (IR56F)
+    // Income Particulars (IR56F/IR56G)
     $ir56fIncomes = Ir56fIncome::orderby('seq_no')->get();
     foreach ($ir56fIncomes as $row) {
       $teamIr56fIncome = $row->teamIr56fIncomes()->whereTeamId($oaTeamId)->first();
       $row->pay_type_ids = [];
       if (isset($teamIr56fIncome)) {
         $payTypeIds = trim($teamIr56fIncome->pay_type_ids);
+        $row->pay_type_ids = empty($payTypeIds) ? [] : explode(',', $payTypeIds);
+      }
+    }
+
+    // Income Particulars (IR56M)
+    $ir56mIncomes = Ir56mIncome::orderby('seq_no')->get();
+    foreach ($ir56mIncomes as $row) {
+      $teamIr56mIncome = $row->teamIr56mIncomes()->whereTeamId($oaTeamId)->first();
+      $row->pay_type_ids = [];
+      if (isset($teamIr56mIncome)) {
+        $payTypeIds = trim($teamIr56mIncome->pay_type_ids);
         $row->pay_type_ids = empty($payTypeIds) ? [] : explode(',', $payTypeIds);
       }
     }
@@ -45,6 +56,7 @@ class TaxFormSettingController extends BaseAuthController
     $data = [
       'ir56b_incomes' => $ir56bIncomes->toArray(),
       'ir56f_incomes' => $ir56fIncomes->toArray(),
+      'ir56m_incomes' => $ir56mIncomes->toArray(),
       'fileNo' => $fileNo,
       'langId' => $lang->id,
       'designation' => $team->getSetting('designation', ''),

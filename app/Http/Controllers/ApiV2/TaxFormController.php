@@ -9,8 +9,10 @@ use App\Models\FormDeparture;
 use App\Models\FormSalary;
 use App\Models\Ir56bIncome;
 use App\Models\Ir56fIncome;
+use App\Models\Ir56mIncome;
 use App\Models\TeamIr56bIncome;
 use App\Models\TeamIr56fIncome;
+use App\Models\TeamIr56mIncome;
 use App\Models\Lang;
 
 use App\Helpers\TeamHelper;
@@ -138,6 +140,22 @@ class TaxFormController extends BaseAuthController
       }
       $teamIr56fIncome->pay_type_ids = implode(',', $ir56fIncome['pay_type_ids']);
       $record->teamIr56fIncomes()->save($teamIr56fIncome);
+    }
+
+    // IR56M Income Mapping
+    $ir56mIncomes = \Input::get('ir56mIncomes');
+    foreach($ir56mIncomes as $ir56mIncome) {
+      $particularId = $ir56mIncome['id'];
+      $record = ir56mIncome::find($particularId);
+
+      $teamIr56mIncome = TeamIr56mIncome::whereTeamId($oaTeamId)->whereIr56mIncomeId($particularId)->first();
+      if(is_null($teamIr56mIncome)) {
+        $teamIr56mIncome = TeamIr56mIncome::create([
+          'team_id' => $oaTeamId
+        ]);
+      }
+      $teamIr56mIncome->pay_type_ids = implode(',', $ir56mIncome['pay_type_ids']);
+      $record->teamIr56mIncomes()->save($teamIr56mIncome);
     }
 
     return response()->json([

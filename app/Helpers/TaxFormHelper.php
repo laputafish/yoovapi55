@@ -769,7 +769,7 @@ class TaxFormHelper
         $headerData['HeaderCol3Row1'] = 'IR56M, Item 6';
         $headerData['HeaderCol3Row2'] = '(HK$)';
       } else {
-        $headerData['HeaderPageSubject'] = '以電腦格式遞交 IR56B 的收款人名單';
+        $headerData['HeaderPageSubject'] = '以電腦格式遞交 IR56M 的收款人名單';
 
         $headerData['HeaderCol0Row1'] = '表格編號';
         $headerData['HeaderCol1Row1'] = '收款人姓名';

@@ -126,6 +126,7 @@ function phpDateFormat( $yyyy_mm_dd, $format ) {
 }
 
 function irdDate2numberDate($irdDate) {
+  echo 'irdDate = '.$irdDate; nf();
   $segs = explode('/', $irdDate);
   $d = $segs[0];
   $m = $segs[1];
@@ -255,8 +256,9 @@ function concatNames($names) {
 function emptyFolder($folderPath) {
   $files = glob( $folderPath.'/*'); // get all file names
   foreach($files as $file){ // iterate files
-    if(is_file($file))
+    if(is_file($file)) {
       unlink($file); // delete file
+    }
   }
 }
 
@@ -264,4 +266,29 @@ function getDefault($defaults, $key, $defaultValue) {
   return array_key_exists($key, $defaults) ?
     $defaults[$key] :
     $defaultValue;
+}
+
+function createOrAddAmount($key, &$ar, $amount) {
+  if(array_key_exists($key, $ar)) {
+    $ar[$key] += $amount;
+  }
+  else {
+    $ar[$key] = $amount;
+  }
+}
+
+function implodeArrayProperty( $separator, $key, $ar ) {
+  $arValues = [];
+  for($i = 0; $i < count($ar); $i++) {
+    $arValues[] = $ar[$i][$key];
+  }
+  return implode( $separator, $arValues);
+}
+
+function sumArrayProperty( $key, $ar ) {
+  $result = 0;
+  for($i = 0; $i < count($ar) ; $i++) {
+    $result += $ar[$i][$key];
+  }
+  return $result;
 }

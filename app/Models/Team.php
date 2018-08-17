@@ -116,6 +116,11 @@ class Team extends BaseModel {
     return $this->hasMany('App\Models\TeamIr56fIncome', 'team_id', 'oa_team_id');
   }
 
+  public function teamIr56mIncomes() {
+    return $this->hasMany('App\Models\TeamIr56mIncome', 'team_id', 'oa_team_id');
+  }
+
+
 //  public function incomeParticulars() {
 //    return $this->hasMany('App\Models\TeamIr56bIncome', 'team_id', 'oa_team_id');
 //  }

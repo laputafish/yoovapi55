@@ -109,15 +109,18 @@ class Ir56gHelper extends IrDataHelper {
       //
       // 8. Other RAP (Bonus, Rewards, Allowance, etc.)
       'PerOfOtherRAPs' => $otherRapsPeriod,
-      'AmtOfOtherRAPs' => toCurrency($otherRapsAmounts),
+      'AmtOfOtherRAPs' => toCurrency($otherRapsAmount),
       //
       // 9
+      'NatureSpecialPayments' => $incomeInfo['NatureSpecialPayments'],
       'PerOfSpecialPayments' => $incomeInfo['PerOfSpecialPayments'],
       'AmtOfSpecialPayments' => toCurrency($incomeInfo['AmtOfSpecialPayments']),
-      'NatureSpecialPayments' => $incomeInfo['NatureSpecialPayments'],
 
       // total
       'TotalIncome' => toCurrency($incomeInfo['TotalIncome']),
+
+      // Employment Status (IR56F)
+      // 'CessationReason' => $employeeInfo['CessationReason'],
 
       // Place of residence
       'PlaceProvided' => empty($incomeInfo['addrOfPlace']) ? '0': '1',

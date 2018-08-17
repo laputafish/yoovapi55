@@ -111,7 +111,7 @@ class Ir56fHelper extends IrDataHelper {
       'AmtOfSpecialPayments' => toCurrency($incomeInfo['AmtOfSpecialPayments']),
 
       // total
-      'TotalIncome' => $incomeInfo['TotalIncome'],
+      'TotalIncome' => toCurrency($incomeInfo['TotalIncome']),
 
       // Employment Status
       'CessationReason' => $employeeInfo['CessationReason'],

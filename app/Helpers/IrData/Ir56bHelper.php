@@ -41,7 +41,7 @@ class Ir56bHelper extends IrDataHelper
 //      $formInfo['PerOfEmp'],
 //      $defaults);
 
-    return [
+    $result = [
       // Ird fields
       'SheetNo' => $sheetNo,
       'TypeOfForm' => $formInfo['TypeOfForm'],'O', // Original, Supplementary, Replacement
@@ -164,6 +164,7 @@ class Ir56bHelper extends IrDataHelper
       // Remark
       'Remarks' => $formInfo['Remarks']
     ];
+    return $result;
   }
 
   public static function getxxx($team, $employeeId, $options = [])

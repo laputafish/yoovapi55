@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Ir56bIncome extends BaseModel
+class Ir56mIncome extends BaseModel
 {
   /**
    * The attributes that are mass assignable.
@@ -21,7 +21,7 @@ class Ir56bIncome extends BaseModel
 
   public $timestamps = false;
 
-  public function teamIr56bIncomes() {
-    return $this->hasMany('App\Models\TeamIr56bIncome');
+  public function teamIr56mIncomes() {
+    return $this->hasMany('App\Models\TeamIr56mIncome');
   }
 }

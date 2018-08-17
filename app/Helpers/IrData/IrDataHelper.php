@@ -86,6 +86,110 @@ class IrDataHelper
     $oaEmployee,
     $fiscalYearInfo)
   {
+    if (static::$irdCode == 'IR56M') {
+      return static::getOAPayrollSummary_ir56m($oaAuth, $team, $oaEmployee, $fiscalYearInfo);
+    } else {
+      return static::getOAPayrollSummary_ir56bfg($oaAuth, $team, $oaEmployee, $fiscalYearInfo);
+    }
+  }
+
+  public static function getOAPayrollSummary_ir56m(
+    $oaAuth,
+    $team,
+    $oaEmployee,
+    $fiscalYearInfo)
+  {
+    $period = [
+      'startDate' => $fiscalYearInfo['startDate'],
+      'endDate' => $fiscalYearInfo['endDate']
+    ];
+
+    $summary = [
+      'type1_subcontracting_fees' => 0,
+      'type2_commission' => 0,
+      'type3_writer_contributor_fees' => 0,
+      'others_artiste_fees' => 0,
+      'others_copyright_royalties' => 0,
+      'others_consultancy_management_fees' => 0,
+      'others_service_fees' => 0,
+      'others' => []
+    ];
+
+    $incomeMappings = [];
+    $payTypeToTokenMappings = [];
+    $summary['totalIncome'] = 0;
+    $others = [];
+
+    $incomeMappings = $team->teamIr56mIncomes()->with('ir56mIncome')->get();
+    foreach ($incomeMappings as $item) {
+      $token = $item->ir56mIncome->token;
+      $payTypeIds = trim($item->pay_type_ids);
+      if ($payTypeIds != '') {
+        $arPayTypeIds = explode(',', $payTypeIds);
+        foreach ($arPayTypeIds as $payTypeId) {
+          $payTypeToTokenMappings['payType_' . $payTypeId] = $token;
+        }
+      }
+      if ($token == 'others') {
+        $summary[$token] = [];
+      } else {
+        $summary[$token] = 0;
+      }
+    }
+
+    //****************************************
+    // Fetch payslips amount of each pay type
+    //****************************************
+
+    // Filter payslips for related fiscal year
+    $payslips = OAPayslipHelper::get($oaAuth, $oaEmployee['id'], $team->oa_team_id);
+    $effectivePayslips = [];
+    foreach ($payslips as $i => $payslip) {
+      if (inBetween($payslip['startedDate'], $period) ||
+        inBetween($payslip['endedDate'], $period)) {
+        $effectivePayslips[] = $payslip;
+      }
+    }
+
+    foreach ($effectivePayslips as $payslip) {
+      foreach ($payslip['details'] as $detail) {
+        if ($detail['isBasicSalary']) {
+          createOrAddAmount('Basic Salary', $others, $detail['amount']);
+        } else {
+          if ($detail['payTypeId']) {
+            $index = 'payType_' . $detail['payTypeId'];
+            if (array_key_exists($index, $payTypeToTokenMappings)) {
+              $token = $payTypeToTokenMappings['payType_' . $detail['payTypeId']];
+              if ($token == 'others') {
+                createOrAddAmount($detail['name'], $others, $detail['amount']);
+              } else {
+                $summary[$token] += $detail['amount'];
+              }
+            } else {
+              createOrAddAmount('others', $others, $detail['amount']);
+            }
+          } else {
+            createOrAddAmount('others', $others, $detail['amount']);
+          }
+        }
+        $summary['totalIncome'] += $detail['amount'];
+      }
+    }
+    foreach ($others as $nature => $amount) {
+      $summary['others'][] = [
+        'nature' => $nature,
+        'amt' => $amount
+      ];
+    }
+    return $summary;
+  }
+
+  public static function getOAPayrollSummary_ir56bfg(
+    $oaAuth,
+    $team,
+    $oaEmployee,
+    $fiscalYearInfo)
+  {
     $period = [
       'startDate' => $fiscalYearInfo['startDate'],
       'endDate' => $fiscalYearInfo['endDate']
@@ -145,7 +249,7 @@ class IrDataHelper
           $summary[$token] = 0;
         }
       }
-    } else {
+    } else { // IR56F or IR56G
       $incomeMappings = $team->teamIr56fIncomes()->with('ir56fIncome')->get();
       foreach ($incomeMappings as $item) {
         $token = $item->ir56fIncome->token;
@@ -331,13 +435,13 @@ class IrDataHelper
   {
     $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
     $jobEndedDate = isset($oaEmployee['cessationDate']) ?
-      $oaEmployee['cessationDate'] :
-      substr($oaEmployee['cessationDate'], 0, 10);
+      substr($oaEmployee['cessationDate'], 0, 10)
+      : null;
 
     $empStartDate = $fiscalYearInfo['startDate'] > $joinedDate ? $fiscalYearInfo['startDate'] : $joinedDate;
-    $empEndDate = isset($jobEndedDate) ?
-      ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearInfo['endDate'] : $jobEndedDate) :
-      $fiscalYearInfo['endDate'];
+    $empEndDate = isset($jobEndedDate)
+      ? ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearInfo['endDate'] : $jobEndedDate)
+      : $fiscalYearInfo['endDate'];
 
     $perOfEmp = str_replace('-', '', $empStartDate) . '-' .
       str_replace('-', '', $empEndDate);
@@ -510,7 +614,7 @@ class IrDataHelper
     ];
 
     $result =
-      (in_array(static::$irdCode, ['IR56B', 'IR56F']) ? static::getIncomeInfoForIR56B($options) : []) +
+      (in_array(static::$irdCode, ['IR56B', 'IR56F', 'IR56G']) ? static::getIncomeInfoForIR56B($options) : []) +
       (static::$irdCode == 'IR56M' ? static::getIncomeInfoForIR56M($options) : []) +
       (static::$irdCode == 'IR56E' ? static::getIncomeInfoForIR56E($options) : []);
 
@@ -568,27 +672,45 @@ class IrDataHelper
     $perOfEmp = $options['perOfEmp'];
     $defaults = $options['defaults'];
 
+    $oaPayrollSummary = static::getOAPayrollSummary($oaAuth, $team, $oaEmployee, $fiscalYearInfo);
+
     // For IR56M
     // Service Period
-    $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
-    $jobEndedDate = substr($oaEmployee['jobEndedDate'], 0, 10);
 
-    $empStartDate = $fiscalYearInfo['startDate'] > $joinedDate ? $fiscalYearInfo['startDate'] : $joinedDate;
-    $empEndDate = isset($oaEmployee['jobEndedDate']) ?
-      ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearInfo['endDate'] : $jobEndedDate) :
-      $fiscalYearInfo['endDate'];
-    $perOfService = phpDateFormat($empStartDate, 'd/m/Y') . ' - ' . phpDateFormat($empEndDate, 'd/m/Y');
-    $amtOfType1 = array_key_exists('AmtOfType1', $defaults) ? $defaults['AmtOfType1'] : 0;
-    $amtOfType2 = array_key_exists('AmtOfType2', $defaults) ? $defaults['AmtOfType2'] : 0;
-    $amtOfType3 = array_key_exists('AmtOfType3', $defaults) ? $defaults['AmtOfType3'] : 0;
-    $amtOfArtistFee = array_key_exists('AmtOfArtistFee', $defaults) ? $defaults['AmtOfArtistFee'] : 0;
-    $amtOfCopyright = array_key_exists('AmtOfCopyright', $defaults) ? $defaults['AmtOfCopyright'] : 0;
-    $amtOfConsultFee = array_key_exists('AmtOfConsultFee', $defaults) ? $defaults['AmtOfConsultFee'] : 0;
+//    $joinedDate = substr($oaEmployee['joinedDate'], 0, 10);
+//    $jobEndedDate = substr($oaEmployee['jobEndedDate'], 0, 10);
+//
+//    $empStartDate = $fiscalYearInfo['startDate'] > $joinedDate ? $fiscalYearInfo['startDate'] : $joinedDate;
+//    $empEndDate = isset($oaEmployee['jobEndedDate']) ?
+//      ($fiscalYearInfo['endDate'] < $jobEndedDate ? $fiscalYearInfo['endDate'] : $jobEndedDate) :
+//      $fiscalYearInfo['endDate'];
+//    $perOfService = phpDateFormat($empStartDate, 'd/m/Y') . ' - ' . phpDateFormat($empEndDate, 'd/m/Y');
+
+    $perOfService = $perOfEmp;
+
+    $tableMapping = [
+      'AmtOfType1' => 'type1_subcontracting_fees',
+      'AmtOfType2' => 'type2_commission',
+      'AmtOfType3' => 'type3_writer_contributor_fees',
+      'AmtOfArtistFee' => 'others_artiste_fees',
+      'AmtOfCopyright' => 'others_copyright_royalties',
+      'AmtOfConsultFee' => 'others_consultancy_management_fees',
+      'AmtOfOtherInc1' => 'others_service_fees',
+    ];
+    $amtOfType1 = $oaPayrollSummary[$tableMapping['AmtOfType1']];
+    $amtOfType2 = $oaPayrollSummary[$tableMapping['AmtOfType2']];
+    $amtOfType3 = $oaPayrollSummary[$tableMapping['AmtOfType3']];
+    $amtOfArtistFee = $oaPayrollSummary[$tableMapping['AmtOfArtistFee']];
+    $amtOfCopyright = $oaPayrollSummary[$tableMapping['AmtOfCopyright']];
+    $amtOfConsultFee = $oaPayrollSummary[$tableMapping['AmtOfConsultFee']];
+
     $natureOtherInc1 = 'Services Fee';
-    $amtOfOtherInc1 = array_key_exists('AmtOfOtherInc1', $defaults) ? $defaults['AmtOfOtherInc1'] : 0;
-    $natureOtherInc2 = array_key_exists('NatureOtherInc2', $defaults) ? $defaults['NatureOtherInc2'] : 0;
-    $amtOfOtherInc2 = array_key_exists('AmtOfOtherInc2', $defaults) ? $defaults['AmtOfOtherInc2'] : 0;
-    $totalIncome = array_key_exists('TotalIncome', $defaults) ? $defaults['TotalIncome'] :
+    $amtOfOtherInc1 = $oaPayrollSummary[$tableMapping['AmtOfOtherInc1']];
+
+    $natureOtherInc2 = implodeArrayProperty( ',', 'nature', $oaPayrollSummary['others']);
+    $amtOfOtherInc2 = sumArrayProperty('amt', $oaPayrollSummary['others']);
+
+    $totalIncome =
       $amtOfType1 +
       $amtOfType2 +
       $amtOfType3 +
@@ -598,6 +720,26 @@ class IrDataHelper
       $amtOfOtherInc1 +
       $amtOfOtherInc2;
 
+//    $amtOfType1 = array_key_exists('AmtOfType1', $defaults) ? $defaults['AmtOfType1'] : 0;
+//    $amtOfType2 = array_key_exists('AmtOfType2', $defaults) ? $defaults['AmtOfType2'] : 0;
+//    $amtOfType3 = array_key_exists('AmtOfType3', $defaults) ? $defaults['AmtOfType3'] : 0;
+//    $amtOfArtistFee = array_key_exists('AmtOfArtistFee', $defaults) ? $defaults['AmtOfArtistFee'] : 0;
+//    $amtOfCopyright = array_key_exists('AmtOfCopyright', $defaults) ? $defaults['AmtOfCopyright'] : 0;
+//    $amtOfConsultFee = array_key_exists('AmtOfConsultFee', $defaults) ? $defaults['AmtOfConsultFee'] : 0;
+//    $natureOtherInc1 = 'Services Fee';
+//    $amtOfOtherInc1 = array_key_exists('AmtOfOtherInc1', $defaults) ? $defaults['AmtOfOtherInc1'] : 0;
+//    $natureOtherInc2 = array_key_exists('NatureOtherInc2', $defaults) ? $defaults['NatureOtherInc2'] : 0;
+//    $amtOfOtherInc2 = array_key_exists('AmtOfOtherInc2', $defaults) ? $defaults['AmtOfOtherInc2'] : 0;
+//    $totalIncome = array_key_exists('TotalIncome', $defaults) ? $defaults['TotalIncome'] :
+//      $amtOfType1 +
+//      $amtOfType2 +
+//      $amtOfType3 +
+//      $amtOfArtistFee +
+//      $amtOfCopyright +
+//      $amtOfConsultFee +
+//      $amtOfOtherInc1 +
+//      $amtOfOtherInc2;
+
     $perOfType1 = empty($amtOfType1) ? '' : $perOfService;
     $perOfType2 = empty($amtOfType2) ? '' : $perOfService;
     $perOfType3 = empty($amtOfType3) ? '' : $perOfService;
@@ -606,6 +748,7 @@ class IrDataHelper
     $perOfConsultFee = empty($amtOfConsultFee) ? '' : $perOfService;
     $perOfOtherInc1 = empty($amtOfOtherInc1) ? '' : $perOfService;
     $perOfOtherInc2 = empty($amtOfOtherInc2) ? '' : $perOfService;
+
     if ($amtOfOtherInc1 == 0) {
       $natureOtherInc1 = '';
     }
@@ -627,6 +770,7 @@ class IrDataHelper
       'PerOfType2' => $perOfType2,
       'AmtOfType3' => $amtOfType3,
       'PerOfType3' => $perOfType3,
+
       'AmtOfArtistFee' => $amtOfArtistFee,
       'PerOfArtistFee' => $perOfArtistFee,
       'AmtOfCopyright' => $amtOfCopyright,
@@ -846,13 +990,13 @@ class IrDataHelper
       // Total Income
       'TotalIncome' => $oaPayrollSummary['totalIncome'],
 
-      // For IR56F
+      // For IR56F or IR56G
       'NatureSpecialPayments' => $oaPayrollSummary['special_payments_nature'],
       'PerOfSpecialPayments' => $incomeSummary['PerOfSpecialPayments'],
       'AmtOfSpecialPayments' => $incomeSummary['AmtOfSpecialPayments'],
+      // For IR56F or IR56G ends
 
-      // For IR56F ends
-      //
+
       // Place of Residence
       'PlaceOfResInd' => '0',
 
@@ -912,11 +1056,11 @@ class IrDataHelper
     $oaEmployee = static::getOAAdminEmployee();
     $oaEmployee['cessationDate'] = null;
     $oaEmployee['cessationReason'] = null;
-    if(static::$irdCode === 'IR56F') {
+    if (static::$irdCode === 'IR56F') {
       $resignation = static::getResignation();
       $resignationCount = count($resignation);
-      if($resignationCount>0) {
-        $lastResignation = $resignation[$resignationCount-1];
+      if ($resignationCount > 0) {
+        $lastResignation = $resignation[$resignationCount - 1];
         $oaEmployee['cessationDate'] = $lastResignation['endedDate'];
         $oaEmployee['cessationReason'] = static::translateResignationReason($isEnglish, $lastResignation['reason']);
       }
@@ -944,39 +1088,6 @@ class IrDataHelper
       $formInfo['PerOfEmp'],
       $defaults);
 
-//    $result = [
-//      'fileNo' => $registrationNumber,
-//      'ern' => $ern,
-//      'erName' => $oaTeam['name'],
-//      'erAddress' => $oaTeam['setting']['companyAddress'],
-//      'signatureName' => $signatureName,
-//      'designation' => $designation,
-//      'formDate' => phpDateFormat($formDate, 'd/m/Y')
-//    ];
-
-    // Employee
-//    if (isset($oaEmployee)) {
-//      if (isset($oaEmployee['jobEndedDate'])) {
-//        $jobEndedDate = phpDateFormat($oaEmployee['jobEndedDate'], 'd/m/Y');
-//        $fiscalYearStartBeforeCease = phpDateFormat(getFiscalYearStartOfDate($jobEndedDate), 'd/m/Y');
-//      } else {
-//        $jobEndedDate = '';
-//        $fiscalYearStartBeforeCease = '';
-//      }
-//      $result = array_merge($result, [
-//        'name' => $oaEmployee['lastName'] . ', ' . $oaEmployee['firstName'],
-//        'surname' => $oaEmployee['lastName'],
-//        'nameInChinese' => getOAEmployeeChineseName($oaEmployee),
-//        'hkid' => $oaEmployee['identityNumber'],
-//        'ppNum' => empty($oaEmployee['identityNumber']) ? $oaEmployee['passport'] : 'xxxxx',
-//        'gender' => $oaEmployee['gender'],
-//        'maritalStatus' => ($oaEmployee['marital'] == 'married' ? 2 : 1),
-//        // 1=Single/Widowed/Divorced/Living Apart, 2=Married
-//
-//        'endDateOfEmp' => $jobEndedDate,
-//        'fiscalYearStartDateBeforeCease' => $fiscalYearStartBeforeCease
-//      ]);
-//    }
 
     return static::prepareResult(
       $sheetNo,
@@ -988,17 +1099,18 @@ class IrDataHelper
   }
 
 
-  private static function translateResignationReason($isEnglish, $resignationReason) {
+  private static function translateResignationReason($isEnglish, $resignationReason)
+  {
     $reasonMapping = [
       'resignation' => '辭職',
-      'retirement'=>'退休',
-      'dismissal'=>'解僱',
-      'death'=>'身故'
+      'retirement' => '退休',
+      'dismissal' => '解僱',
+      'death' => '身故'
     ];
-    if($isEnglish) {
+    if ($isEnglish) {
       $result = ucfirst($resignationReason);
     } else {
-      if(array_key_exists($resignationReason, $reasonMapping)) {
+      if (array_key_exists($resignationReason, $reasonMapping)) {
         $result = $reasonMapping[$resignationReason];
       } else {
         $result = ucfirst($resignationReason);
