@@ -16,6 +16,12 @@ class IrdForm extends BaseModel {
     'can_use_softcopy'
   ];
 
+  protected $appends = ['ird_form_type_name'];
+
+  public function getIrdFormTypeNameAttribute(){
+    return isset($this->irdFormType) ? $this->irdFormType->name : '';
+  }
+
   public $timestamps = false;
 
   public function files() {

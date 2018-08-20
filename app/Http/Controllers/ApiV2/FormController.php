@@ -13,6 +13,8 @@ use App\Models\TempFile;
 
 class FormController extends BaseAuthController {
   protected $modelName = 'Form';
+  protected $requireTeamFilter = true;
+  protected $essentialWith = 'employees';
 
   protected $rules = [
     'team_id'=>'string',
@@ -91,22 +93,22 @@ class FormController extends BaseAuthController {
     'order'=>'desc'
   ];
 
-  public function index() {
-    $query = $this->model->whereTeamId($this->team->id)->with('employees');
-
-    $query = $this->addFilter($query);
-    $query = $this->addSortOrder($query);
-    $data = $this->getWithPagination($query, $total);
-    $total = addPagination($query);
-
-    return response()->json([
-      'status'=>true,
-      'result'=>[
-        'data'=>$data,
-        'total'=>$total
-      ]
-    ]);
-  }
+//  public function index() {
+//    $query = $this->model->whereTeamId($this->team->id)->with('employees');
+//    $query = $this->addFilter($query);
+//    $total = $query->count();
+//
+//    $query = $this->addSortOrder($query);
+//    $data = $this->getWithPagination($query);
+//
+//    return response()->json([
+//      'status'=>true,
+//      'result'=>[
+//        'data'=>$data,
+//        'total'=>$total
+//      ]
+//    ]);
+//  }
 
   public function update($id) {
     $form = $this->model->find($id);

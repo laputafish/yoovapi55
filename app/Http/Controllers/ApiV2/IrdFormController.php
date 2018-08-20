@@ -2,26 +2,21 @@
 
 class IrdFormController extends BaseAuthController
 {
-  protected $modelName = 'IrdForm';
   protected static $BLANK_FORM_ICON = '/public/dist/img/forms/blank.png';
   protected static $SAMPLE_FORM_ICON = '/public/dist/img/forms/ir56b_pc_e.gif';
 
-  public function index()
-  {
-    $query = $this->model->all();
-    $query = $this->addFilter($query);
-    $query = $this->addSortOrder($query);
-    $data = $this->getWithPagination($query, $total);
+  protected $modelName = 'IrdForm';
+  protected $esentialWith = 'IrdFormType';
+  protected $requireTeamFilter = false;
 
-    return response()->json([
-      'status' => true,
-      'result' => [
-        'data'=>$data,
-        'total'=>$total
-      ]
-    ]);
+  protected function addSortOrder($query, $mapping=[]) {
+    return parent::addSortOrder($query, ['ird_form_type_name'=>'name']);
   }
 
+  protected function addJoins($query) {
+    $query->leftjoin('ird_form_types as ift', 'ift.id', '=', 'ird_forms.ird_form_type_id');
+    return $query;
+  }
   public function showFormIcon($employeeFormId)
   {
     $imagePath = '';

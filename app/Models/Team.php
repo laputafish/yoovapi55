@@ -5,6 +5,14 @@ class Team extends BaseModel {
     'oa_team_id',
     'oa_access_token',
     'oa_token_type',
+
+    'oa_team_code',
+    'oa_team_currency_code',
+    'oa_access_token',
+    'oa_team_logo_path',
+    'oa_team_name',
+    'oa_team_created_at',
+
     'updated_at',
     'created_at'
   ];
