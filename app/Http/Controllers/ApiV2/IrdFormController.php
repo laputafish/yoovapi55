@@ -5,11 +5,20 @@ class IrdFormController extends BaseAuthController
   protected $modelName = 'IrdForm';
   protected static $BLANK_FORM_ICON = '/public/dist/img/forms/blank.png';
   protected static $SAMPLE_FORM_ICON = '/public/dist/img/forms/ir56b_pc_e.gif';
+
   public function index()
   {
+    $query = $this->model->all();
+    $query = $this->addFilter($query);
+    $query = $this->addSortOrder($query);
+    $data = $this->getWithPagination($query, $total);
+
     return response()->json([
       'status' => true,
-      'result' => $this->model->orderBy('form_date', 'desc')->get()
+      'result' => [
+        'data'=>$data,
+        'total'=>$total
+      ]
     ]);
   }
 

@@ -86,38 +86,18 @@ class FormController extends BaseAuthController {
     return $form;
   }
 
+  protected $defaultSortOrder = [
+    'sort'=>'form_date',
+    'order'=>'desc'
+  ];
+
   public function index() {
-    $input = \Input::all();
     $query = $this->model->whereTeamId($this->team->id)->with('employees');
 
-    // filter
-    if (\Input::has('filter')) {
-      $filters = explode(';', \Input::get('filter'));
-      foreach($filters as $filter) {
-        $keyValues = explode(':', $filter);
-        if($keyValues[1]!='0') {
-          $query = $query->where($keyValues[0], $keyValues[1]);
-        }
-      }
-    }
-
-    // sort/order
-    $sort = \Input::get('sort','');
-    $order = \Input::get('order', 'asc');
-    if(empty($sort)) {
-      $sort = 'form_date';
-      $order = 'desc';
-    }
-    $query = $query->orderby($sort, $order);
-
-    // Pagination
-    $query = $query->skip(\Input::get('offset',0));
-    if(\Input::has('limit')) {
-      $query = $query->take(\Input::get('limit'));
-    }
-    $data = $query->get();
-    $data = $this->onDataReady($data);
-    $total = $data->count();
+    $query = $this->addFilter($query);
+    $query = $this->addSortOrder($query);
+    $data = $this->getWithPagination($query, $total);
+    $total = addPagination($query);
 
     return response()->json([
       'status'=>true,

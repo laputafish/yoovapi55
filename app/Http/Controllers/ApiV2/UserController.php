@@ -140,7 +140,8 @@ class UserController extends BaseAuthController
   public function getUser()
   {
     $user = request()->user();
-    return response()->jsON($user);
+    $user->is_supervisor = $user->hasRole('supervisor');
+    return response()->json($user);
   }
 
   public function getUser2()
